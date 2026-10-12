@@ -20,8 +20,40 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
 
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+const fs = require('fs');
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Serve uploads from local disk or fallback to MongoDB Atlas if ephemeral disk was wiped
+app.get('/uploads/:filename', async (req, res, next) => {
+  const filename = req.params.filename;
+  const localPath = path.join(__dirname, 'uploads', filename);
+  if (fs.existsSync(localPath)) {
+    return res.sendFile(localPath);
+  }
+  try {
+    const Product = require('./models/Product');
+    const product = await Product.findOne({
+      $or: [
+        { 'imagesData.filename': filename },
+        { images: new RegExp(filename, 'i') },
+      ],
+    });
+    if (product) {
+      const imgObj = product.imagesData?.find((img) => img.filename === filename);
+      if (imgObj && imgObj.data) {
+        const buf = Buffer.from(imgObj.data, 'base64');
+        res.type(imgObj.mime || 'image/jpeg');
+        return res.send(buf);
+      }
+    }
+  } catch (err) {
+    console.error('Upload retrieval error:', err);
+  }
+  next();
+});
+
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api/auth', require('./routes/authRoutes'));

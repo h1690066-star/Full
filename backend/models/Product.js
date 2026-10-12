@@ -23,6 +23,7 @@ const productSchema = new mongoose.Schema(
     reviewsCount: { type: Number, default: 0, min: 0 },
 
     images: [String],
+    imagesData: [{ _id: false, filename: String, data: String, mime: String }],
     colors: [String],   // HEX, masalan '#000000'
     storage: [String],  // '128GB', '256GB' ...
     specs: [specItem],  // oddiy xususiyatlar jadvali

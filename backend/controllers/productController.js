@@ -1,3 +1,4 @@
+const fs = require('fs');
 const mongoose = require('mongoose');
 const Product = require('../models/Product');
 const { removeUpload } = require('../utils/files');
@@ -5,6 +6,19 @@ const { removeUpload } = require('../utils/files');
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const toUrl = (file) => `/uploads/${file.filename}`;
 const cleanupFiles = (files) => (files || []).forEach((f) => removeUpload(toUrl(f)));
+
+const fileToImageData = (file) => {
+  try {
+    const buf = fs.readFileSync(file.path);
+    return {
+      filename: file.filename,
+      data: buf.toString('base64'),
+      mime: file.mimetype || 'image/jpeg',
+    };
+  } catch (e) {
+    return null;
+  }
+};
 
 // multipart da massiv JSON string yoki vergul bilan kelishi mumkin
 const toArray = (v) => {
@@ -148,6 +162,7 @@ exports.createProduct = async (req, res) => {
       data.used = true;
     }
     data.images = (req.files || []).map(toUrl);
+    data.imagesData = (req.files || []).map(fileToImageData).filter(Boolean);
 
     const product = await Product.create(data);
     res.status(201).json(product);
@@ -186,7 +201,11 @@ exports.updateProduct = async (req, res) => {
       own.forEach(removeUpload);
     }
 
-    if (req.files && req.files.length) product.images.push(...req.files.map(toUrl));
+    if (req.files && req.files.length) {
+      product.images.push(...req.files.map(toUrl));
+      if (!product.imagesData) product.imagesData = [];
+      product.imagesData.push(...req.files.map(fileToImageData).filter(Boolean));
+    }
 
     await product.save();
     res.json(product);
