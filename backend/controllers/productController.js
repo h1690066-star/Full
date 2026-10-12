@@ -43,6 +43,12 @@ exports.getProducts = async (req, res) => {
           { category: new RegExp('^phones$', 'i'), used: true },
           { used: true }
         ];
+      } else if (/^(home\s*appliances?|elektronika|maishiy\s*texnika)$/i.test(catTrim)) {
+        filter.$or = [
+          { category: new RegExp('^home\\s*appliances?$', 'i') },
+          { category: new RegExp('^elektronika$', 'i') },
+          { category: new RegExp('^maishiy\\s*texnika$', 'i') }
+        ];
       } else {
         filter.category = new RegExp('^' + escapeRegex(catTrim) + '$', 'i');
       }
@@ -136,6 +142,11 @@ exports.createProduct = async (req, res) => {
     NUMERIC.forEach((f) => { if (b[f] !== undefined && b[f] !== '') data[f] = Number(b[f]); });
     LISTS.forEach((f) => { if (b[f] !== undefined) data[f] = toArray(b[f]); });
     data.isActive = b.isActive === undefined ? true : b.isActive === 'true' || b.isActive === true;
+    if (b.used !== undefined) {
+      data.used = b.used === 'true' || b.used === true;
+    } else if (/^(used(\s*phones?)?|b\/u(\s*telefonlar)?)$/i.test(String(b.category || ''))) {
+      data.used = true;
+    }
     data.images = (req.files || []).map(toUrl);
 
     const product = await Product.create(data);
@@ -161,6 +172,11 @@ exports.updateProduct = async (req, res) => {
     NUMERIC.forEach((f) => { if (b[f] !== undefined && b[f] !== '') product[f] = Number(b[f]); });
     LISTS.forEach((f) => { if (b[f] !== undefined) product[f] = toArray(b[f]); });
     if (b.isActive !== undefined) product.isActive = b.isActive === 'true' || b.isActive === true;
+    if (b.used !== undefined) {
+      product.used = b.used === 'true' || b.used === true;
+    } else if (b.category && /^(used(\s*phones?)?|b\/u(\s*telefonlar)?)$/i.test(String(b.category))) {
+      product.used = true;
+    }
 
     // ochirilishi kerak bolgan eski rasmlar: removeImages = ["/uploads/a.jpg", ...]
     const toRemove = toArray(b.removeImages);

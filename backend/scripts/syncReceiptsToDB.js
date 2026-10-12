@@ -54,3 +54,4 @@ syncReceipts().catch((err) => {
   console.error('Sync error:', err);
   process.exit(1);
 });
+

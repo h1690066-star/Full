@@ -5,6 +5,9 @@ import { getT } from "@/lib/i18n";
 import { mapApiProduct, fetchProducts } from "@/lib/products";
 import { api } from "@/lib/api";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function generateMetadata({ params }) {
   const { id } = await params;
   const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://xonbozor.uz";

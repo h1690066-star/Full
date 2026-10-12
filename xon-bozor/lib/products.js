@@ -5,7 +5,7 @@ export const formatPrice = (n) => String(n || 0).replace(/\B(?=(\d{3})+(?!\d))/g
 // Faqat APIdan kelgan mahsulotlarni formatlash uchun helper
 export const mapApiProduct = (item) => {
   if (!item) return null;
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://full-nbal.onrender.com";
   const images = (item.images || []).map((img) =>
     typeof img === "string" && img.startsWith("/uploads/") ? `${apiBase}${img}` : img
   );
@@ -13,6 +13,14 @@ export const mapApiProduct = (item) => {
     images[0] ||
     (typeof item.image === "string" && item.image.startsWith("/uploads/") ? `${apiBase}${item.image}` : item.image) ||
     null;
+
+  const isUsed =
+    Boolean(item.used) ||
+    item.category === "Used Phones" ||
+    item.category === "B/U Telefonlar" ||
+    (typeof item.name === "string" &&
+      (item.name.toLowerCase().includes("(used") ||
+        item.name.toLowerCase().includes("(b/u)")));
 
   return {
     id: item._id || item.id,
@@ -34,7 +42,7 @@ export const mapApiProduct = (item) => {
     storage: item.storage || [],
     stock: item.stock ?? 0,
     discount: item.discount || 0,
-    used: item.used || false,
+    used: isUsed,
     grade: item.grade || "excellent",
     battery: item.battery || 95,
   };
@@ -69,26 +77,46 @@ export async function fetchProducts(params = {}) {
 // 2️⃣ Har bir Kategoriya bo'yicha API So'rovi: GET /api/products?category=...
 export async function fetchProductsByCategory(category, fallback = [], limit = 1000) {
   try {
-    const res = await api.get("/api/products", { params: { category, limit } });
-    const items = res.data?.items || (Array.isArray(res.data) ? res.data : []);
-    const mapped = items.map(mapApiProduct).filter(Boolean);
-    if (mapped.length > 0) return mapped;
+    let categoriesToFetch = [category];
+    const catLower = (category || "").toLowerCase();
 
-    // Kategoriya taxallusi (alias) bo'yicha qayta izlash (Used Phones <-> B/U Telefonlar, Home appliances <-> Elektronika)
-    let aliasCategory = null;
-    if (category === "Used Phones") aliasCategory = "B/U Telefonlar";
-    else if (category === "B/U Telefonlar") aliasCategory = "Used Phones";
-    else if (category === "Home appliances") aliasCategory = "Elektronika";
-    else if (category === "Elektronika") aliasCategory = "Home appliances";
-
-    if (aliasCategory) {
-      const aliasRes = await api.get("/api/products", { params: { category: aliasCategory, limit } });
-      const aliasItems = aliasRes.data?.items || (Array.isArray(aliasRes.data) ? aliasRes.data : []);
-      const aliasMapped = aliasItems.map(mapApiProduct).filter(Boolean);
-      if (aliasMapped.length > 0) return aliasMapped;
+    if (catLower.includes("used") || catLower.includes("b/u")) {
+      categoriesToFetch = ["Used Phones", "B/U Telefonlar"];
+    } else if (
+      catLower.includes("appliance") ||
+      catLower.includes("elektronika") ||
+      catLower.includes("maishiy")
+    ) {
+      categoriesToFetch = ["Home appliances", "Elektronika", "Maishiy texnika"];
+    } else if (catLower.includes("accessor") || catLower.includes("aksessuar")) {
+      categoriesToFetch = ["Aksessuarlar", "Accessories"];
+    } else if (catLower === "phones") {
+      categoriesToFetch = ["Phones"];
     }
 
-    return [];
+    const results = await Promise.all(
+      categoriesToFetch.map((cat) =>
+        api
+          .get("/api/products", { params: { category: cat, limit } })
+          .then((res) => res.data?.items || (Array.isArray(res.data) ? res.data : []))
+          .catch(() => [])
+      )
+    );
+
+    const merged = [];
+    const seen = new Set();
+    for (const list of results) {
+      for (const item of list) {
+        const id = item._id || item.id;
+        if (id && !seen.has(id)) {
+          seen.add(id);
+          merged.push(item);
+        }
+      }
+    }
+
+    const mapped = merged.map(mapApiProduct).filter(Boolean);
+    return mapped;
   } catch (err) {
     return [];
   }

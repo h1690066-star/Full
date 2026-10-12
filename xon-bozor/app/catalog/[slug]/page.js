@@ -4,6 +4,9 @@ import CatalogClient from "@/components/CatalogClient";
 import { getT } from "@/lib/i18n";
 import { fetchProducts, fetchProductsByCategory } from "@/lib/products";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const BRAND_MAP = {
   iphone: "Apple",
   apple: "Apple",
@@ -23,6 +26,11 @@ const CATEGORY_MAP = {
   used: "Used Phones",
   appliances: "Home appliances",
   accessories: "Aksessuarlar",
+  electronics: "Elektronika",
+  elektronika: "Elektronika",
+  tv: "Elektronika",
+  computers: "Elektronika",
+  watches: "Aksessuarlar",
 };
 
 export async function generateMetadata({ params }) {
