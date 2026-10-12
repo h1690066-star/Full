@@ -47,6 +47,7 @@ export default function ProductDetailClient({ product, related = [], t }) {
     ? product.images
     : (product.image ? [product.image] : ["/logo.png"]);
   const [activeImg, setActiveImg] = useState(allImages[0]);
+  const [imgError, setImgError] = useState(false);
 
   // Active Tab
   const [activeTab, setActiveTab] = useState("specs");
@@ -179,11 +180,19 @@ export default function ProductDetailClient({ product, related = [], t }) {
               )}
             </button>
 
-            <img
-              src={activeImg}
-              alt={product.name}
-              className="max-h-full max-w-full object-contain transition duration-300 hover:scale-105"
-            />
+            {activeImg && !imgError ? (
+              <img
+                src={activeImg}
+                alt={product.name}
+                className="max-h-full max-w-full object-contain transition duration-300 hover:scale-105"
+                onError={() => setImgError(true)}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center p-4 text-center select-none">
+                <MdPhoneIphone className="text-8xl text-brand/30" />
+                <span className="text-xs font-bold text-slate-400 mt-2">{product.brand || "Xon Bozor"}</span>
+              </div>
+            )}
 
             <span className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-xs">
               <MdZoomIn className="text-xl" />

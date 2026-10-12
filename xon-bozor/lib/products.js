@@ -6,9 +6,17 @@ export const formatPrice = (n) => String(n || 0).replace(/\B(?=(\d{3})+(?!\d))/g
 export const mapApiProduct = (item) => {
   if (!item) return null;
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://full-nbal.onrender.com";
-  const images = (item.images || []).map((img) =>
+
+  // Check if item has embedded imagesData from MongoDB Atlas
+  const embeddedImages = (item.imagesData || [])
+    .filter((d) => d && d.data)
+    .map((d) => `data:${d.mime || "image/jpeg"};base64,${d.data}`);
+
+  const rawImages = (item.images || []).map((img) =>
     typeof img === "string" && img.startsWith("/uploads/") ? `${apiBase}${img}` : img
   );
+
+  const images = embeddedImages.length > 0 ? embeddedImages : rawImages;
   const mainImage =
     images[0] ||
     (typeof item.image === "string" && item.image.startsWith("/uploads/") ? `${apiBase}${item.image}` : item.image) ||

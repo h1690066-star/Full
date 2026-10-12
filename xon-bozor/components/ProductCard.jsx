@@ -40,6 +40,7 @@ function ProductCard({ product: p, t }) {
 
   const [isSelectingQty, setIsSelectingQty] = useState(false);
   const [selectedQty, setSelectedQty] = useState(1);
+  const [imgError, setImgError] = useState(false);
 
   const requireAuth = () => {
     if (typeof window !== "undefined") {
@@ -134,7 +135,7 @@ function ProductCard({ product: p, t }) {
         </button>
 
         <Link href={`/product/${pid}`} className="flex h-full w-full items-center justify-center">
-          {imgUrl ? (
+          {imgUrl && !imgError ? (
             <img
               src={imgUrl}
               alt={p.name}
@@ -143,9 +144,13 @@ function ProductCard({ product: p, t }) {
               className="max-h-full max-w-full object-contain transition duration-300 group-hover:scale-105"
               loading="lazy"
               decoding="async"
+              onError={() => setImgError(true)}
             />
           ) : (
-            <MdPhoneIphone className="text-6xl text-brand/25" aria-hidden />
+            <div className="flex flex-col items-center justify-center p-2 text-center select-none">
+              <MdPhoneIphone className="text-6xl text-brand/30" aria-hidden />
+              <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 mt-1 line-clamp-1">{p.brand || "Xon Bozor"}</span>
+            </div>
           )}
         </Link>
       </div>
