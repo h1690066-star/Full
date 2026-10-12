@@ -13,15 +13,11 @@ app.set('trust proxy', 1);
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
-// CORS: productionda faqat CLIENT_URL, developmentda localhost va lokal tarmoq
-const allowed = (process.env.CLIENT_URL || '').split(',').map((s) => s.trim()).filter(Boolean);
-const devOrigin = /^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+)(:\d+)?$/;
+// CORS sozlamasi: Har qanday frontend (Vercel, localhost, mobil) ulanishi uchun ruxsat berish
 app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin || allowed.includes(origin)) return cb(null, true);
-    if (process.env.NODE_ENV !== 'production' && devOrigin.test(origin)) return cb(null, true);
-    cb(null, false);
-  },
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
 
 app.use(express.json({ limit: '1mb' }));
