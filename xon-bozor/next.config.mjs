@@ -7,6 +7,7 @@ const nextConfig = {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
       { protocol: "http", hostname: "localhost" },
+      { protocol: "https", hostname: "full-nbal.onrender.com" },
       { protocol: "https", hostname: "**" },
     ],
   },
