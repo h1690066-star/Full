@@ -35,7 +35,19 @@ export function CartProvider({ children }) {
     } catch (e) {}
   }, [wishlist, hydrated]);
 
+  const checkAuth = () => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/register";
+        return false;
+      }
+    }
+    return true;
+  };
+
   const addToCart = (product, qty = 1, options = {}) => {
+    if (!checkAuth()) return;
     if (!product) return;
     const pid = product.id || product._id;
     setCart((prev) => {
@@ -87,6 +99,7 @@ export function CartProvider({ children }) {
   const clearCart = () => setCart([]);
 
   const toggleWishlist = (product) => {
+    if (!checkAuth()) return;
     if (!product) return;
     const pid = product.id || product._id;
     setWishlist((prev) => {

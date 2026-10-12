@@ -15,17 +15,15 @@ export default async function Home() {
   const { t, lang } = await getT();
   const s = t.sections;
 
-  const [apiPhones, apiUsed, apiAppliances, apiAccessories] = await Promise.all([
+  const [apiPhones, apiUsed, apiAppliances] = await Promise.all([
     fetchProductsByCategory("Phones"),
     fetchProductsByCategory("Used Phones"),
     fetchProductsByCategory("Home appliances"),
-    fetchProductsByCategory("Aksessuarlar"),
   ]);
 
   const phonesToShow = apiPhones || [];
   const usedToShow = apiUsed || [];
   const appliancesToShow = apiAppliances || [];
-  const accessoriesToShow = apiAccessories || [];
 
   const jsonLd = [
     {
@@ -60,9 +58,6 @@ export default async function Home() {
         <ProductSection id="new" title={s.newPhones} href="/catalog/phones" allLabel={s.all} products={phonesToShow} t={t} />
         <ProductSection id="used" title={s.usedPhones} href="/catalog/used" allLabel={s.allUsed} products={usedToShow} t={t} />
         <ProductSection id="appliances" title={s.appliances} href="/catalog/appliances" allLabel={s.allAppliances} products={appliancesToShow} t={t} />
-        {accessoriesToShow.length > 0 && (
-          <ProductSection id="accessories" title={s.accessories} href="/catalog/accessories" allLabel={s.allShort || s.all} products={accessoriesToShow} t={t} />
-        )}
         <CategoriesSection t={t} />
       </main>
       <Footer t={t} />

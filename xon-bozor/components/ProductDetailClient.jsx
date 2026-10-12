@@ -22,6 +22,7 @@ import {
 import { formatPrice } from "@/lib/products";
 import { useCart } from "@/lib/cartContext";
 import ProductCard from "./ProductCard";
+import { toast } from "./ToastContainer";
 
 export default function ProductDetailClient({ product, related = [], t }) {
   const router = useRouter();
@@ -58,15 +59,34 @@ export default function ProductDetailClient({ product, related = [], t }) {
   const discountPercent = product.discount || (oldPrice > price ? Math.round(((oldPrice - price) / oldPrice) * 100) : 0);
   const monthlyPrice = product.monthly || Math.round(price / 12);
 
+  const requireAuth = () => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast("Xarid qilish yoki saralash uchun avval ro'yxatdan o'ting", "warning");
+        router.push("/register");
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleAddToCart = () => {
+    if (!requireAuth()) return;
     addToCart(product, qty, { color: selectedColor, storage: selectedStorage });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
 
   const handleBuyNow = () => {
+    if (!requireAuth()) return;
     addToCart(product, qty, { color: selectedColor, storage: selectedStorage });
     router.push("/cart");
+  };
+
+  const handleWishlistClick = () => {
+    if (!requireAuth()) return;
+    toggleWishlist(product);
   };
 
   // Dynamic Specs List from API
@@ -148,7 +168,7 @@ export default function ProductDetailClient({ product, related = [], t }) {
 
             <button
               type="button"
-              onClick={() => toggleWishlist(product)}
+              onClick={handleWishlistClick}
               className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 dark:bg-slate-800/90 shadow-md border border-slate-100 dark:border-slate-700 hover:scale-110 transition"
               aria-label="Saralanganlarga qo'shish"
             >
@@ -324,7 +344,7 @@ export default function ProductDetailClient({ product, related = [], t }) {
               {/* Wishlist Button */}
               <button
                 type="button"
-                onClick={() => toggleWishlist(product)}
+                onClick={handleWishlistClick}
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-brand hover:text-brand transition"
                 aria-label="Wishlist"
               >

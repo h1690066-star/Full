@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, memo } from "react";
 import {
   MdFavorite,
@@ -16,6 +17,7 @@ import { useCart } from "@/lib/cartContext";
 import { toast } from "./ToastContainer";
 
 function ProductCard({ product: p, t }) {
+  const router = useRouter();
   const c = t?.card || {
     add: "Savatga",
     perMonth: "so'm/oyiga",
@@ -39,9 +41,22 @@ function ProductCard({ product: p, t }) {
   const [isSelectingQty, setIsSelectingQty] = useState(false);
   const [selectedQty, setSelectedQty] = useState(1);
 
+  const requireAuth = () => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast("Xarid qilish yoki saralash uchun avval ro'yxatdan o'ting", "warning");
+        router.push("/register");
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleInitialCartClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!requireAuth()) return;
     setSelectedQty(qtyInCart > 0 ? qtyInCart : 1);
     setIsSelectingQty(true);
   };
@@ -86,6 +101,7 @@ function ProductCard({ product: p, t }) {
   const handleLike = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!requireAuth()) return;
     toggleWishlist(p);
   };
 
