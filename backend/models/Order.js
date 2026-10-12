@@ -29,7 +29,9 @@ const orderSchema = new mongoose.Schema(
     handling: Number,
     total: Number,
     paymentMethod: { type: String, default: 'card_transfer' },
-    receipt: { type: String, default: '' }, // private/receipts ichidagi fayl nomi
+    receipt: { type: String, default: '' }, // Fayl nomi yoki yo'li
+    receiptData: { type: String, default: '' }, // Base64 saqlangan chek rasmi (Render qayta yuklanganda ham yo'qolmaydi)
+    receiptMime: { type: String, default: 'image/jpeg' },
     status: { type: String, enum: ['new', 'confirmed', 'delivered', 'cancelled'], default: 'new' },
     telegramSent: { type: Boolean, default: false },
   },

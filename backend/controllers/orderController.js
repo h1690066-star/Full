@@ -92,6 +92,15 @@ exports.create = async (req, res) => {
 
     const lat = Number(address.lat), lon = Number(address.lon);
     const hasGeo = address.lat != null && address.lon != null && Number.isFinite(lat) && Number.isFinite(lon);
+    let receiptBase64 = '';
+    let receiptMimeType = req.file.mimetype || 'image/jpeg';
+    try {
+      const fileBuf = await fs.promises.readFile(path.join(receiptDir, req.file.filename));
+      receiptBase64 = fileBuf.toString('base64');
+    } catch (readErr) {
+      console.warn('Receipt buffer read warning:', readErr.message);
+    }
+
     const order = await Order.create({
       orderNumber: newNumber(),
       user: user._id,
@@ -106,6 +115,8 @@ exports.create = async (req, res) => {
       promoCode: t.promoApplied ? String(req.body.promo).trim().toLowerCase() : '',
       subtotal: t.subtotal, discount: t.discount, tax: t.tax, handling: t.handling, total: t.total,
       receipt: req.file.filename,
+      receiptData: receiptBase64,
+      receiptMime: receiptMimeType,
     });
     orderCreated = true;
 
@@ -167,7 +178,7 @@ exports.listAll = async (req, res) => {
     const pageNum = Math.max(1, Number(page) || 1);
     const limitNum = Math.min(100, Math.max(1, Number(limit) || 20));
     const [items, total] = await Promise.all([
-      Order.find(filter).populate('user', 'name email phone').sort({ createdAt: -1 }).skip((pageNum - 1) * limitNum).limit(limitNum),
+      Order.find(filter).select('-receiptData').populate('user', 'name email phone').sort({ createdAt: -1 }).skip((pageNum - 1) * limitNum).limit(limitNum),
       Order.countDocuments(filter),
     ]);
     res.json({ items, total, page: pageNum, pages: Math.ceil(total / limitNum) });
@@ -205,8 +216,21 @@ exports.receipt = async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ message: 'ID notogri' });
     const order = await Order.findById(req.params.id);
-    if (!order || !order.receipt) return res.status(404).json({ message: 'Chek topilmadi' });
-    res.sendFile(path.join(receiptDir, path.basename(order.receipt)));
+    if (!order || (!order.receipt && !order.receiptData)) return res.status(404).json({ message: 'Chek topilmadi' });
+
+    const localPath = order.receipt ? path.join(receiptDir, path.basename(order.receipt)) : null;
+    if (localPath && fs.existsSync(localPath)) {
+      return res.sendFile(localPath);
+    }
+
+    if (order.receiptData) {
+      const imgBuffer = Buffer.from(order.receiptData, 'base64');
+      res.setHeader('Content-Type', order.receiptMime || 'image/jpeg');
+      res.setHeader('Content-Length', imgBuffer.length);
+      return res.send(imgBuffer);
+    }
+
+    res.status(404).json({ message: 'Chek fayli serverda topilmadi' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
