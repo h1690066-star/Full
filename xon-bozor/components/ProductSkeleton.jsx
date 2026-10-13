@@ -4,7 +4,7 @@ export default function ProductSkeleton({ count = 1 }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="flex flex-col rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#1a1b22] p-2.5 shadow-sm animate-pulse"
+          className="flex flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1b22] p-2.5 shadow-xs animate-pulse"
         >
           {/* Aspect square image placeholder */}
           <div className="relative aspect-square w-full rounded-xl bg-slate-200/80 dark:bg-slate-800/80" />

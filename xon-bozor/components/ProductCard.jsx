@@ -107,7 +107,7 @@ function ProductCard({ product: p, t }) {
   };
 
   return (
-    <article className="group relative flex flex-col rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#1a1b22] p-2.5 shadow-sm transition hover:shadow-xl hover:border-slate-200 dark:hover:border-slate-700">
+    <article className="group relative flex flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1b22] p-2.5 shadow-xs transition duration-200 hover:shadow-xl hover:border-slate-300 dark:hover:border-slate-700">
       {/* Image container */}
       <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-[#f5f6fa] dark:bg-[#121319] p-3">
         {/* Badge left */}

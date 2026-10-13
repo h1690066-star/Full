@@ -358,7 +358,7 @@ export default function CartClient({ t }) {
                 return (
                   <div
                     key={pid}
-                    className="flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#1a1b22] p-4 shadow-sm transition hover:border-slate-200 dark:hover:border-slate-700"
+                    className="flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1b22] p-4 shadow-xs transition hover:border-slate-300 dark:hover:border-slate-700"
                   >
                     <Link
                       href={`/product/${pid}`}
@@ -433,7 +433,7 @@ export default function CartClient({ t }) {
 
             {/* Order Summary Sidebar */}
             <div className="lg:col-span-1">
-              <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#1a1b22] p-6 shadow-sm sticky top-24">
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1b22] p-6 shadow-xs sticky top-24">
                 <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">Buyurtma ma'lumoti</h2>
 
                 <div className="mt-4 space-y-3 text-sm">

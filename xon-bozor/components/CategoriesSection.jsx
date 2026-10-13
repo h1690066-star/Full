@@ -20,7 +20,7 @@ export default function CategoriesSection({ t }) {
           <Link
             key={key}
             href={`/catalog/${key}`}
-            className="group flex items-center gap-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#1a1b22] p-4 shadow-sm transition hover:border-brand/30 hover:shadow-lg"
+            className="group flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1b22] p-4 shadow-xs transition hover:border-brand/30 hover:shadow-lg"
           >
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-soft dark:bg-brand/20 text-brand transition group-hover:bg-brand group-hover:text-white">
               <Icon className="text-2xl" />
