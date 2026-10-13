@@ -17,7 +17,6 @@ export default function Header({ t, lang }) {
     [t.nav.xiaomi, "/catalog/xiaomi"],
     [t.nav.honor, "/catalog/honor"],
     [t.nav.redmi, "/catalog/redmi"],
-    [t.nav.accessories, "/catalog/accessories"],
     [t.nav.appliances, "/catalog/appliances"],
   ];
 

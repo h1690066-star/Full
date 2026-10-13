@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState, useMemo, useEffect, useCallback, memo } from "react";
 import {
   MdChevronRight,
@@ -8,9 +9,18 @@ import {
   MdCheck,
   MdClose,
   MdExpandMore,
+  MdKitchen,
 } from "react-icons/md";
 import ProductCard from "./ProductCard";
 import ProductSkeleton from "./ProductSkeleton";
+
+const APPLIANCE_TYPES = [
+  { name: "Muzlatgichlar", match: "Muzlatgich" },
+  { name: "Kir yuvish mashinalari", match: "Kir yuvish" },
+  { name: "Konditsionerlar", match: "Konditsioner" },
+  { name: "Mikroto'lqinli pechlar", match: "Mikrotolqinli" },
+  { name: "Changyutgichlar", match: "Changyutgich" },
+];
 
 const MODELS_LIST = ["iPhone 18 Pro", "iPhone 17", "iPhone 16", "Galaxy S25", "Galaxy A55", "Xiaomi 15"];
 const STORAGE_LIST = ["64GB", "128GB", "256GB", "512GB", "1TB"];
@@ -25,6 +35,9 @@ const COLOR_LIST = [
 ];
 
 const SidebarFilters = memo(function SidebarFilters({
+  categorySlug,
+  selectedApplianceType,
+  setSelectedApplianceType,
   minPriceInput,
   maxPriceInput,
   handleMinPriceChange,
@@ -152,73 +165,121 @@ const SidebarFilters = memo(function SidebarFilters({
         </div>
       )}
 
-      {/* Telefon modeli */}
-      <div className="border-t border-slate-100 dark:border-slate-800 pt-3 space-y-2">
-        <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200">Telefon modeli</h3>
-        <div className="space-y-1.5">
-          {MODELS_LIST.map((m) => {
-            const checked = selectedModels.includes(m);
-            return (
-              <div
-                key={m}
-                onClick={() => toggleModel(m)}
-                className="flex cursor-pointer items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-brand select-none"
+      {/* Texnika turi (Faqat Maishiy texnika bo'limi uchun) */}
+      {categorySlug === "appliances" ? (
+        <div className="border-t border-slate-100 dark:border-slate-800 pt-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <MdKitchen className="text-sm text-brand" />
+              <span>Texnika turi</span>
+            </h3>
+            {selectedApplianceType && (
+              <button
+                type="button"
+                onClick={() => setSelectedApplianceType("")}
+                className="text-[10px] text-brand font-bold hover:underline"
               >
+                Hammasi
+              </button>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            {APPLIANCE_TYPES.map((a) => {
+              const checked = selectedApplianceType?.toLowerCase() === a.match.toLowerCase();
+              return (
                 <div
-                  className={`flex h-4 w-4 items-center justify-center rounded border transition ${
-                    checked ? "border-brand bg-brand text-white" : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
+                  key={a.match}
+                  onClick={() => setSelectedApplianceType(checked ? "" : a.match)}
+                  className="flex cursor-pointer items-center justify-between text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-brand select-none"
+                >
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`flex h-4 w-4 items-center justify-center rounded border transition ${
+                        checked
+                          ? "border-brand bg-brand text-white"
+                          : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
+                      }`}
+                    >
+                      {checked && <MdCheck className="text-xs font-bold" />}
+                    </div>
+                    <span>{a.name}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Telefon modeli */}
+          <div className="border-t border-slate-100 dark:border-slate-800 pt-3 space-y-2">
+            <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200">Telefon modeli</h3>
+            <div className="space-y-1.5">
+              {MODELS_LIST.map((m) => {
+                const checked = selectedModels.includes(m);
+                return (
+                  <div
+                    key={m}
+                    onClick={() => toggleModel(m)}
+                    className="flex cursor-pointer items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-brand select-none"
+                  >
+                    <div
+                      className={`flex h-4 w-4 items-center justify-center rounded border transition ${
+                        checked ? "border-brand bg-brand text-white" : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
+                      }`}
+                    >
+                      {checked && <MdCheck className="text-xs font-bold" />}
+                    </div>
+                    <span>{m}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Xotira */}
+          <div className="border-t border-slate-100 dark:border-slate-800 pt-3 space-y-2">
+            <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200">Xotira</h3>
+            <div className="flex flex-wrap gap-1.5">
+              {STORAGE_LIST.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setSelectedStorage(selectedStorage === s ? "" : s)}
+                  className={`rounded-full px-3 py-1 text-xs font-bold transition ${
+                    selectedStorage === s
+                      ? "bg-brand text-white shadow-xs"
+                      : "border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-brand/40"
                   }`}
                 >
-                  {checked && <MdCheck className="text-xs font-bold" />}
-                </div>
-                <span>{m}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
 
-      {/* Xotira */}
-      <div className="border-t border-slate-100 dark:border-slate-800 pt-3 space-y-2">
-        <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200">Xotira</h3>
-        <div className="flex flex-wrap gap-1.5">
-          {STORAGE_LIST.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setSelectedStorage(selectedStorage === s ? "" : s)}
-              className={`rounded-full px-3 py-1 text-xs font-bold transition ${
-                selectedStorage === s
-                  ? "bg-brand text-white shadow-xs"
-                  : "border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-brand/40"
-              }`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* RAM */}
-      <div className="border-t border-slate-100 dark:border-slate-800 pt-3 space-y-2">
-        <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200">Operativ xotira (RAM)</h3>
-        <div className="flex flex-wrap gap-1.5">
-          {RAM_LIST.map((r) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setSelectedRam(selectedRam === r ? "" : r)}
-              className={`rounded-full px-3 py-1 text-xs font-bold transition ${
-                selectedRam === r
-                  ? "bg-brand text-white shadow-xs"
-                  : "border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-brand/40"
-              }`}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
-      </div>
+          {/* RAM */}
+          <div className="border-t border-slate-100 dark:border-slate-800 pt-3 space-y-2">
+            <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200">Operativ xotira (RAM)</h3>
+            <div className="flex flex-wrap gap-1.5">
+              {RAM_LIST.map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => setSelectedRam(selectedRam === r ? "" : r)}
+                  className={`rounded-full px-3 py-1 text-xs font-bold transition ${
+                    selectedRam === r
+                      ? "bg-brand text-white shadow-xs"
+                      : "border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-brand/40"
+                  }`}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Holati */}
       <div className="border-t border-slate-100 dark:border-slate-800 pt-3 space-y-2">
@@ -319,14 +380,30 @@ const SidebarFilters = memo(function SidebarFilters({
   );
 });
 
-export default function CatalogClient({ products: initialProducts = [], categoryName = "Mahsulotlar", t }) {
+export default function CatalogClient({
+  products: initialProducts = [],
+  categoryName = "Mahsulotlar",
+  categorySlug = "",
+  t,
+}) {
   const [products, setProducts] = useState(initialProducts);
 
   useEffect(() => {
     setProducts(initialProducts || []);
   }, [initialProducts]);
 
+  const searchParams = useSearchParams();
+  const urlType = searchParams?.get("type") || searchParams?.get("search") || searchParams?.get("q") || "";
+
   // Filter States
+  const [selectedApplianceType, setSelectedApplianceType] = useState(urlType);
+
+  useEffect(() => {
+    if (urlType) {
+      setSelectedApplianceType(urlType);
+    }
+  }, [urlType]);
+
   const [minPriceInput, setMinPriceInput] = useState("100 000");
   const [maxPriceInput, setMaxPriceInput] = useState("20 000 000");
   const [onlyOriginal, setOnlyOriginal] = useState(false);
@@ -402,6 +479,7 @@ export default function CatalogClient({ products: initialProducts = [], category
     setCondition("");
     setSelectedColor("");
     setHighRating(false);
+    setSelectedApplianceType("");
   }, []);
 
   // Safe filter logic
@@ -416,6 +494,13 @@ export default function CatalogClient({ products: initialProducts = [], category
       const pPrice = Number(p.price) || 0;
       if (effectiveMinP > 0 && pPrice < effectiveMinP) return false;
       if (effectiveMaxP > 0 && pPrice > effectiveMaxP) return false;
+
+      if (selectedApplianceType) {
+        const qLower = selectedApplianceType.toLowerCase();
+        const pName = (p.name || "").toLowerCase();
+        const pCat = (p.category || "").toLowerCase();
+        if (!pName.includes(qLower) && !pCat.includes(qLower)) return false;
+      }
 
       if (onlyOriginal && p.used) return false;
       if (condition === "new" && p.used) return false;
@@ -441,6 +526,7 @@ export default function CatalogClient({ products: initialProducts = [], category
     return items;
   }, [
     products,
+    selectedApplianceType,
     minPriceInput,
     maxPriceInput,
     onlyOriginal,
@@ -474,6 +560,7 @@ export default function CatalogClient({ products: initialProducts = [], category
   useEffect(() => {
     setPage(1);
   }, [
+    selectedApplianceType,
     minPriceInput,
     maxPriceInput,
     onlyOriginal,
@@ -542,6 +629,9 @@ export default function CatalogClient({ products: initialProducts = [], category
         {/* Left Sidebar Filter (Desktop) */}
         <aside className="hidden lg:block lg:col-span-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#1a1b22] p-5 shadow-xs">
           <SidebarFilters
+            categorySlug={categorySlug}
+            selectedApplianceType={selectedApplianceType}
+            setSelectedApplianceType={setSelectedApplianceType}
             minPriceInput={minPriceInput}
             maxPriceInput={maxPriceInput}
             handleMinPriceChange={handleMinPriceChange}
@@ -583,6 +673,9 @@ export default function CatalogClient({ products: initialProducts = [], category
             </div>
             <div className="flex-1 overflow-y-auto p-4">
               <SidebarFilters
+                categorySlug={categorySlug}
+                selectedApplianceType={selectedApplianceType}
+                setSelectedApplianceType={setSelectedApplianceType}
                 minPriceInput={minPriceInput}
                 maxPriceInput={maxPriceInput}
                 handleMinPriceChange={handleMinPriceChange}
@@ -613,7 +706,33 @@ export default function CatalogClient({ products: initialProducts = [], category
         )}
 
         {/* Right Main Product Grid (9 columns) */}
-        <div className="lg:col-span-9 space-y-6">
+        <div className="lg:col-span-9 space-y-4">
+          {selectedApplianceType && (
+            <div className="flex items-center gap-2 flex-wrap bg-brand/5 dark:bg-brand/10 border border-brand/20 rounded-2xl px-4 py-2.5">
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                Tanlangan filtr:
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-brand text-white shadow-xs">
+                <span>{selectedApplianceType}</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedApplianceType("")}
+                  className="hover:opacity-80 transition"
+                  title="Filtrni olib tashlash"
+                >
+                  <MdClose className="text-sm" />
+                </button>
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedApplianceType("")}
+                className="text-xs font-bold text-brand hover:underline ml-auto"
+              >
+                Hammasini ko'rsatish
+              </button>
+            </div>
+          )}
+
           {filteredProducts.length === 0 ? (
             <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#1a1b22] p-12 text-center shadow-xs">
               <p className="text-lg font-extrabold text-slate-900 dark:text-white">Mahsulot mavjud emas</p>

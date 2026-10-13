@@ -1,18 +1,62 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { MdGridView, MdClose, MdChevronRight, MdSmartphone, MdHeadphones, MdKitchen, MdTv, MdLaptopMac, MdWatch, MdDirectionsCar, MdVerified, MdSwapHoriz, MdBolt, MdArrowForward } from "react-icons/md";
+import {
+  MdGridView,
+  MdClose,
+  MdChevronRight,
+  MdSmartphone,
+  MdKitchen,
+  MdTv,
+  MdLaptopMac,
+  MdWatch,
+  MdVerified,
+  MdSwapHoriz,
+  MdBolt,
+  MdArrowForward,
+  MdFilterAlt,
+} from "react-icons/md";
 
 const CATS = [
   { key: "phones", icon: MdSmartphone },
-  { key: "accessories", icon: MdHeadphones },
   { key: "appliances", icon: MdKitchen },
   { key: "tv", icon: MdTv },
   { key: "computers", icon: MdLaptopMac },
   { key: "watches", icon: MdWatch },
-  { key: "car", icon: MdDirectionsCar },
 ];
+
 const PHONES = ["iPhone 18 Pro", "iPhone 17", "iPhone 16", "Samsung Galaxy S", "Samsung Galaxy A", "Xiaomi", "Redmi", "Honor", "Realme", "Tecno", "Infinix"];
+
+const APPLIANCE_SHOWCASE = [
+  {
+    name: "Muzlatgichlar",
+    sub: "LG, Samsung NoFrost",
+    image: "https://images.unsplash.com/photo-1584992236310-6edddc08acff?w=400&h=400&fit=crop",
+    type: "Muzlatgich",
+    badge: "Kafolatli",
+  },
+  {
+    name: "Kir yuvish mashinalari",
+    sub: "EcoBubble va Inverter",
+    image: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=400&h=400&fit=crop",
+    type: "Kir yuvish",
+    badge: "Tejamkor",
+  },
+  {
+    name: "Konditsionerlar",
+    sub: "Artel, Midea Inverter",
+    image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&h=400&fit=crop",
+    type: "Konditsioner",
+    badge: "Yoz & Qish",
+  },
+  {
+    name: "Mikroto'lqinli pechlar",
+    sub: "Panasonic, Artel 23L",
+    image: "https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=400&h=400&fit=crop",
+    type: "Mikrotolqinli",
+    badge: "Grill & Pech",
+  },
+];
 
 export default function CatalogMenu({ t, phone }) {
   const [open, setOpen] = useState(false);
@@ -62,6 +106,7 @@ export default function CatalogMenu({ t, phone }) {
                     </span>
                     <MdChevronRight className="text-slate-400 text-lg" />
                   </Link>
+
                   {key === "phones" && (
                     <div className="mt-2 grid grid-cols-2 gap-1.5 border-t border-slate-100 dark:border-slate-800 pt-2 text-xs text-slate-600 dark:text-slate-400">
                       {PHONES.slice(0, 6).map((item) => (
@@ -72,6 +117,22 @@ export default function CatalogMenu({ t, phone }) {
                           className="rounded-lg bg-slate-50 dark:bg-slate-800 p-2 font-medium text-slate-700 dark:text-slate-300 hover:text-brand dark:hover:text-brand"
                         >
                           {item}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+
+                  {key === "appliances" && (
+                    <div className="mt-2 grid grid-cols-2 gap-2 border-t border-slate-100 dark:border-slate-800 pt-2 text-xs">
+                      {APPLIANCE_SHOWCASE.map((item) => (
+                        <Link
+                          key={item.type}
+                          href={`/catalog/appliances?type=${encodeURIComponent(item.type)}`}
+                          onClick={() => setOpen(false)}
+                          className="flex items-center gap-2 rounded-xl bg-slate-50 dark:bg-slate-800 p-2 font-medium text-slate-800 dark:text-slate-200 hover:text-brand"
+                        >
+                          <img src={item.image} alt={item.name} className="w-8 h-8 rounded-lg object-contain bg-white shrink-0 p-0.5" />
+                          <span className="truncate">{item.name}</span>
                         </Link>
                       ))}
                     </div>
@@ -119,7 +180,7 @@ export default function CatalogMenu({ t, phone }) {
 
               <div className="p-5 text-slate-900 dark:text-white">
                 {active === "phones" ? (
-                  <div className="grid gap-6 lg:grid-cols-3">
+                  <div className="grid gap-6 lg:grid-cols-2">
                     <div>
                       <MenuTitle title={m.smartphones} all={m.all2} />
                       <ul className="mt-3 space-y-2.5 text-sm">
@@ -137,32 +198,87 @@ export default function CatalogMenu({ t, phone }) {
                       </div>
                     </div>
                     <div>
-                      <MenuTitle title={m.accTitle} all={m.all2} />
-                      <ul className="mt-3 space-y-2.5 text-sm text-slate-600 dark:text-slate-300">
-                        {m.accList.map((n) => <li key={n}><Link href="/catalog/accessories" onClick={() => setOpen(false)} className="hover:text-brand dark:hover:text-brand">{n}</Link></li>)}
-                      </ul>
-                      <div className="mt-4 flex items-center gap-3 rounded-xl bg-brand-soft dark:bg-slate-800 p-3">
-                        <MdBolt className="text-2xl text-brand" />
-                        <div><p className="text-sm font-semibold text-slate-900 dark:text-white">{m.fast}</p><p className="text-xs text-slate-500 dark:text-slate-400">{m.fastSub}</p></div>
-                      </div>
-                    </div>
-                    <div>
-                      <MenuTitle title={m.appTitle} all={m.all2} />
-                      <ul className="mt-3 space-y-2.5 text-sm text-slate-600 dark:text-slate-300">
-                        {m.appList.map((n) => <li key={n}><Link href="/catalog/appliances" onClick={() => setOpen(false)} className="hover:text-brand dark:hover:text-brand">{n}</Link></li>)}
-                      </ul>
-                      <div className="mt-4 rounded-xl bg-gradient-to-br from-brand to-purple-900 p-4 text-white">
-                        <span className="rounded bg-sun px-1.5 py-0.5 text-[10px] font-bold text-ink">{m.promoTag}</span>
-                        <p className="mt-2 font-bold">{m.promoTitle}</p>
-                        <p className="text-xs text-white/80">{m.promoText}</p>
-                        <Link href="/catalog/phones" onClick={() => setOpen(false)} className="mt-3 inline-flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-ink">{m.more}<MdArrowForward /></Link>
+                      <MenuTitle title="Kafolatli va Tezkor Xizmat" all={m.all2} />
+                      <div className="mt-3 space-y-3">
+                        <div className="flex items-center gap-3 rounded-xl bg-brand-soft dark:bg-slate-800 p-3.5">
+                          <MdBolt className="text-3xl text-brand shrink-0" />
+                          <div>
+                            <p className="text-sm font-semibold text-slate-900 dark:text-white">{m.fast}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{m.fastSub}</p>
+                          </div>
+                        </div>
+
+                        <div className="rounded-xl bg-gradient-to-br from-brand to-purple-900 p-4 text-white">
+                          <span className="rounded bg-sun px-1.5 py-0.5 text-[10px] font-bold text-ink">{m.promoTag}</span>
+                          <p className="mt-2 font-bold">{m.promoTitle}</p>
+                          <p className="text-xs text-white/80">{m.promoText}</p>
+                          <Link href="/catalog/phones" onClick={() => setOpen(false)} className="mt-3 inline-flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-ink">{m.more}<MdArrowForward /></Link>
+                        </div>
                       </div>
                     </div>
                   </div>
+                ) : active === "appliances" ? (
+                  <div>
+                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+                      <div>
+                        <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                          <MdKitchen className="text-xl text-brand" />
+                          <span>Maishiy texnika bo'limi</span>
+                        </h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                          Kerakli texnika turini tanlang va filtrlangan holda ko'ring
+                        </p>
+                      </div>
+                      <Link
+                        href="/catalog/appliances"
+                        onClick={() => setOpen(false)}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-brand hover:underline"
+                      >
+                        Barchasini ko'rish <MdArrowForward />
+                      </Link>
+                    </div>
+
+                    {/* 4 TA TEXNIKA RASMI VA NOMI BILAN */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                      {APPLIANCE_SHOWCASE.map((app) => (
+                        <Link
+                          key={app.type}
+                          href={`/catalog/appliances?type=${encodeURIComponent(app.type)}`}
+                          onClick={() => setOpen(false)}
+                          className="group flex flex-col rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#15161c] p-3.5 shadow-xs hover:border-brand hover:shadow-lg transition cursor-pointer"
+                        >
+                          <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-800/60 flex items-center justify-center p-3 mb-3">
+                            <span className="absolute top-2 left-2 z-10 rounded-md bg-brand px-1.5 py-0.5 text-[9px] font-black uppercase text-white shadow-xs">
+                              {app.badge}
+                            </span>
+                            <img
+                              src={app.image}
+                              alt={app.name}
+                              className="max-h-full max-w-full object-contain group-hover:scale-105 transition duration-300"
+                            />
+                          </div>
+                          <h4 className="text-xs font-extrabold text-slate-900 dark:text-white group-hover:text-brand line-clamp-1">
+                            {app.name}
+                          </h4>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                            {app.sub}
+                          </p>
+                          <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-bold text-brand">
+                            <span className="flex items-center gap-1">
+                              <MdFilterAlt className="text-sm" /> Tanlash
+                            </span>
+                            <MdArrowForward className="group-hover:translate-x-1 transition" />
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
                 ) : (
-                  <Link href={`/catalog/${active}`} onClick={() => setOpen(false)} className="inline-flex items-center gap-2 text-lg font-semibold text-brand">
-                    {t.cats[active]} <MdArrowForward />
-                  </Link>
+                  <div>
+                    <Link href={`/catalog/${active}`} onClick={() => setOpen(false)} className="inline-flex items-center gap-2 text-lg font-semibold text-brand">
+                      {t.cats[active] || active} <MdArrowForward />
+                    </Link>
+                  </div>
                 )}
               </div>
             </div>

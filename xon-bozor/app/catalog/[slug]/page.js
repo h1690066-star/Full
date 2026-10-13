@@ -90,7 +90,7 @@ export default async function Catalog({ params }) {
     <div className="min-h-screen flex flex-col bg-slate-50/50 dark:bg-[#0f1015]">
       <Header t={t} lang={lang} />
       <main className="flex-1 pb-16">
-        <CatalogClient products={list} categoryName={catName} t={t} />
+        <CatalogClient products={list} categoryName={catName} categorySlug={slug} t={t} />
       </main>
       <Footer t={t} />
     </div>

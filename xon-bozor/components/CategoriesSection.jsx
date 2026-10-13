@@ -2,8 +2,11 @@ import Link from "next/link";
 import { MdSmartphone, MdHeadphones, MdKitchen, MdTv, MdLaptopMac, MdWatch, MdDirectionsCar, MdArrowForward } from "react-icons/md";
 
 const CATS = [
-  { key: "phones", icon: MdSmartphone }, { key: "accessories", icon: MdHeadphones }, { key: "appliances", icon: MdKitchen },
-  { key: "tv", icon: MdTv }, { key: "computers", icon: MdLaptopMac }, { key: "watches", icon: MdWatch }, { key: "car", icon: MdDirectionsCar },
+  { key: "phones", icon: MdSmartphone },
+  { key: "appliances", icon: MdKitchen },
+  { key: "tv", icon: MdTv },
+  { key: "computers", icon: MdLaptopMac },
+  { key: "watches", icon: MdWatch },
 ];
 
 // Kategoriyalar uchun API berilmagan, shuning uchun ro'yxat statik.
