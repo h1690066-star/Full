@@ -219,6 +219,23 @@ export default function CartClient({ t }) {
     };
 
     try {
+      // 1. Telegram botga so'rov yuborish (Rasm, ism, nomer, manzil, to'lov turi va mahsulotlar)
+      const tgForm = new FormData();
+      tgForm.append("items", JSON.stringify(items));
+      tgForm.append("customerInfo", JSON.stringify(customerInfo));
+      tgForm.append("address", JSON.stringify(addressObj));
+      tgForm.append("paymentMethod", paymentMethod);
+      tgForm.append("total", String(cartTotal));
+      if (receiptFile) {
+        tgForm.append("receipt", receiptFile);
+      }
+
+      fetch("/api/telegram-order", {
+        method: "POST",
+        body: tgForm,
+      }).catch((tgErr) => console.warn("Telegram order send warning:", tgErr));
+
+      // 2. Backend bazasiga saqlash
       if (receiptFile) {
         const formData = new FormData();
         formData.append("items", JSON.stringify(items));

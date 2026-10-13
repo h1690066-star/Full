@@ -9,7 +9,38 @@ import { fetchProductsByCategory } from "@/lib/products";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://xonbozor.uz";
+const SITE =
+  (process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes("localhost"))
+    ? process.env.NEXT_PUBLIC_SITE_URL
+    : process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "https://xonbozor.vercel.app";
+
+export const metadata = {
+  title: "Xon Bozor — Original telefonlar, B/U smartfonlar va maishiy texnika",
+  description:
+    "Xon Bozor: Toshkentda original iPhone, Samsung, Xiaomi telefonlari, tekshirilgan B/U smartfonlar, aksessuarlar va maishiy texnika. 0% muddatli to'lov, kafolat va tezkor yetkazish.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: "Xon Bozor",
+    url: "/",
+    locale: "uz_UZ",
+    title: "Xon Bozor — Original telefonlar va maishiy texnika",
+    description:
+      "Toshkentda original smartfonlar va maishiy texnika rasmiy kafolat hamda 0% muddatli to'lov bilan.",
+    images: [
+      {
+        url: "/images/hero/hero-1.png",
+        width: 1200,
+        height: 630,
+        alt: "Xon Bozor",
+      },
+    ],
+  },
+};
 
 export default async function Home() {
   const { t, lang } = await getT();
