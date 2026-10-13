@@ -72,10 +72,11 @@ export default async function RootLayout({ children }) {
         <meta name="twitter:title" content="Xon Bozor — Original telefonlar va maishiy texnika" />
         <meta name="twitter:description" content="Original telefonlar, B/U smartfonlar va maishiy texnika Toshkentda." />
         <meta name="twitter:image" content={`${SITE}/images/hero/hero-1.png`} />
+        <link rel="preload" href="/images/hero/hero-1.png" as="image" type="image/png" />
+        <link rel="preconnect" href="https://full-nbal.onrender.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://full-nbal.onrender.com" />
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
-        <link rel="preconnect" href="http://localhost:5000" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="http://localhost:5000" />
         <meta name="format-detection" content="telephone=no" />
         <script
           dangerouslySetInnerHTML={{
@@ -94,7 +95,7 @@ export default async function RootLayout({ children }) {
           }}
         />
       </head>
-      <body className={`${inter.className} bg-slate-50 dark:bg-[#0f1015] text-slate-900 dark:text-slate-100 transition-colors duration-200`}>
+      <body className={`${inter.className} bg-slate-50 dark:bg-[#0f1015] text-slate-900 dark:text-slate-100 antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

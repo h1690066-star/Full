@@ -46,7 +46,7 @@ export function CartProvider({ children }) {
     return true;
   };
 
-  const addToCart = (product, qty = 1, options = {}) => {
+  const addToCart = useCallback((product, qty = 1, options = {}) => {
     if (!checkAuth()) return;
     if (!product) return;
     const pid = product.id || product._id;
@@ -76,13 +76,13 @@ export function CartProvider({ children }) {
       };
       return [...prev, item];
     });
-  };
+  }, []);
 
-  const removeFromCart = (id) => {
+  const removeFromCart = useCallback((id) => {
     setCart((prev) => prev.filter((item) => (item.id || item._id) !== id));
-  };
+  }, []);
 
-  const updateQuantity = (id, delta) => {
+  const updateQuantity = useCallback((id, delta) => {
     setCart((prev) =>
       prev
         .map((item) => {
@@ -94,11 +94,11 @@ export function CartProvider({ children }) {
         })
         .filter(Boolean)
     );
-  };
+  }, []);
 
-  const clearCart = () => setCart([]);
+  const clearCart = useCallback(() => setCart([]), []);
 
-  const toggleWishlist = (product) => {
+  const toggleWishlist = useCallback((product) => {
     if (!checkAuth()) return;
     if (!product) return;
     const pid = product.id || product._id;
@@ -125,11 +125,12 @@ export function CartProvider({ children }) {
         },
       ];
     });
-  };
+  }, []);
 
-  const isInWishlist = (id) => {
-    return wishlist.some((p) => (p.id || p._id) === id);
-  };
+  const isInWishlist = useCallback(
+    (id) => wishlist.some((p) => (p.id || p._id) === id),
+    [wishlist]
+  );
 
   const cartCount = useMemo(
     () => cart.reduce((acc, item) => acc + (item.quantity || 1), 0),
@@ -155,27 +156,40 @@ export function CartProvider({ children }) {
 
   const wishlistCount = wishlist.length;
 
-  return (
-    <CartContext.Provider
-      value={{
-        cart,
-        wishlist,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        toggleWishlist,
-        isInWishlist,
-        cartCount,
-        wishlistCount,
-        cartTotal,
-        cartOldTotal,
-        hydrated,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
+  const value = useMemo(
+    () => ({
+      cart,
+      wishlist,
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      clearCart,
+      toggleWishlist,
+      isInWishlist,
+      cartCount,
+      wishlistCount,
+      cartTotal,
+      cartOldTotal,
+      hydrated,
+    }),
+    [
+      cart,
+      wishlist,
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      clearCart,
+      toggleWishlist,
+      isInWishlist,
+      cartCount,
+      wishlistCount,
+      cartTotal,
+      cartOldTotal,
+      hydrated,
+    ]
   );
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {

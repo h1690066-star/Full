@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MdSmartphone, MdHeadphones, MdKitchen, MdTv, MdLaptopMac, MdWatch, MdDirectionsCar, MdArrowForward } from "react-icons/md";
+import { MdSmartphone, MdKitchen, MdTv, MdLaptopMac, MdWatch, MdArrowForward } from "react-icons/md";
 
 const CATS = [
   { key: "phones", icon: MdSmartphone },

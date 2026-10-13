@@ -33,7 +33,15 @@ export default function HeroCarousel({ slides }) {
       <div className="flex transition-transform duration-700 ease-out" style={{ transform: `translateX(-${i * 100}%)` }}>
         {slides.map((s, idx) => (
           <div key={idx} className="relative aspect-[16/10] min-w-full sm:aspect-[16/7] lg:aspect-auto lg:h-[350px]">
-            <Image src={s.image} alt={s.title} fill priority={idx === 0} sizes="(min-width:1280px) 1216px, 100vw" className={`object-cover ${s.align === "right" ? "object-right" : "object-center"}`} />
+            <Image
+              src={s.image}
+              alt={s.title}
+              fill
+              priority={idx === 0}
+              loading={idx === 0 ? "eager" : "lazy"}
+              sizes="(min-width:1280px) 1216px, 100vw"
+              className={`object-cover ${s.align === "right" ? "object-right" : "object-center"}`}
+            />
             {s.text && <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent sm:via-black/30" />}
             <div className="absolute inset-0 flex flex-col justify-end gap-2 p-5 sm:justify-center sm:gap-3 sm:p-10 lg:max-w-[55%] lg:pl-14">
               {s.badge && <span className="w-fit rounded-full bg-brand px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white sm:text-xs">{s.badge}</span>}
