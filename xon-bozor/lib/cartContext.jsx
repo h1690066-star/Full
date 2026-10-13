@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useEffect, useState, useMemo } from "react";
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
 
 const CartContext = createContext(null);
 
