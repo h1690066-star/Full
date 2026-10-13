@@ -4,10 +4,9 @@ import ProductSection from "@/components/ProductSection";
 import CategoriesSection from "@/components/CategoriesSection";
 import Footer from "@/components/Footer";
 import { getT } from "@/lib/i18n";
-import { fetchProductsByCategory } from "@/lib/products";
+import { fetchProducts } from "@/lib/products";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 const SITE =
   (process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes("localhost"))
@@ -46,15 +45,24 @@ export default async function Home() {
   const { t, lang } = await getT();
   const s = t.sections;
 
-  const [apiPhones, apiUsed, apiAppliances] = await Promise.all([
-    fetchProductsByCategory("Phones"),
-    fetchProductsByCategory("Used Phones"),
-    fetchProductsByCategory("Home appliances"),
-  ]);
+  const allProducts = (await fetchProducts({ limit: 60 })) || [];
 
-  const phonesToShow = apiPhones || [];
-  const usedToShow = apiUsed || [];
-  const appliancesToShow = apiAppliances || [];
+  const phonesToShow = allProducts
+    .filter((p) => !p.used && (p.category === "Phones" || !p.category))
+    .slice(0, 10);
+
+  const usedToShow = allProducts
+    .filter((p) => p.used)
+    .slice(0, 10);
+
+  const appliancesToShow = allProducts
+    .filter(
+      (p) =>
+        p.category === "Home appliances" ||
+        p.category === "Elektronika" ||
+        p.category === "Maishiy texnika"
+    )
+    .slice(0, 10);
 
   const jsonLd = [
     {

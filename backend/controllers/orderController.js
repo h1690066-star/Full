@@ -49,8 +49,6 @@ exports.create = async (req, res) => {
   const bad = (msg, status = 400) => { rmReceipt(req.file); return res.status(status).json({ message: msg }); };
 
   try {
-    if (!req.file) return bad("To'lov chekini (screenshot) yuklang");
-
     const rawItems = parse(req.body.items);
     const address = parse(req.body.address);
     if (!Array.isArray(rawItems) || !rawItems.length || rawItems.length > 50) return bad('Savat bosh');
@@ -93,12 +91,15 @@ exports.create = async (req, res) => {
     const lat = Number(address.lat), lon = Number(address.lon);
     const hasGeo = address.lat != null && address.lon != null && Number.isFinite(lat) && Number.isFinite(lon);
     let receiptBase64 = '';
-    let receiptMimeType = req.file.mimetype || 'image/jpeg';
-    try {
-      const fileBuf = await fs.promises.readFile(path.join(receiptDir, req.file.filename));
-      receiptBase64 = fileBuf.toString('base64');
-    } catch (readErr) {
-      console.warn('Receipt buffer read warning:', readErr.message);
+    let receiptMimeType = req.file ? (req.file.mimetype || 'image/jpeg') : '';
+    let receiptFilename = req.file ? req.file.filename : '';
+    if (req.file) {
+      try {
+        const fileBuf = await fs.promises.readFile(path.join(receiptDir, req.file.filename));
+        receiptBase64 = fileBuf.toString('base64');
+      } catch (readErr) {
+        console.warn('Receipt buffer read warning:', readErr.message);
+      }
     }
 
     const order = await Order.create({
@@ -114,7 +115,7 @@ exports.create = async (req, res) => {
       shipping: { id: shipId, label: SHIPPING[shipId].label, price: t.shipPrice, date: String(req.body.shipDate || '').slice(0, 30) },
       promoCode: t.promoApplied ? String(req.body.promo).trim().toLowerCase() : '',
       subtotal: t.subtotal, discount: t.discount, tax: t.tax, handling: t.handling, total: t.total,
-      receipt: req.file.filename,
+      receipt: receiptFilename,
       receiptData: receiptBase64,
       receiptMime: receiptMimeType,
     });

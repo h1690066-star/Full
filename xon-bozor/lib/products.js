@@ -7,16 +7,17 @@ export const mapApiProduct = (item) => {
   if (!item) return null;
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://full-nbal.onrender.com";
 
-  // Check if item has embedded imagesData from MongoDB Atlas
+  // URL rasmlarni afzal ko'ramiz (HTML hajmini kichik va yuklanishni tez qilish uchun)
+  const rawImages = (item.images || [])
+    .map((img) => (typeof img === "string" && img.startsWith("/uploads/") ? `${apiBase}${img}` : img))
+    .filter(Boolean);
+
+  // Faqat URL yo'q bo'lsa base64 fallback ishlatiladi
   const embeddedImages = (item.imagesData || [])
     .filter((d) => d && d.data)
     .map((d) => `data:${d.mime || "image/jpeg"};base64,${d.data}`);
 
-  const rawImages = (item.images || []).map((img) =>
-    typeof img === "string" && img.startsWith("/uploads/") ? `${apiBase}${img}` : img
-  );
-
-  const images = embeddedImages.length > 0 ? embeddedImages : rawImages;
+  const images = rawImages.length > 0 ? rawImages : embeddedImages;
   const mainImage =
     images[0] ||
     (typeof item.image === "string" && item.image.startsWith("/uploads/") ? `${apiBase}${item.image}` : item.image) ||
@@ -61,29 +62,57 @@ export const usedPhones = [];
 export const appliances = [];
 export const accessories = [];
 
-// 1️⃣ Barcha Kategoriyalar Ro'yxatini Olish API: GET /api/products/categories
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://full-nbal.onrender.com";
+
+// 1️⃣ Barcha Kategoriyalar Ro'yxatini Olish: Next.js revalidate kesh bilan
 export async function fetchCategories() {
   try {
-    const res = await api.get("/api/products/categories");
-    return Array.isArray(res.data) ? res.data : [];
+    const res = await fetch(`${API_BASE}/api/products/categories`, {
+      next: { revalidate: 120 },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
   } catch (err) {
-    return [];
+    try {
+      const res = await api.get("/api/products/categories");
+      return Array.isArray(res.data) ? res.data : [];
+    } catch {
+      return [];
+    }
   }
 }
 
-// GET /api/products
+// GET /api/products: Next.js ISR kesh bilan
 export async function fetchProducts(params = {}) {
   try {
-    const res = await api.get("/api/products", { params: { limit: 1000, ...params } });
-    const items = res.data?.items || (Array.isArray(res.data) ? res.data : []);
-    return items.map(mapApiProduct).filter(Boolean);
+    const q = new URLSearchParams(params).toString();
+    const url = `${API_BASE}/api/products${q ? `?${q}` : ""}`;
+    const res = await fetch(url, {
+      next: { revalidate: 60 },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const items = data?.items || (Array.isArray(data) ? data : []);
+      return items.map(mapApiProduct).filter(Boolean);
+    }
+    throw new Error(`Fetch status: ${res.status}`);
   } catch (err) {
-    return [];
+    // Axios fallback
+    try {
+      const res = await api.get("/api/products", { params: { limit: 100, ...params } });
+      const items = res.data?.items || (Array.isArray(res.data) ? res.data : []);
+      return items.map(mapApiProduct).filter(Boolean);
+    } catch {
+      return [];
+    }
   }
 }
 
-// 2️⃣ Har bir Kategoriya bo'yicha API So'rovi: GET /api/products?category=...
-export async function fetchProductsByCategory(category, fallback = [], limit = 1000) {
+// 2️⃣ Kategoriya bo'yicha olish: limit 100, tezkor kesh bilan
+export async function fetchProductsByCategory(category, fallback = [], limit = 100) {
   try {
     let categoriesToFetch = [category];
     const catLower = (category || "").toLowerCase();
@@ -103,12 +132,22 @@ export async function fetchProductsByCategory(category, fallback = [], limit = 1
     }
 
     const results = await Promise.all(
-      categoriesToFetch.map((cat) =>
-        api
-          .get("/api/products", { params: { category: cat, limit } })
-          .then((res) => res.data?.items || (Array.isArray(res.data) ? res.data : []))
-          .catch(() => [])
-      )
+      categoriesToFetch.map(async (cat) => {
+        try {
+          const q = new URLSearchParams({ category: cat, limit: String(limit) }).toString();
+          const res = await fetch(`${API_BASE}/api/products?${q}`, {
+            next: { revalidate: 60 },
+            signal: AbortSignal.timeout(5000),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            return data?.items || (Array.isArray(data) ? data : []);
+          }
+          return [];
+        } catch {
+          return [];
+        }
+      })
     );
 
     const merged = [];
@@ -124,8 +163,8 @@ export async function fetchProductsByCategory(category, fallback = [], limit = 1
     }
 
     const mapped = merged.map(mapApiProduct).filter(Boolean);
-    return mapped;
+    return mapped.length > 0 ? mapped : fallback;
   } catch (err) {
-    return [];
+    return fallback;
   }
 }

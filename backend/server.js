@@ -28,6 +28,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Serve uploads from local disk or fallback to MongoDB Atlas if ephemeral disk was wiped
 app.get('/uploads/:filename', async (req, res, next) => {
   const filename = req.params.filename;
+  res.set('Cache-Control', 'public, max-age=31536000, immutable');
   const localPath = path.join(__dirname, 'uploads', filename);
   if (fs.existsSync(localPath)) {
     return res.sendFile(localPath);

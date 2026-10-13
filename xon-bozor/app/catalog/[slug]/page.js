@@ -4,8 +4,7 @@ import CatalogClient from "@/components/CatalogClient";
 import { getT } from "@/lib/i18n";
 import { fetchProducts, fetchProductsByCategory } from "@/lib/products";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 const BRAND_MAP = {
   iphone: "Apple",

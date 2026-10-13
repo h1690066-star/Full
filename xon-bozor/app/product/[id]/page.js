@@ -5,12 +5,18 @@ import { getT } from "@/lib/i18n";
 import { mapApiProduct, fetchProducts } from "@/lib/products";
 import { api } from "@/lib/api";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
-  const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://xonbozor.uz";
+  const SITE =
+    (process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes("localhost"))
+      ? process.env.NEXT_PUBLIC_SITE_URL
+      : process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "https://xonbozor.vercel.app";
   try {
     const res = await api.get(`/api/products/${id}`);
     if (res.data?.product?.name) {
