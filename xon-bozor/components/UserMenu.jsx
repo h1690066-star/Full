@@ -11,36 +11,49 @@ export default function UserMenu({ loginLabel }) {
     const cached = getCurrentUser();
     if (cached) setUser(cached);
 
-    const syncUser = () => {
+    let timer = null;
+    const syncUser = (immediate = false) => {
       if (!localStorage.getItem("token")) {
         setUser(null);
         return;
       }
       const u = getCurrentUser();
       if (u) setUser(u);
-      getMe()
-        .then((d) => {
-          const fresh = d?.user || d;
-          if (fresh && fresh.name) {
-            setUser(fresh);
-            localStorage.setItem("user", JSON.stringify(fresh));
-          }
-        })
-        .catch(() => {});
+
+      const doFetch = () => {
+        getMe()
+          .then((d) => {
+            const fresh = d?.user || d;
+            if (fresh && fresh.name) {
+              setUser(fresh);
+              localStorage.setItem("user", JSON.stringify(fresh));
+            }
+          })
+          .catch(() => {});
+      };
+
+      if (immediate) {
+        doFetch();
+      } else {
+        timer = setTimeout(doFetch, 1500);
+      }
     };
 
-    syncUser();
+    syncUser(false);
 
     const handleAuthChange = (e) => {
       if (e.detail) {
         setUser(e.detail);
       } else {
-        syncUser();
+        syncUser(true);
       }
     };
 
     window.addEventListener("auth-change", handleAuthChange);
-    return () => window.removeEventListener("auth-change", handleAuthChange);
+    return () => {
+      if (timer) clearTimeout(timer);
+      window.removeEventListener("auth-change", handleAuthChange);
+    };
   }, []);
 
   const name = user?.name || user?.fullName;

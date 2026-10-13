@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   MdChevronRight,
   MdArrowForward,
@@ -14,11 +14,13 @@ import ProductSkeleton from "./ProductSkeleton";
 export default function ProductSection({ title, href, allLabel, products, t, hot = false, id }) {
   const [query, setQuery] = useState("");
 
-  const filtered = query.trim()
-    ? (products || []).filter((p) =>
-        (p.name || "").toLowerCase().includes(query.trim().toLowerCase())
-      )
-    : products || [];
+  const filtered = useMemo(() => {
+    if (!query.trim()) return products || [];
+    const q = query.trim().toLowerCase();
+    return (products || []).filter((p) =>
+      (p.name || "").toLowerCase().includes(q)
+    );
+  }, [products, query]);
 
   return (
     <section id={id} className="mx-auto max-w-7xl px-4 pt-10" aria-labelledby={`${id}-h`}>

@@ -72,7 +72,6 @@ export default async function RootLayout({ children }) {
         <meta name="twitter:title" content="Xon Bozor — Original telefonlar va maishiy texnika" />
         <meta name="twitter:description" content="Original telefonlar, B/U smartfonlar va maishiy texnika Toshkentda." />
         <meta name="twitter:image" content={`${SITE}/images/hero/hero-1.png`} />
-        <link rel="preload" href="/images/hero/hero-1.png" as="image" type="image/png" />
         <link rel="preconnect" href="https://full-nbal.onrender.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://full-nbal.onrender.com" />
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
