@@ -8,7 +8,7 @@ import Footer from "@/components/Footer";
 import { getT } from "@/lib/i18n";
 import { fetchProducts } from "@/lib/products";
 
-export const revalidate = 60;
+export const revalidate = 30;
 
 const SITE =
   (process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes("localhost"))

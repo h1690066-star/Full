@@ -418,8 +418,8 @@ export default function CatalogClient({
     }
   }, [urlType]);
 
-  const [minPriceInput, setMinPriceInput] = useState("100 000");
-  const [maxPriceInput, setMaxPriceInput] = useState("20 000 000");
+  const [minPriceInput, setMinPriceInput] = useState("");
+  const [maxPriceInput, setMaxPriceInput] = useState("");
   const [onlyOriginal, setOnlyOriginal] = useState(false);
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedModels, setSelectedModels] = useState([]);
@@ -483,8 +483,8 @@ export default function CatalogClient({
   }, []);
 
   const resetFilters = useCallback(() => {
-    setMinPriceInput("100 000");
-    setMaxPriceInput("20 000 000");
+    setMinPriceInput("");
+    setMaxPriceInput("");
     setOnlyOriginal(false);
     setSelectedBrands([]);
     setSelectedModels([]);

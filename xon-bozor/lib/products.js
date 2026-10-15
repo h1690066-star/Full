@@ -26,7 +26,8 @@ export const mapApiProduct = (item) => {
     defaultPlaceholder;
 
   const isUsed =
-    Boolean(item.used) ||
+    item.used === true ||
+    item.used === "true" ||
     item.category === "Used Phones" ||
     item.category === "B/U Telefonlar" ||
     (typeof item.name === "string" &&
@@ -66,26 +67,32 @@ export const accessories = [];
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://full-nbal.onrender.com";
 
-// Server-side in-memory cache for ultra-fast TTFB (0ms response)
+// Server-side in-memory cache
 const memoryCache = new Map();
 
-// 1️⃣ Barcha Kategoriyalar Ro'yxatini Olish: Next.js revalidate kesh bilan
+export function clearProductsCache() {
+  memoryCache.clear();
+}
+
+// 1️⃣ Barcha Kategoriyalar Ro'yxatini Olish
 export async function fetchCategories() {
   const cacheKey = "categories";
   const cached = memoryCache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < 120_000) {
+  if (cached && Date.now() - cached.timestamp < 60_000) {
     return cached.data;
   }
   try {
     const res = await fetch(`${API_BASE}/api/products/categories`, {
-      next: { revalidate: 120 },
-      signal: AbortSignal.timeout(4000),
+      next: { revalidate: 60 },
+      signal: AbortSignal.timeout(12000),
     });
-    if (!res.ok) return cached?.data || [];
-    const data = await res.json();
-    const result = Array.isArray(data) ? data : [];
-    memoryCache.set(cacheKey, { data: result, timestamp: Date.now() });
-    return result;
+    if (res.ok) {
+      const data = await res.json();
+      const result = Array.isArray(data) ? data : [];
+      memoryCache.set(cacheKey, { data: result, timestamp: Date.now() });
+      return result;
+    }
+    throw new Error("Categories fetch status: " + res.status);
   } catch (err) {
     try {
       const res = await api.get("/api/products/categories");
@@ -98,26 +105,26 @@ export async function fetchCategories() {
   }
 }
 
-// GET /api/products: Server-side SWR kesh (0ms TTFB)
+// GET /api/products: Server-side SWR kesh
 export async function fetchProducts(params = {}) {
   const cacheKey = `products_${JSON.stringify(params)}`;
   const now = Date.now();
   const cached = memoryCache.get(cacheKey);
 
-  // Fresh kesh (< 60s): darhol qaytarish (0ms)
-  if (cached && now - cached.timestamp < 60_000) {
+  // Fresh kesh (< 20s): darhol qaytarish
+  if (cached && cached.data?.length > 0 && now - cached.timestamp < 20_000) {
     return cached.data;
   }
 
-  // Stale kesh (60s - 15 min): darhol qaytarib, orqa fonda yangilash
-  if (cached && now - cached.timestamp < 900_000) {
+  // Stale kesh (20s - 3 min): darhol qaytarib, orqa fonda yangilash
+  if (cached && cached.data?.length > 0 && now - cached.timestamp < 180_000) {
     if (!cached.refreshing) {
       cached.refreshing = true;
       (async () => {
         try {
           const q = new URLSearchParams(params).toString();
           const url = `${API_BASE}/api/products${q ? `?${q}` : ""}`;
-          const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+          const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
           if (res.ok) {
             const data = await res.json();
             const items = data?.items || (Array.isArray(data) ? data : []);
@@ -140,15 +147,17 @@ export async function fetchProducts(params = {}) {
     const q = new URLSearchParams(params).toString();
     const url = `${API_BASE}/api/products${q ? `?${q}` : ""}`;
     const res = await fetch(url, {
-      next: { revalidate: 60 },
-      signal: AbortSignal.timeout(4000),
+      next: { revalidate: 30 },
+      signal: AbortSignal.timeout(15000),
     });
     if (res.ok) {
       const data = await res.json();
       const items = data?.items || (Array.isArray(data) ? data : []);
       const mapped = items.map(mapApiProduct).filter(Boolean);
-      memoryCache.set(cacheKey, { data: mapped, timestamp: now, refreshing: false });
-      return mapped;
+      if (mapped.length > 0) {
+        memoryCache.set(cacheKey, { data: mapped, timestamp: now, refreshing: false });
+        return mapped;
+      }
     }
     throw new Error(`Fetch status: ${res.status}`);
   } catch (err) {
@@ -156,21 +165,24 @@ export async function fetchProducts(params = {}) {
       const res = await api.get("/api/products", { params: { limit: 100, ...params } });
       const items = res.data?.items || (Array.isArray(res.data) ? res.data : []);
       const mapped = items.map(mapApiProduct).filter(Boolean);
-      memoryCache.set(cacheKey, { data: mapped, timestamp: now, refreshing: false });
-      return mapped;
+      if (mapped.length > 0) {
+        memoryCache.set(cacheKey, { data: mapped, timestamp: now, refreshing: false });
+        return mapped;
+      }
     } catch {
       return cached?.data || [];
     }
+    return cached?.data || [];
   }
 }
 
-// 2️⃣ Kategoriya bo'yicha olish: limit 100, tezkor SWR kesh bilan
+// 2️⃣ Kategoriya bo'yicha olish: limit 100
 export async function fetchProductsByCategory(category, fallback = [], limit = 100) {
   const cacheKey = `cat_${category}_${limit}`;
   const now = Date.now();
   const cached = memoryCache.get(cacheKey);
 
-  if (cached && now - cached.timestamp < 60_000) {
+  if (cached && cached.data?.length > 0 && now - cached.timestamp < 20_000) {
     return cached.data;
   }
 
@@ -197,14 +209,17 @@ export async function fetchProductsByCategory(category, fallback = [], limit = 1
         try {
           const q = new URLSearchParams({ category: cat, limit: String(limit) }).toString();
           const res = await fetch(`${API_BASE}/api/products?${q}`, {
-            next: { revalidate: 60 },
-            signal: AbortSignal.timeout(4000),
+            next: { revalidate: 30 },
+            signal: AbortSignal.timeout(15000),
           });
           if (res.ok) {
             const data = await res.json();
             return data?.items || (Array.isArray(data) ? data : []);
           }
-          return [];
+        } catch (_) {}
+        try {
+          const res = await api.get("/api/products", { params: { category: cat, limit } });
+          return res.data?.items || (Array.isArray(res.data) ? res.data : []);
         } catch {
           return [];
         }
@@ -225,7 +240,9 @@ export async function fetchProductsByCategory(category, fallback = [], limit = 1
 
     const mapped = merged.map(mapApiProduct).filter(Boolean);
     const finalData = mapped.length > 0 ? mapped : (cached?.data || fallback);
-    memoryCache.set(cacheKey, { data: finalData, timestamp: now });
+    if (finalData.length > 0) {
+      memoryCache.set(cacheKey, { data: finalData, timestamp: now });
+    }
     return finalData;
   } catch (err) {
     return cached?.data || fallback;

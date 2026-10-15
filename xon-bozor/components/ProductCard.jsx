@@ -9,6 +9,8 @@ import {
   MdStar,
   MdShoppingCart,
   MdCheck,
+  MdDoneAll,
+  MdClose,
   MdAdd,
   MdRemove,
   MdPhoneIphone,
@@ -28,7 +30,7 @@ function ProductCard({ product: p, t, priority = false }) {
     used: "B/U",
   };
 
-  const { cart, addToCart, updateQuantity, removeFromCart, toggleWishlist, isInWishlist } = useCart();
+  const { cart, addToCart, toggleWishlist, isInWishlist } = useCart();
   const pid = p.id || p._id;
   const ratingNum = Number(p.rating) || 4.9;
   const reviewsCount = p.reviewsCount ?? p.reviews ?? 128;
@@ -40,6 +42,9 @@ function ProductCard({ product: p, t, priority = false }) {
   const qtyInCart = cartItem ? cartItem.quantity : 0;
 
   const [imgError, setImgError] = useState(false);
+  // Savatga qo'shishdan oldingi tanlash rejimi (hali savatga qo'shilmagan)
+  const [picking, setPicking] = useState(false);
+  const [pickQty, setPickQty] = useState(1);
 
   const requireAuth = () => {
     if (typeof window !== "undefined") {
@@ -53,29 +58,41 @@ function ProductCard({ product: p, t, priority = false }) {
     return true;
   };
 
-  const handleAddToCart = (e) => {
+  const stop = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!requireAuth()) return;
-    addToCart(p, 1);
-    toast("Mahsulot savatga qo'shildi", "success");
   };
 
+  // 1-bosqich: "Savatga qo'shish" -> faqat tanlash rejimi ochiladi, savatga hali qo'shilmaydi
+  const handleStartPick = (e) => {
+    stop(e);
+    if (!requireAuth()) return;
+    setPickQty(1);
+    setPicking(true);
+  };
+
+  // 1 da turganda "-" bosilsa tanlash bekor qilinadi (savatga qo'shilmaydi)
   const handleMinus = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (qtyInCart <= 1) {
-      removeFromCart(pid);
-      toast("Mahsulot savatdan olindi", "info");
-    } else {
-      updateQuantity(pid, -1);
+    stop(e);
+    if (pickQty <= 1) {
+      setPicking(false);
+      return;
     }
+    setPickQty((q) => q - 1);
   };
 
   const handlePlus = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    updateQuantity(pid, 1);
+    stop(e);
+    setPickQty((q) => Math.min(q + 1, 99));
+  };
+
+  // 2-bosqich: galochka bosilganda tanlangan soni bilan savatga qo'shiladi
+  const handleConfirm = (e) => {
+    stop(e);
+    if (!requireAuth()) return;
+    addToCart(p, pickQty);
+    setPicking(false);
+    toast("Mahsulot savatga qo'shildi", "success");
   };
 
   const handleLike = (e) => {
@@ -86,42 +103,40 @@ function ProductCard({ product: p, t, priority = false }) {
   };
 
   return (
-    <article className="group relative flex flex-col rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-[#181920] p-2.5 sm:p-3 shadow-xs transition duration-200 hover:shadow-xl hover:-translate-y-0.5 hover:border-slate-300 dark:hover:border-slate-700">
-      {/* Rasm konteyneri - har doim oq fonda toza va chiroyli chiqadi */}
-      <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-white p-3 shadow-2xs border border-slate-100 dark:border-white/5">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white dark:bg-[#181920] ring-1 ring-slate-200/80 dark:ring-white/10 transition-shadow duration-300 hover:shadow-[0_12px_32px_-12px_rgba(15,23,42,0.25)] dark:hover:shadow-[0_12px_32px_-12px_rgba(0,0,0,0.7)]">
+      {/* Rasm konteyneri */}
+      <div className="relative aspect-square w-full bg-white">
         {/* Holat nishoni (ORIGINAL / B/U) */}
-        <div className="absolute left-2 top-2 z-10 flex items-center gap-1">
-          <span
-            className={`rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-xs ${
-              p.used ? "bg-amber-500" : "bg-emerald-600"
+        <span
+          className={`absolute left-2.5 top-2.5 z-10 inline-flex items-center gap-1 rounded-full py-0.5 pl-1.5 pr-2 text-[10px] font-bold tracking-wide text-white ${p.used ? "bg-amber-500" : "bg-emerald-600"
             }`}
-          >
-            {p.used ? "B/U" : "ORIGINAL"}
-          </span>
-        </div>
+        >
+          {!p.used && <MdCheck className="text-[11px]" aria-hidden />}
+          {p.used ? "B/U" : "ORIGINAL"}
+        </span>
 
         {/* Sevimlilar tugmasi */}
         <button
           onClick={handleLike}
           aria-label="Wishlist"
-          className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 dark:bg-slate-900/90 shadow-sm border border-slate-100 dark:border-slate-800/80 backdrop-blur-sm transition hover:scale-110 active:scale-95 cursor-pointer"
+          className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-400 shadow-sm ring-1 ring-slate-200/70 backdrop-blur transition hover:text-rose-500 active:scale-90 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
           {liked ? (
-            <MdFavorite className="text-lg text-rose-500" />
+            <MdFavorite className="text-[18px] text-rose-500" />
           ) : (
-            <MdFavoriteBorder className="text-lg text-slate-400 dark:text-slate-300 hover:text-brand" />
+            <MdFavoriteBorder className="text-[18px]" />
           )}
         </button>
 
         {/* Mahsulot rasmi */}
-        <Link href={`/product/${pid}`} className="flex h-full w-full items-center justify-center">
+        <Link href={`/product/${pid}`} className="flex h-full w-full items-center justify-center p-5 sm:p-6">
           {imgUrl && !imgError ? (
             <Image
               src={imgUrl}
               alt={p.name}
               width={220}
               height={220}
-              className="max-h-full max-w-full object-contain transition duration-300 group-hover:scale-105"
+              className="max-h-full max-w-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.04]"
               priority={priority}
               loading={priority ? "eager" : "lazy"}
               sizes="(max-width: 640px) 180px, (max-width: 1024px) 220px, 240px"
@@ -130,109 +145,120 @@ function ProductCard({ product: p, t, priority = false }) {
           ) : (
             <div className="flex flex-col items-center justify-center p-2 text-center select-none">
               <MdPhoneIphone className="text-5xl text-brand/30" aria-hidden />
-              <span className="text-[11px] font-bold text-slate-400 mt-1 line-clamp-1">{p.brand || "Xon Bozor"}</span>
+              <span className="mt-1 line-clamp-1 text-[11px] font-semibold text-slate-400">{p.brand || "Xon Bozor"}</span>
             </div>
           )}
         </Link>
       </div>
 
-      {/* Kontent qismi - 2-rasm (Uzum Market) uslubida */}
-      <div className="flex flex-1 flex-col justify-between pt-2.5 px-0.5">
-        <div className="space-y-1.5">
-          {/* 1. Narx (1-bo'lib eng tepada chiqadi) */}
-          <div className="min-w-0">
-            <p className="text-sm sm:text-base md:text-lg font-black text-slate-900 dark:text-white leading-tight">
-              {formatPrice(p.price)} <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{c.som}</span>
+      {/* Kontent qismi */}
+      <div className="flex flex-1 flex-col gap-2 p-3 sm:p-3.5">
+        {/* Narx */}
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0">
+          <p className="text-base sm:text-lg font-extrabold leading-none tracking-tight text-slate-900 dark:text-white tabular-nums">
+            {formatPrice(p.price)}
+            <span className="ml-1 text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400">{c.som}</span>
+          </p>
+          {p.oldPrice && p.oldPrice > p.price && (
+            <p className="text-[11px] font-medium leading-none text-slate-400 line-through tabular-nums">
+              {formatPrice(p.oldPrice)}
             </p>
-            {p.oldPrice && p.oldPrice > p.price && (
-              <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 line-through leading-tight">
-                {formatPrice(p.oldPrice)} {c.som}
-              </p>
-            )}
-          </div>
-
-          {/* 2. Pasida ozgina ma'lumot: Muddatli to'lov nishoni */}
-          <div className="pt-0.5">
-            <span className="inline-block rounded-md bg-amber-400/90 px-2 py-0.5 text-[10px] sm:text-[11px] font-extrabold text-slate-900 shadow-2xs">
-              {formatPrice(monthlyPrice)} {c.perMonth}
-            </span>
-          </div>
-
-          {/* Mahsulot nomi */}
-          <Link href={`/product/${pid}`} className="block">
-            <h3 className="line-clamp-2 min-h-[2.4rem] text-[13px] font-semibold text-slate-900 dark:text-slate-100 leading-snug group-hover:text-brand transition">
-              {p.name}
-            </h3>
-          </Link>
-
-          {/* Reyting va sharhlar */}
-          <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-            <MdStar className="text-amber-500 text-sm" />
-            <span className="font-bold text-slate-800 dark:text-slate-200">{ratingNum.toFixed(1)}</span>
-            <span className="text-[11px] text-slate-400 dark:text-slate-500">
-              ({reviewsCount} {c.reviews})
-            </span>
-          </div>
+          )}
         </div>
 
-        {/* 3. Eng pasida: Savatga qo'shish tugmasi (2-rasmdagidek to'liq kenglikda) */}
-        <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/80">
-          {qtyInCart === 0 ? (
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              aria-label="Savatga qo'shish"
-              title="Savatga qo'shish"
-              className="flex w-full h-9 items-center justify-center gap-2 rounded-xl bg-brand text-white shadow-md shadow-brand/20 hover:bg-brand-dark active:scale-[0.98] transition cursor-pointer text-xs sm:text-sm font-extrabold"
-            >
-              <MdShoppingCart className="text-base" />
-              <span>Savatga qo'shish</span>
-            </button>
-          ) : (
-            /* Tanlangandan keyin: [- 1 +], nechta kerakligini tanlash va oldida chiroyli animatsiyali galochka */
-            <div
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              className="flex w-full h-9 items-center justify-between rounded-xl bg-slate-100 dark:bg-slate-800/90 p-1 border border-emerald-500/40 dark:border-emerald-500/40 shadow-2xs transition"
-            >
-              <button
-                type="button"
-                onClick={handleMinus}
-                aria-label="Kamaytirish"
-                title="Kamaytirish"
-                className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-xs hover:bg-rose-500 hover:text-white dark:hover:bg-rose-500 dark:hover:text-white transition active:scale-90 cursor-pointer shrink-0"
-              >
-                <MdRemove className="text-sm font-black" />
-              </button>
+        {/* Muddatli to'lov */}
+        <span className="inline-flex w-fit items-center rounded-lg bg-amber-100 px-2 py-1 text-[11px] font-bold leading-none text-amber-900 dark:bg-amber-400/15 dark:text-amber-300 tabular-nums">
+          {formatPrice(monthlyPrice)} {c.perMonth}
+        </span>
 
-              {/* Tanlangan soni va oldida chiroyli animatsiyali galochka */}
-              <div
-                className="flex items-center gap-1.5 px-2 select-none cursor-default"
-                title={`${qtyInCart} ta savatga tanlangan`}
-              >
-                <span
-                  key={qtyInCart}
-                  className="flex h-4 w-4 sm:h-4.5 sm:w-4.5 items-center justify-center rounded-full bg-emerald-500 text-white shadow-xs animate-check-pop"
+        {/* Mahsulot nomi */}
+        <Link href={`/product/${pid}`} className="block">
+          <h3 className="line-clamp-2 min-h-[2.5rem] text-[13px] font-medium leading-5 text-slate-700 transition-colors group-hover:text-brand dark:text-slate-200">
+            {p.name}
+          </h3>
+        </Link>
+
+        {/* Reyting va sharhlar */}
+        <div className="flex items-center gap-1 text-xs">
+          <MdStar className="text-[15px] text-amber-500" />
+          <span className="font-bold text-slate-800 dark:text-slate-100 tabular-nums">{ratingNum.toFixed(1)}</span>
+          <span className="text-[11px] text-slate-400 dark:text-slate-500">
+            ({reviewsCount} {c.reviews})
+          </span>
+        </div>
+
+        {/* Savat bloki: 3 holat — qo'shish / tanlash / savatda */}
+        <div className="mt-auto pt-1.5">
+          {qtyInCart > 0 ? (
+            /* 3) Savatda: bosilsa hech narsa qo'shilmaydi */
+            <div
+              role="status"
+              className="flex h-11 w-full select-none cursor-default items-center justify-center gap-2 rounded-xl bg-emerald-500/10 text-[13px] font-bold text-emerald-600 ring-1 ring-inset ring-emerald-500/40 dark:bg-emerald-400/10 dark:text-emerald-400 dark:ring-emerald-400/35"
+            >
+              <MdDoneAll key={qtyInCart} className="text-xl animate-check-pop" aria-hidden />
+              <span>Savatda</span>
+              <span className="rounded-md bg-emerald-500/15 px-1.5 py-0.5 text-[11px] leading-none tabular-nums">
+                {qtyInCart} ta
+              </span>
+            </div>
+          ) : picking ? (
+            /* 2) Tanlash: chapda miqdor boshqaruvi, o'ngda alohida tasdiqlash tugmasi */
+            <div onClick={stop} className="flex h-11 w-full items-center gap-1.5">
+              <div className="flex h-full flex-1 items-center justify-between rounded-xl bg-slate-100 p-1 ring-1 ring-inset ring-slate-200 dark:bg-white/[0.06] dark:ring-white/10">
+                <button
+                  type="button"
+                  onClick={handleMinus}
+                  aria-label={pickQty <= 1 ? "Bekor qilish" : "Kamaytirish"}
+                  title={pickQty <= 1 ? "Bekor qilish" : "Kamaytirish"}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-white hover:text-rose-500 hover:shadow-sm active:scale-90 cursor-pointer dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-rose-400 focus-visible:outline-2 focus-visible:outline-brand"
                 >
-                  <MdCheck className="text-[11px] sm:text-xs font-black" />
+                  {pickQty <= 1 ? <MdClose className="text-[17px]" /> : <MdRemove className="text-xl" />}
+                </button>
+
+                <span
+                  className="min-w-6 select-none text-center text-[15px] font-extrabold leading-none text-slate-900 dark:text-white tabular-nums"
+                  title={`${pickQty} ta tanlangan`}
+                >
+                  {pickQty}
                 </span>
-                <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white tabular-nums">
-                  {qtyInCart}
-                </span>
+
+                <button
+                  type="button"
+                  onClick={handlePlus}
+                  aria-label="Ko'paytirish"
+                  title="Ko'paytirish"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-700 transition hover:bg-white hover:text-brand hover:shadow-sm active:scale-90 cursor-pointer dark:text-slate-100 dark:hover:bg-white/10 dark:hover:text-white focus-visible:outline-2 focus-visible:outline-brand"
+                >
+                  <MdAdd className="text-xl" />
+                </button>
               </div>
 
               <button
                 type="button"
-                onClick={handlePlus}
-                aria-label="Ko'paytirish"
-                title="Ko'paytirish"
-                className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-xs hover:bg-brand hover:text-white dark:hover:bg-brand dark:hover:text-white transition active:scale-90 cursor-pointer shrink-0"
+                onClick={handleConfirm}
+                aria-label="Savatga qo'shish"
+                title="Savatga qo'shish"
+                className="flex h-full w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-600 active:scale-90 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
               >
-                <MdAdd className="text-sm font-black" />
+                <MdCheck className="text-[22px]" />
               </button>
             </div>
+          ) : (
+            /* 1) Boshlang'ich: Savatga qo'shish */
+            <button
+              type="button"
+              onClick={handleStartPick}
+              aria-label="Savatga qo'shish"
+              title="Savatga qo'shish"
+              className="group/cart relative flex h-11 w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-brand text-[13px] font-bold text-white shadow-lg shadow-brand/25 ring-1 ring-inset ring-white/15 transition duration-200 hover:bg-brand-dark hover:shadow-brand/40 active:scale-[0.97] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            >
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-white/20 opacity-0 blur-sm transition duration-500 group-hover/cart:left-[130%] group-hover/cart:opacity-100"
+              />
+              <MdShoppingCart className="text-[18px] transition-transform duration-200 group-hover/cart:-translate-y-px group-hover/cart:scale-110" />
+              <span className="relative">Savatga qo'shish</span>
+            </button>
           )}
         </div>
       </div>

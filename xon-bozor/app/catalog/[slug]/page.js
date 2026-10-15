@@ -4,7 +4,7 @@ import CatalogClient from "@/components/CatalogClient";
 import { getT } from "@/lib/i18n";
 import { fetchProducts, fetchProductsByCategory } from "@/lib/products";
 
-export const revalidate = 60;
+export const revalidate = 30;
 
 const BRAND_MAP = {
   iphone: "Apple",
