@@ -29,6 +29,7 @@ export default function ProfileClient({ t }) {
   const [pw, setPw] = useState({ oldPassword: "", newPassword: "" });
   const [msg, setMsg] = useState({ profile: "", profileErr: "", password: "", passwordErr: "" });
   const [state, setState] = useState("loading");
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const fileInputRef = useRef(null);
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -136,8 +137,14 @@ export default function ProfileClient({ t }) {
     }
   };
 
-  const logout = () => {
+  const confirmLogout = () => {
     clearToken();
+    try {
+      localStorage.removeItem("user");
+      window.dispatchEvent(new CustomEvent("auth-change", { detail: null }));
+    } catch {}
+    toast("Akkauntdan chiqildi", "info");
+    setShowLogoutModal(false);
     router.push("/");
     router.refresh();
   };
@@ -260,11 +267,12 @@ export default function ProfileClient({ t }) {
               </Link>
             )}
             <button
-              onClick={logout}
-              className="btn h-11 border border-rose-200 bg-rose-50 px-4 text-rose-600 hover:bg-rose-100 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15"
+              type="button"
+              onClick={() => setShowLogoutModal(true)}
+              className="btn h-11 border border-rose-200 bg-rose-50 px-4 text-rose-600 hover:bg-rose-100 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15 cursor-pointer transition active:scale-95"
             >
               <MdLogout className="text-lg" />
-              {p.logout}
+              <span>{p.logout || "Chiqish"}</span>
             </button>
           </div>
         </div>
@@ -380,6 +388,50 @@ export default function ProfileClient({ t }) {
           )}
         </form>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowLogoutModal(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+        >
+          <div className="relative w-full max-w-sm rounded-3xl bg-white dark:bg-[#181920] border border-slate-100 dark:border-slate-800 p-6 shadow-2xl animate-in zoom-in-95 duration-200 text-center space-y-4">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-500 dark:bg-rose-500/20 shadow-xs">
+              <MdLogout className="text-2xl" />
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="font-display text-lg font-black text-slate-900 dark:text-white">
+                Akkauntdan chiqish
+              </h3>
+              <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
+                Siz rostdan ham akkauntdan chiqmoqchimisiz?
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 h-11 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer"
+              >
+                Bekor qilish
+              </button>
+              <button
+                type="button"
+                onClick={confirmLogout}
+                className="flex-1 h-11 rounded-xl bg-rose-600 hover:bg-rose-700 font-bold text-xs sm:text-sm text-white shadow-md shadow-rose-600/20 transition active:scale-95 cursor-pointer"
+              >
+                Ha, chiqish
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
