@@ -7,7 +7,6 @@ import {
   MdFavoriteBorder,
   MdStar,
   MdShoppingCart,
-  MdCheck,
   MdAdd,
   MdRemove,
   MdPhoneIphone,
@@ -38,8 +37,6 @@ function ProductCard({ product: p, t }) {
   const cartItem = cart.find((i) => (i.id || i._id) === pid);
   const qtyInCart = cartItem ? cartItem.quantity : 0;
 
-  const [isSelectingQty, setIsSelectingQty] = useState(false);
-  const [selectedQty, setSelectedQty] = useState(1);
   const [imgError, setImgError] = useState(false);
 
   const requireAuth = () => {
@@ -54,49 +51,29 @@ function ProductCard({ product: p, t }) {
     return true;
   };
 
-  const handleInitialCartClick = (e) => {
+  const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (!requireAuth()) return;
-    setSelectedQty(qtyInCart > 0 ? qtyInCart : 1);
-    setIsSelectingQty(true);
-  };
-
-  const handleConfirmQty = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (qtyInCart === 0) {
-      addToCart(p, selectedQty);
-    } else {
-      const diff = selectedQty - qtyInCart;
-      if (diff !== 0) updateQuantity(pid, diff);
-    }
-    setIsSelectingQty(false);
-    toast("Mahsulot muvaffaqiyatli qo'shildi", "success");
+    addToCart(p, 1);
+    toast("Mahsulot savatga qo'shildi", "success");
   };
 
   const handleMinus = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (selectedQty > 1) {
-      setSelectedQty((q) => q - 1);
+    if (qtyInCart <= 1) {
+      removeFromCart(pid);
+      toast("Mahsulot savatdan olindi", "info");
     } else {
-      if (qtyInCart > 0) removeFromCart(pid);
-      setIsSelectingQty(false);
+      updateQuantity(pid, -1);
     }
   };
 
   const handlePlus = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setSelectedQty((q) => q + 1);
-  };
-
-  const handleSavatdaClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setSelectedQty(qtyInCart);
-    setIsSelectingQty(true);
+    updateQuantity(pid, 1);
   };
 
   const handleLike = (e) => {
@@ -107,13 +84,13 @@ function ProductCard({ product: p, t }) {
   };
 
   return (
-    <article className="group relative flex flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1b22] p-2.5 shadow-xs transition duration-200 hover:shadow-xl hover:border-slate-300 dark:hover:border-slate-700">
-      {/* Image container */}
-      <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-[#f5f6fa] dark:bg-[#121319] p-3">
-        {/* Badge left */}
-        <div className="absolute left-2.5 top-2.5 z-10 flex items-center gap-1">
+    <article className="group relative flex flex-col rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-[#181920] p-2.5 sm:p-3 shadow-xs transition duration-200 hover:shadow-xl hover:-translate-y-0.5 hover:border-slate-300 dark:hover:border-slate-700">
+      {/* Rasm konteyneri - har doim oq fonda toza va chiroyli chiqadi */}
+      <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-white p-3 shadow-2xs border border-slate-100 dark:border-white/5">
+        {/* Holat nishoni (ORIGINAL / B/U) */}
+        <div className="absolute left-2 top-2 z-10 flex items-center gap-1">
           <span
-            className={`rounded px-2 py-0.5 text-[10px] font-extrabold uppercase text-white shadow-sm ${
+            className={`rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-xs ${
               p.used ? "bg-amber-500" : "bg-emerald-600"
             }`}
           >
@@ -121,19 +98,20 @@ function ProductCard({ product: p, t }) {
           </span>
         </div>
 
-        {/* Wishlist right */}
+        {/* Sevimlilar tugmasi */}
         <button
           onClick={handleLike}
           aria-label="Wishlist"
-          className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 dark:bg-slate-800/90 shadow-sm backdrop-blur-sm transition hover:scale-110"
+          className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 dark:bg-slate-900/90 shadow-sm border border-slate-100 dark:border-slate-800/80 backdrop-blur-sm transition hover:scale-110 active:scale-95 cursor-pointer"
         >
           {liked ? (
             <MdFavorite className="text-lg text-rose-500" />
           ) : (
-            <MdFavoriteBorder className="text-lg text-slate-500 dark:text-slate-300 hover:text-brand" />
+            <MdFavoriteBorder className="text-lg text-slate-400 dark:text-slate-300 hover:text-brand" />
           )}
         </button>
 
+        {/* Mahsulot rasmi */}
         <Link href={`/product/${pid}`} className="flex h-full w-full items-center justify-center">
           {imgUrl && !imgError ? (
             <img
@@ -148,121 +126,90 @@ function ProductCard({ product: p, t }) {
             />
           ) : (
             <div className="flex flex-col items-center justify-center p-2 text-center select-none">
-              <MdPhoneIphone className="text-6xl text-brand/30" aria-hidden />
-              <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 mt-1 line-clamp-1">{p.brand || "Xon Bozor"}</span>
+              <MdPhoneIphone className="text-5xl text-brand/30" aria-hidden />
+              <span className="text-[11px] font-bold text-slate-400 mt-1 line-clamp-1">{p.brand || "Xon Bozor"}</span>
             </div>
           )}
         </Link>
       </div>
 
-      {/* Content */}
-      <div className="flex flex-1 flex-col justify-between pt-2.5 px-1">
+      {/* Kontent qismi */}
+      <div className="flex flex-1 flex-col justify-between pt-2.5 px-0.5">
         <div>
-          {/* Monthly price pill */}
+          {/* Muddatli to'lov nishoni */}
           <div className="flex items-center gap-1.5 mb-1.5">
-            <span className="w-fit rounded bg-amber-400/90 px-2 py-0.5 text-[11px] font-extrabold text-slate-900 shadow-2xs">
+            <span className="w-fit rounded-md bg-amber-400/90 px-2 py-0.5 text-[10px] sm:text-[11px] font-extrabold text-slate-900 shadow-2xs">
               {formatPrice(monthlyPrice)} {c.perMonth}
             </span>
-            {p.badgePercent && (
-              <span className="rounded bg-emerald-100 dark:bg-emerald-950 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:text-emerald-300">
-                {p.badgePercent}%
-              </span>
-            )}
           </div>
 
-          {/* Product Title */}
+          {/* Mahsulot nomi */}
           <Link href={`/product/${pid}`}>
-            <h3 className="line-clamp-2 min-h-[2.5rem] text-[13px] font-semibold text-slate-800 dark:text-slate-100 leading-snug group-hover:text-brand transition">
+            <h3 className="line-clamp-2 min-h-[2.4rem] text-[13px] font-semibold text-slate-900 dark:text-slate-100 leading-snug group-hover:text-brand transition">
               {p.name}
             </h3>
           </Link>
 
-          {/* Rating */}
+          {/* Reyting va sharhlar */}
           <div className="mt-1 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
             <MdStar className="text-amber-500 text-sm" />
             <span className="font-bold text-slate-800 dark:text-slate-200">{ratingNum.toFixed(1)}</span>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">
+            <span className="text-[11px] text-slate-400 dark:text-slate-500">
               ({reviewsCount} {c.reviews})
             </span>
           </div>
         </div>
 
-        {/* Price & Cart button section */}
-        <div className="mt-3 border-t border-slate-100/80 dark:border-slate-800 pt-2">
-          <div className="flex items-center justify-between min-h-[36px]">
-            {!isSelectingQty && qtyInCart === 0 ? (
-              <>
-                {/* Price */}
-                <div className="min-w-0 flex-1 pr-1">
-                  {p.oldPrice && p.oldPrice > p.price && (
-                    <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 line-through leading-tight truncate">
-                      {formatPrice(p.oldPrice)} {c.som}
-                    </p>
-                  )}
-                  <p className="text-xs sm:text-sm md:text-base font-extrabold text-slate-900 dark:text-white leading-tight whitespace-nowrap">
-                    {formatPrice(p.price)} {c.som}
-                  </p>
-                </div>
+        {/* Narx va Savat qismi - Narx har doim ko'rinib turadi */}
+        <div className="mt-3 border-t border-slate-100 dark:border-slate-800/80 pt-2.5">
+          <div className="flex items-center justify-between min-h-[38px] gap-2">
+            {/* Chap taraf: Narx */}
+            <div className="min-w-0 flex-1">
+              {p.oldPrice && p.oldPrice > p.price && (
+                <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 line-through leading-tight truncate">
+                  {formatPrice(p.oldPrice)} {c.som}
+                </p>
+              )}
+              <p className="text-xs sm:text-sm md:text-base font-extrabold text-slate-900 dark:text-white leading-tight whitespace-nowrap">
+                {formatPrice(p.price)} <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">{c.som}</span>
+              </p>
+            </div>
 
-                {/* Cart Icon Button */}
-                <button
-                  onClick={handleInitialCartClick}
-                  aria-label="Savatga qo'shish"
-                  title="Savatga qo'shish"
-                  className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-white shadow-md active:scale-95 hover:bg-brand-dark transition"
-                >
-                  <MdShoppingCart className="text-base sm:text-lg" />
-                </button>
-              </>
-            ) : isSelectingQty ? (
-              /* Premium Interactive Quantity Selector */
-              <div className="flex h-9 w-full items-center justify-between rounded-xl border border-brand/40 bg-slate-100 dark:bg-[#121319] p-1 shadow-inner animate-in fade-in duration-200">
-                <div className="flex flex-1 items-center justify-between px-1">
-                  <button
-                    type="button"
-                    onClick={handleMinus}
-                    aria-label="Kamaytirish"
-                    title="Kamaytirish"
-                    className="flex h-7 w-7 items-center justify-center rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-white font-bold shadow-xs hover:bg-brand/10 dark:hover:bg-brand/20 active:scale-95 transition cursor-pointer"
-                  >
-                    <MdRemove className="text-sm font-black" />
-                  </button>
-                  <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white tracking-wide">
-                    {selectedQty}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handlePlus}
-                    aria-label="Ko'paytirish"
-                    title="Ko'paytirish"
-                    className="flex h-7 w-7 items-center justify-center rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-white font-bold shadow-xs hover:bg-brand/10 dark:hover:bg-brand/20 active:scale-95 transition cursor-pointer"
-                  >
-                    <MdAdd className="text-sm font-black" />
-                  </button>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleConfirmQty}
-                  title="Tasdiqlash"
-                  aria-label="Tasdiqlash"
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm active:scale-95 transition cursor-pointer ml-1"
-                >
-                  <MdCheck className="text-sm font-extrabold" />
-                </button>
-              </div>
-            ) : (
-              /* Savatda Button replacing price row */
+            {/* O'ng taraf: Savat tugmasi yoki Qty Counter */}
+            {qtyInCart === 0 ? (
               <button
                 type="button"
-                onClick={handleSavatdaClick}
-                title="Savatda"
-                aria-label="Savatda"
-                className="flex h-8 sm:h-9 w-full items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3 text-xs sm:text-sm font-bold text-white shadow-md transition cursor-pointer"
+                onClick={handleAddToCart}
+                aria-label="Savatga qo'shish"
+                title="Savatga qo'shish"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-white shadow-md shadow-brand/20 hover:bg-brand-dark active:scale-95 transition cursor-pointer"
               >
-                <MdCheck className="text-sm sm:text-base font-black" />
-                <span>Savatda</span>
+                <MdShoppingCart className="text-base sm:text-lg" />
               </button>
+            ) : (
+              <div className="flex items-center gap-1.5 rounded-xl bg-brand/10 dark:bg-brand/20 p-1 border border-brand/20">
+                <button
+                  type="button"
+                  onClick={handleMinus}
+                  aria-label="Kamaytirish"
+                  title="Kamaytirish"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-white dark:bg-slate-800 text-brand dark:text-brand-light font-bold shadow-xs hover:bg-brand hover:text-white transition active:scale-90 cursor-pointer"
+                >
+                  <MdRemove className="text-xs font-black" />
+                </button>
+                <span className="px-1 text-xs font-black text-brand dark:text-brand-light min-w-[1.1rem] text-center">
+                  {qtyInCart}
+                </span>
+                <button
+                  type="button"
+                  onClick={handlePlus}
+                  aria-label="Ko'paytirish"
+                  title="Ko'paytirish"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-white font-bold shadow-xs hover:bg-brand-dark transition active:scale-90 cursor-pointer"
+                >
+                  <MdAdd className="text-xs font-black" />
+                </button>
+              </div>
             )}
           </div>
         </div>

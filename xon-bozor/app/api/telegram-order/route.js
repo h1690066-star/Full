@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-const DEFAULT_BOT_TOKEN = "8215957478:AAH1lyyrQSAcFKVBWbXel7ep4k_WJqpd8Ds";
+const DEFAULT_BOT_TOKEN = "8832265019:AAGdOMzPWlcVOPZ-_5Upa7zELuKm0aNkDU8";
+const BOT_USERNAME = "xonbozorbuyurtma_bot";
 
 const esc = (s) =>
   String(s ?? "")
@@ -10,7 +11,7 @@ const esc = (s) =>
 
 async function resolveChatId(botToken, configuredChatId) {
   // Agar env da to'g'ri chat_id bo'lsa (va bot ID siga teng bo'lmasa)
-  if (configuredChatId && configuredChatId !== "8215957478") {
+  if (configuredChatId && configuredChatId !== "8832265019" && configuredChatId !== "8215957478") {
     return configuredChatId;
   }
 
@@ -112,11 +113,11 @@ export async function POST(req) {
       `🕒 <b>Vaqti:</b> ${esc(dateStr)}`;
 
     if (!chatId) {
-      console.warn("⚠️ [Telegram]: Chat ID topilmadi. Botga @xonbozorzakaz_bot Telegram orqali /start bosilmagan.");
+      console.warn(`⚠️ [Telegram]: Chat ID topilmadi. Botga @${BOT_USERNAME} Telegram orqali /start bosilmagan.`);
       return NextResponse.json({
         success: false,
         warning: "Telegram botga /start bosilmagan yoki Chat ID sozlanmagan",
-        botUsername: "xonbozorzakaz_bot",
+        botUsername: BOT_USERNAME,
       });
     }
 

@@ -9,49 +9,60 @@ export const metadata = { title: "Kirish - Xon Bozor", robots: { index: false, f
 export default async function Page() {
   const { t, lang } = await getT();
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0f1015]">
+    <div className="min-h-screen flex flex-col">
       <Header t={t} lang={lang} />
-      <main className="flex-1 flex items-center justify-center py-12 px-4 relative overflow-hidden">
-        <div className="absolute top-1/4 -left-20 w-80 h-80 bg-brand/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+      <main className="relative flex-1 overflow-hidden px-4 py-8 pb-28 sm:py-12 min-[601px]:pb-12">
+        <div className="pointer-events-none absolute -left-24 top-1/4 h-80 w-80 rounded-full bg-brand/10 blur-3xl" />
+        <div className="pointer-events-none absolute -right-24 bottom-1/4 h-80 w-80 rounded-full bg-accent/10 blur-3xl" />
 
-        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative z-10">
-          <div className="hidden md:flex flex-col space-y-6 pr-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/10 text-brand font-bold text-xs w-max">
-              <MdOutlineVerified className="text-base" />
-              <span>Xon Bozor - Rasmiy internet do'koni</span>
+        <div className="relative z-10 mx-auto grid w-full max-w-6xl grid-cols-1 items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
+          {/* Brand panel (desktop) */}
+          <div className="relative hidden overflow-hidden rounded-4xl bg-brand-gradient p-10 text-white shadow-glow-lg lg:flex lg:flex-col lg:justify-between animate-fade-up">
+            <div className="pointer-events-none absolute inset-0 bg-grid opacity-20" />
+            <div className="pointer-events-none absolute inset-0 bg-noise opacity-[0.07] mix-blend-overlay" />
+            <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/20 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-fuchsia-300/30 blur-3xl" />
+
+            <div className="relative space-y-6">
+              <div className="inline-flex w-max items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-xs font-bold backdrop-blur">
+                <MdOutlineVerified className="text-base" />
+                <span>Xon Bozor - Rasmiy internet do'koni</span>
+              </div>
+              <h2 className="font-display text-4xl font-extrabold leading-[1.1] tracking-tight xl:text-5xl">
+                Ajoyib xaridlar olamiga xush kelibsiz!
+              </h2>
+              <p className="max-w-md text-[15px] leading-relaxed text-white/80">
+                Hisobingizga kiring, saralangan va savatdagi mahsulotlarni kuzating, qulay 0% muddatli to'lov va tezkor yetkazishdan bahramand bo'ling.
+              </p>
             </div>
-            <h2 className="text-3xl font-black text-slate-900 dark:text-white leading-tight">
-              Ajoyib xaridlar olamiga xush kelibsiz!
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-              Hisobingizga kiring, saralangan va savatdagi mahsulotlarni kuzating, qulay 0% muddatli to'lov va tezkor yetkazishdan bahramand bo'ling.
-            </p>
 
-            <div className="grid grid-cols-2 gap-4 pt-2">
-              <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/80 dark:bg-[#1a1b22]/80 border border-slate-200/60 dark:border-slate-800 shadow-sm">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10 text-brand font-bold">
+            <div className="relative mt-10 grid grid-cols-2 gap-3">
+              <div className="flex items-center gap-3 rounded-2xl border border-white/20 bg-white/10 p-3.5 backdrop-blur-md">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 shadow-inner-hl">
                   <MdLocalShipping className="text-xl" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">Tez yetkazish</h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Butun O'zbekiston</p>
+                  <h4 className="text-sm font-bold">Tez yetkazish</h4>
+                  <p className="text-xs text-white/70">Butun O'zbekiston</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/80 dark:bg-[#1a1b22]/80 border border-slate-200/60 dark:border-slate-800 shadow-sm">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold">
+              <div className="flex items-center gap-3 rounded-2xl border border-white/20 bg-white/10 p-3.5 backdrop-blur-md">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 shadow-inner-hl">
                   <MdShield className="text-xl" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">100% Kafolat</h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Original tovarlar</p>
+                  <h4 className="text-sm font-bold">100% Kafolat</h4>
+                  <p className="text-xs text-white/70">Original tovarlar</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <AuthForm mode="login" t={t} />
+          {/* Form */}
+          <div className="flex items-center justify-center lg:py-8">
+            <AuthForm mode="login" t={t} />
+          </div>
         </div>
       </main>
       <Footer t={t} />

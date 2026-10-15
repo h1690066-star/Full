@@ -42,18 +42,20 @@ export default function HeaderActions({ t }) {
   };
 
   return (
-    <div className="flex items-center gap-1 sm:gap-2">
+    <div className="flex items-center gap-1 sm:gap-1.5">
       {/* Theme Switcher Button */}
       <button
         onClick={toggleTheme}
         aria-label="Toggle Theme"
-        className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-700 dark:text-slate-200 hover:bg-brand-soft dark:hover:bg-slate-800 transition"
+        className="icon-btn"
       >
-        {isDark ? (
-          <MdWbSunny className="text-xl text-amber-400" />
-        ) : (
-          <MdDarkMode className="text-xl text-slate-700" />
-        )}
+        <span className="relative flex h-6 w-6 items-center justify-center">
+          {isDark ? (
+            <MdWbSunny className="text-[22px] text-amber-400 animate-scale-in" />
+          ) : (
+            <MdDarkMode className="text-[22px] text-slate-700 animate-scale-in" />
+          )}
+        </span>
       </button>
 
       <UserMenu loginLabel={t.login} />
@@ -61,36 +63,32 @@ export default function HeaderActions({ t }) {
       <Link
         href="/wishlist"
         aria-label={t.wishlist}
-        className="relative flex h-10 w-10 items-center justify-center rounded-xl text-slate-700 dark:text-slate-200 hover:bg-brand-soft dark:hover:bg-slate-800 hover:text-brand transition"
+        className="icon-btn"
       >
-        <span className="relative flex items-center justify-center">
-          {hydrated && wishlistCount > 0 ? (
-            <MdFavorite className="text-2xl text-brand" />
-          ) : (
-            <MdFavoriteBorder className="text-2xl" />
-          )}
-          {hydrated && wishlistCount > 0 && (
-            <span className="absolute -right-2 -top-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold text-white shadow-sm">
-              {wishlistCount}
-            </span>
-          )}
-        </span>
+        {hydrated && wishlistCount > 0 ? (
+          <MdFavorite className="text-[23px] text-rose-500" />
+        ) : (
+          <MdFavoriteBorder className="text-[23px]" />
+        )}
+        {hydrated && wishlistCount > 0 && (
+          <span className="badge-count right-0.5 top-0.5">{wishlistCount}</span>
+        )}
       </Link>
 
       <Link
         href="/cart"
         aria-label={t.cart}
-        className="relative flex h-10 items-center justify-center rounded-xl bg-brand-soft dark:bg-brand/20 px-3 py-2 text-sm font-semibold text-brand dark:text-purple-300 hover:bg-brand/15 transition"
+        className="group relative ml-1 flex h-11 items-center justify-center gap-2 rounded-2xl bg-brand hover:bg-brand-dark px-3.5 text-sm font-bold text-white shadow-md shadow-brand/20 transition active:scale-95 sm:px-4"
       >
-        <span className="relative flex items-center justify-center">
-          <MdShoppingCart className="text-2xl" />
+        <span className="relative flex items-center justify-center text-white">
+          <MdShoppingCart className="text-[22px]" />
           {hydrated && cartCount > 0 && (
-            <span className="absolute -right-2.5 -top-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold text-white shadow-sm">
+            <span className="absolute -right-2.5 -top-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-amber-400 px-1 text-[10px] font-extrabold text-slate-900 ring-2 ring-brand">
               {cartCount}
             </span>
           )}
         </span>
-        <span className="hidden sm:inline ml-2">{t.cart}</span>
+        <span className="relative hidden sm:inline text-white font-bold">{t.cart}</span>
       </Link>
     </div>
   );

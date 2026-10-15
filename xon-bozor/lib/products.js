@@ -234,5 +234,5 @@ export async function fetchProductsByCategory(category, fallback = [], limit = 1
 
 // Server ishga tushishi bilan keshni orqa fonda isitish (Pre-warming)
 if (typeof window === "undefined") {
-  fetchProducts({ limit: 60 }).catch(() => {});
+  fetchProducts({ limit: 60 }).catch(() => { });
 }

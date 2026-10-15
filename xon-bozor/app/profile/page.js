@@ -13,9 +13,9 @@ export const metadata = {
 export default async function Page() {
   const { t, lang } = await getT();
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50/50 dark:bg-[#0f1015] transition-colors">
+    <div className="min-h-screen flex flex-col transition-colors">
       <Header t={t} lang={lang} />
-      <main className="flex-1 px-4 py-10">
+      <main className="flex-1 px-4 py-8 pb-28 sm:py-12 min-[601px]:pb-12">
         <ProfileClient t={t} />
       </main>
       <Footer t={t} />

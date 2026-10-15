@@ -11,6 +11,8 @@ import {
   MdVisibilityOff,
   MdCameraAlt,
   MdClose,
+  MdErrorOutline,
+  MdArrowForward,
 } from "react-icons/md";
 import { loginUser, registerUser, saveToken } from "@/lib/services/users";
 import { apiError } from "@/lib/api";
@@ -81,34 +83,35 @@ export default function AuthForm({ mode, t }) {
     }
   };
 
-  const inputStyle =
-    "h-12 w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/70 pl-11 pr-4 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-brand dark:focus:border-brand focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-brand/10 transition";
+  const inputStyle = "input pl-11";
+  const iconWrap =
+    "absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400 transition-colors group-focus-within:text-brand dark:text-slate-500 dark:group-focus-within:text-brand-300";
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full max-w-md mx-auto animate-fade-up">
       {/* Form Container */}
       <form
         onSubmit={submit}
-        className="space-y-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-[#1a1b22]/95 p-6 sm:p-8 shadow-xl backdrop-blur-md transition-all"
+        className="glass relative space-y-6 rounded-4xl p-6 shadow-lift sm:p-8"
       >
         {/* Navigation Tabs */}
-        <div className="flex rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 p-1.5 font-semibold text-sm">
+        <div className="flex rounded-2xl border border-slate-200/70 bg-slate-100/70 p-1 text-sm font-semibold dark:border-white/[0.06] dark:bg-white/[0.04]">
           <Link
             href="/login"
-            className={`flex-1 text-center py-2.5 rounded-xl transition ${
+            className={`flex-1 rounded-xl py-2.5 text-center transition ${
               isLogin
-                ? "bg-white dark:bg-[#232530] text-slate-900 dark:text-white shadow-sm font-bold"
-                : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+                ? "bg-white text-slate-900 shadow-xs font-bold dark:bg-white/[0.1] dark:text-white"
+                : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
             }`}
           >
             {a.loginBtn}
           </Link>
           <Link
             href="/register"
-            className={`flex-1 text-center py-2.5 rounded-xl transition ${
+            className={`flex-1 rounded-xl py-2.5 text-center transition ${
               !isLogin
-                ? "bg-white dark:bg-[#232530] text-brand dark:text-purple-300 shadow-sm font-bold"
-                : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+                ? "bg-white text-brand shadow-xs font-bold dark:bg-white/[0.1] dark:text-brand-300"
+                : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
             }`}
           >
             {a.registerBtn}
@@ -116,11 +119,11 @@ export default function AuthForm({ mode, t }) {
         </div>
 
         {/* Title */}
-        <div className="text-center pt-1">
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+        <div className="text-center">
+          <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900 sm:text-[28px] dark:text-white">
             {isLogin ? a.loginTitle : a.registerTitle}
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
             {isLogin
               ? "Xon Bozor hisobingizga kiring va qulay xarid qiling"
               : "Xon Bozorda ro'yxatdan o'ting va imkoniyatlardan foydalaning"}
@@ -129,7 +132,7 @@ export default function AuthForm({ mode, t }) {
 
         {/* Avatar Upload (Register Mode Only) */}
         {!isLogin && (
-          <div className="flex flex-col items-center justify-center pt-1 pb-1">
+          <div className="flex flex-col items-center justify-center">
             <div className="relative group">
               <input
                 ref={fileInputRef}
@@ -141,7 +144,7 @@ export default function AuthForm({ mode, t }) {
               />
               <label
                 htmlFor="avatar-upload"
-                className="relative flex h-24 w-24 cursor-pointer items-center justify-center rounded-full border-2 border-dashed border-brand/40 bg-brand/5 dark:bg-brand/10 transition hover:border-brand hover:bg-brand/10 overflow-hidden shadow-sm"
+                className="relative flex h-24 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-brand/30 bg-brand-gradient-soft shadow-inner-hl transition hover:border-brand/60 hover:shadow-glow dark:border-brand-400/30"
               >
                 {avatarPreview ? (
                   <img
@@ -150,13 +153,13 @@ export default function AuthForm({ mode, t }) {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="flex flex-col items-center text-center p-2 text-brand dark:text-purple-300">
-                    <MdCameraAlt className="text-2xl mb-1" />
+                  <div className="flex flex-col items-center p-2 text-center text-brand dark:text-brand-300">
+                    <MdCameraAlt className="mb-1 text-2xl" />
                     <span className="text-[10px] font-bold leading-tight">Rasm yuklash</span>
                   </div>
                 )}
                 {/* Overlay hover effect */}
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-white text-xs font-semibold">
+                <div className="absolute inset-0 flex items-center justify-center bg-ink/50 text-xs font-semibold text-white opacity-0 backdrop-blur-[2px] transition group-hover:opacity-100">
                   <MdCameraAlt className="text-xl" />
                 </div>
               </label>
@@ -166,23 +169,23 @@ export default function AuthForm({ mode, t }) {
                   type="button"
                   onClick={removeAvatar}
                   aria-label="Remove avatar"
-                  className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow hover:bg-red-600 transition"
+                  className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full bg-rose-500 text-white shadow-soft ring-2 ring-white transition hover:bg-rose-600 dark:ring-night-100"
                 >
                   <MdClose className="text-sm" />
                 </button>
               )}
             </div>
-            <span className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <span className="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">
               {a.avatarLabel || "Profil rasmi"} <span className="text-slate-400 dark:text-slate-500">({a.optional || "Ixtiyoriy"})</span>
             </span>
           </div>
         )}
 
         {/* Form Fields */}
-        <div className="space-y-3.5">
+        <div className="space-y-3">
           {!isLogin && (
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 dark:text-slate-500">
+            <div className="relative group">
+              <div className={iconWrap}>
                 <MdPerson className="text-xl" />
               </div>
               <input
@@ -198,8 +201,8 @@ export default function AuthForm({ mode, t }) {
           )}
 
           {isLogin ? (
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 dark:text-slate-500">
+            <div className="relative group">
+              <div className={iconWrap}>
                 <MdMail className="text-xl" />
               </div>
               <input
@@ -213,8 +216,8 @@ export default function AuthForm({ mode, t }) {
             </div>
           ) : (
             <>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 dark:text-slate-500">
+              <div className="relative group">
+                <div className={iconWrap}>
                   <MdMail className="text-xl" />
                 </div>
                 <input
@@ -228,8 +231,8 @@ export default function AuthForm({ mode, t }) {
                 />
               </div>
 
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 dark:text-slate-500">
+              <div className="relative group">
+                <div className={iconWrap}>
                   <MdPhone className="text-xl" />
                 </div>
                 <input
@@ -245,8 +248,8 @@ export default function AuthForm({ mode, t }) {
           )}
 
           {/* Password with Eye Toggle */}
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 dark:text-slate-500">
+          <div className="relative group">
+            <div className={iconWrap}>
               <MdLock className="text-xl" />
             </div>
             <input
@@ -257,13 +260,13 @@ export default function AuthForm({ mode, t }) {
               placeholder={a.password}
               value={form.password}
               onChange={onChange}
-              className={`${inputStyle} pr-11`}
+              className={`${inputStyle} pr-12`}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               aria-label={showPassword ? "Hide password" : "Show password"}
-              className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition"
+              className="absolute inset-y-0 right-1.5 my-auto flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-white/[0.06] dark:hover:text-slate-200"
             >
               {showPassword ? (
                 <MdVisibilityOff className="text-xl" />
@@ -276,38 +279,39 @@ export default function AuthForm({ mode, t }) {
 
         {/* Error Alert */}
         {error && (
-          <div className="rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 p-3 text-xs font-semibold text-red-600 dark:text-red-400">
-            {error}
+          <div className="flex items-start gap-2.5 rounded-2xl border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-600 animate-fade-in dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+            <MdErrorOutline className="mt-px shrink-0 text-base" />
+            <span>{error}</span>
           </div>
         )}
 
         {/* Submit Button */}
-        <button
-          disabled={loading}
-          className="h-12 w-full rounded-2xl bg-brand font-bold text-white shadow-lg shadow-brand/25 hover:bg-brand-dark active:scale-[0.99] disabled:opacity-60 transition duration-200 flex items-center justify-center gap-2"
-        >
+        <button disabled={loading} className="btn-primary group/btn h-12 w-full text-[15px]">
           {loading ? (
             <div className="flex items-center gap-2">
-              <div className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
               <span>{a.loading}</span>
             </div>
-          ) : isLogin ? (
-            a.loginBtn
           ) : (
-            a.registerBtn
+            <>
+              <span>{isLogin ? a.loginBtn : a.registerBtn}</span>
+              <MdArrowForward className="text-lg transition-transform group-hover/btn:translate-x-0.5" />
+            </>
           )}
         </button>
 
         {/* Footer Text */}
-        <p className="text-center text-xs text-slate-500 dark:text-slate-400 pt-1">
-          {isLogin ? a.noAcc : a.haveAcc}{" "}
-          <Link
-            href={isLogin ? "/register" : "/login"}
-            className="font-bold text-brand dark:text-purple-400 hover:underline"
-          >
-            {isLogin ? a.registerBtn : a.loginBtn}
-          </Link>
-        </p>
+        <div className="border-t border-slate-200/70 pt-5 dark:border-white/[0.06]">
+          <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+            {isLogin ? a.noAcc : a.haveAcc}{" "}
+            <Link
+              href={isLogin ? "/register" : "/login"}
+              className="font-bold text-brand hover:underline underline-offset-4 dark:text-brand-300"
+            >
+              {isLogin ? a.registerBtn : a.loginBtn}
+            </Link>
+          </p>
+        </div>
       </form>
     </div>
   );

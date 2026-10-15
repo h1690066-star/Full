@@ -1,17 +1,23 @@
-import { Inter } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { getLang } from "@/lib/i18n";
 
-const inter = Inter({ subsets: ["latin"], display: "swap" });
+const inter = Inter({ subsets: ["latin", "cyrillic"], display: "swap", variable: "--font-sans" });
+const display = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-display",
+});
 
 const SITE =
   (process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes("localhost"))
     ? process.env.NEXT_PUBLIC_SITE_URL
     : process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "https://xonbozor.vercel.app";
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "https://xonbozor.vercel.app";
 
 export const metadata = {
   metadataBase: new URL(SITE),
@@ -28,7 +34,7 @@ export const metadata = {
     url: "/",
     locale: "uz_UZ",
     title: "Xon Bozor — Original telefonlar va maishiy texnika",
-    description: "Original telefonlar, B/U smartfonlar va maishiy texnika Toshkentda. 0% muddatli to'lov va rasmiy kafolat.",
+    description: "Original telefonlar, B/U smartfonlar va maishiy texnika Toshkentda. 0% muddatli to'lov va rasmiy kafolat. Xon Bozor: Toshkentda original iPhone, Samsung, Xiaomi telefonlari, tekshirilgan B/U smartfonlar, aksessuarlar va maishiy texnika. 0% muddatli to'lov, kafolat va tezkor yetkazish. | Xon Bozor — Original telefonlar, B/U smartfonlar va maishiy texnika",
     images: [
       {
         url: "/images/hero/hero-1.png",
@@ -47,7 +53,7 @@ export const metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Xon Bozor — Original telefonlar va maishiy texnika",
-    description: "Original telefonlar, B/U smartfonlar va maishiy texnika Toshkentda.",
+    description: "Original telefonlar, B/U smartfonlar va maishiy texnika Toshkentda. 0% muddatli to'lov va rasmiy kafolat. Xon Bozor: Toshkentda original iPhone, Samsung, Xiaomi telefonlari, tekshirilgan B/U smartfonlar, aksessuarlar va maishiy texnika. 0% muddatli to'lov, kafolat va tezkor yetkazish. | Xon Bozor — Original telefonlar, B/U smartfonlar va maishiy texnika",
     images: ["/images/hero/hero-1.png"],
   },
   icons: { icon: "/logo.png", apple: "/logo.png" },
@@ -74,7 +80,7 @@ export default async function RootLayout({ children }) {
         <meta property="og:site_name" content="Xon Bozor" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Xon Bozor — Original telefonlar va maishiy texnika" />
-        <meta name="twitter:description" content="Original telefonlar, B/U smartfonlar va maishiy texnika Toshkentda." />
+        <meta name="twitter:description" content="Original telefonlar, B/U smartfonlar va maishiy texnika Toshkentda. 0% muddatli to'lov va rasmiy kafolat. Xon Bozor: Toshkentda original iPhone, Samsung, Xiaomi telefonlari, tekshirilgan B/U smartfonlar, aksessuarlar va maishiy texnika. 0% muddatli to'lov, kafolat va tezkor yetkazish. | Xon Bozor — Original telefonlar, B/U smartfonlar va maishiy texnika" />
         <meta name="twitter:image" content={`${SITE}/images/hero/hero-1.png`} />
         <link rel="preconnect" href="https://full-nbal.onrender.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://full-nbal.onrender.com" />
@@ -98,7 +104,7 @@ export default async function RootLayout({ children }) {
           }}
         />
       </head>
-      <body className={`${inter.className} bg-slate-50 dark:bg-[#0f1015] text-slate-900 dark:text-slate-100 antialiased`}>
+      <body className={`${inter.variable} ${display.variable} font-sans bg-[#f8f7fc] dark:bg-night text-slate-900 dark:text-slate-100 antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

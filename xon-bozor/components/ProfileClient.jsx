@@ -2,7 +2,18 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { MdCameraAlt, MdPersonOutline } from "react-icons/md";
+import {
+  MdCameraAlt,
+  MdPersonOutline,
+  MdLockOutline,
+  MdLogout,
+  MdAdminPanelSettings,
+  MdCheckCircle,
+  MdErrorOutline,
+  MdMailOutline,
+  MdPhone,
+  MdVerified,
+} from "react-icons/md";
 import { getMe, updateMe, changePassword, clearToken } from "@/lib/services/users";
 import { apiError } from "@/lib/api";
 
@@ -107,69 +118,137 @@ export default function ProfileClient({ t }) {
     router.refresh();
   };
 
-  if (state === "loading") return <p className="text-center text-slate-500 py-12">{t.auth.loading}</p>;
+  if (state === "loading")
+    return (
+      <div className="mx-auto max-w-4xl space-y-6" aria-busy="true">
+        <span className="sr-only">{t.auth.loading}</span>
+        <div className="surface flex items-center gap-5 p-6">
+          <div className="skeleton h-20 w-20 rounded-full" />
+          <div className="flex-1 space-y-2.5">
+            <div className="skeleton h-5 w-48" />
+            <div className="skeleton h-3.5 w-32" />
+          </div>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="skeleton h-80 rounded-3xl" />
+          <div className="skeleton h-80 rounded-3xl" />
+        </div>
+      </div>
+    );
   if (state === "guest")
     return (
-      <div className="mx-auto max-w-md text-center py-12 space-y-4">
-        <p className="text-slate-600">{p.needLogin}</p>
-        <Link
-          href="/login"
-          className="inline-block rounded-xl bg-brand px-6 py-2.5 font-semibold text-white hover:bg-brand-dark"
-        >
+      <div className="surface mx-auto max-w-md space-y-5 p-8 text-center animate-fade-up">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-brand-gradient-soft text-brand dark:text-brand-300">
+          <MdPersonOutline className="text-4xl" />
+        </div>
+        <p className="text-[15px] font-medium text-slate-600 dark:text-slate-300">{p.needLogin}</p>
+        <Link href="/login" className="btn-primary h-12 px-8">
           {t.auth.loginBtn}
         </Link>
       </div>
     );
 
   const currentAvatar = avatarPreview || (user?.avatar ? (user.avatar.startsWith("http") ? user.avatar : `${apiBase}${user.avatar}`) : null);
-  const input = "h-12 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 px-4 text-sm text-slate-900 dark:text-white outline-none focus:border-brand transition font-medium";
-  const btn = "h-11 rounded-xl bg-brand px-6 text-sm font-semibold text-white hover:bg-brand-dark transition shadow-sm";
+  const input = "input font-medium";
+  const btn = "btn-primary h-12 w-full sm:w-auto px-7";
+  const label = "mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300";
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6">
       {/* Profile Header Banner */}
-      <div className="flex items-center gap-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#1a1b22] p-6 shadow-sm">
-        <div className="relative group">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleAvatarChange}
-            className="hidden"
-            id="profile-avatar"
-          />
-          <label
-            htmlFor="profile-avatar"
-            className="relative flex h-20 w-20 cursor-pointer items-center justify-center rounded-full border-2 border-brand/20 bg-brand/5 dark:bg-brand/10 overflow-hidden transition hover:border-brand"
-          >
-            {currentAvatar ? (
-              <img src={currentAvatar} alt={user?.name} className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex flex-col items-center text-brand">
-                <MdPersonOutline className="text-3xl" />
-              </div>
-            )}
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-white">
-              <MdCameraAlt className="text-xl" />
-            </div>
-          </label>
+      <div className="surface relative overflow-hidden animate-fade-up">
+        <div className="relative h-28 overflow-hidden bg-brand-gradient sm:h-32">
+          <div className="pointer-events-none absolute inset-0 bg-grid opacity-20" />
+          <div className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-white/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-20 left-1/3 h-48 w-48 rounded-full bg-fuchsia-300/30 blur-3xl" />
         </div>
 
-        <div>
-          <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">{user?.name || "Foydalanuvchi"}</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{user?.email || user?.phone || "Mijoz"}</p>
-          <span className="inline-block mt-1.5 rounded-full bg-brand/10 px-2.5 py-0.5 text-[11px] font-bold text-brand uppercase tracking-wider">
-            {user?.role === "admin" ? "Admin" : "Mijoz"}
-          </span>
+        <div className="flex flex-col gap-4 px-6 pb-6 sm:flex-row sm:items-end sm:gap-5">
+          <div className="relative group -mt-12 w-max sm:-mt-14">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarChange}
+              className="hidden"
+              id="profile-avatar"
+            />
+            <label
+              htmlFor="profile-avatar"
+              className="relative flex h-24 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-brand-gradient-soft shadow-lift ring-4 ring-white transition hover:shadow-glow sm:h-28 sm:w-28 dark:ring-night-100"
+            >
+              {currentAvatar ? (
+                <img src={currentAvatar} alt={user?.name} className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex flex-col items-center text-brand dark:text-brand-300">
+                  <MdPersonOutline className="text-4xl" />
+                </div>
+              )}
+              <div className="absolute inset-0 flex items-center justify-center bg-ink/50 text-white opacity-0 backdrop-blur-[2px] transition group-hover:opacity-100">
+                <MdCameraAlt className="text-2xl" />
+              </div>
+            </label>
+            <span className="pointer-events-none absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full bg-brand-gradient text-white shadow-glow ring-2 ring-white dark:ring-night-100">
+              <MdCameraAlt className="text-sm" />
+            </span>
+          </div>
+
+          <div className="min-w-0 flex-1 sm:pb-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="truncate font-display text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                {user?.name || "Foydalanuvchi"}
+              </h2>
+              <span
+                className={`chip uppercase tracking-wider ${
+                  user?.role === "admin"
+                    ? "bg-brand-gradient text-white shadow-glow"
+                    : "bg-brand/10 text-brand dark:bg-brand-400/15 dark:text-brand-300"
+                }`}
+              >
+                <MdVerified className="text-xs" />
+                {user?.role === "admin" ? "Admin" : "Mijoz"}
+              </span>
+            </div>
+            <p className="mt-1 flex items-center gap-1.5 truncate text-sm font-medium text-slate-500 dark:text-slate-400">
+              {user?.email ? <MdMailOutline className="shrink-0" /> : <MdPhone className="shrink-0" />}
+              {user?.email || user?.phone || "Mijoz"}
+            </p>
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-wrap items-center gap-2 sm:pb-1">
+            {user?.role === "admin" && (
+              <Link href="/admin/users" className="btn-secondary h-11 px-4">
+                <MdAdminPanelSettings className="text-lg" />
+                {p.adminUsers}
+              </Link>
+            )}
+            <button
+              onClick={logout}
+              className="btn h-11 border border-rose-200 bg-rose-50 px-4 text-rose-600 hover:bg-rose-100 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15"
+            >
+              <MdLogout className="text-lg" />
+              {p.logout}
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Profile Info Form */}
-        <form onSubmit={saveProfile} className="space-y-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#1a1b22] p-6 shadow-sm">
-          <h1 className="text-lg font-extrabold text-slate-900 dark:text-white">{p.title}</h1>
+        <form
+          onSubmit={saveProfile}
+          className="surface space-y-4 p-6 animate-fade-up"
+          style={{ animationDelay: "80ms" }}
+        >
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-white/[0.06]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-gradient-soft text-brand dark:text-brand-300">
+              <MdPersonOutline className="text-xl" />
+            </div>
+            <h1 className="font-display text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">{p.title}</h1>
+          </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-300">{t.auth.name}</label>
+            <label className={label}>{t.auth.name}</label>
             <input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -178,7 +257,7 @@ export default function ProfileClient({ t }) {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-300">{t.auth.email}</label>
+            <label className={label}>{t.auth.email}</label>
             <input
               type="email"
               value={form.email}
@@ -188,7 +267,7 @@ export default function ProfileClient({ t }) {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-300">{t.auth.phone}</label>
+            <label className={label}>{t.auth.phone}</label>
             <input
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -196,16 +275,37 @@ export default function ProfileClient({ t }) {
               className={input}
             />
           </div>
-          <button className={btn}>{p.save}</button>
-          {msg.profile && <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">{msg.profile}</p>}
-          {msg.profileErr && <p className="text-sm font-medium text-red-600 dark:text-red-400">{msg.profileErr}</p>}
+          <div className="pt-1">
+            <button className={btn}>{p.save}</button>
+          </div>
+          {msg.profile && (
+            <p className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-700 animate-fade-in dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+              <MdCheckCircle className="shrink-0" />
+              {msg.profile}
+            </p>
+          )}
+          {msg.profileErr && (
+            <p className="flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm font-medium text-rose-600 animate-fade-in dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+              <MdErrorOutline className="shrink-0" />
+              {msg.profileErr}
+            </p>
+          )}
         </form>
 
         {/* Change Password Form */}
-        <form onSubmit={savePassword} className="space-y-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#1a1b22] p-6 shadow-sm">
-          <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">{p.passwordTitle}</h2>
+        <form
+          onSubmit={savePassword}
+          className="surface space-y-4 p-6 animate-fade-up"
+          style={{ animationDelay: "160ms" }}
+        >
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-white/[0.06]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300">
+              <MdLockOutline className="text-xl" />
+            </div>
+            <h2 className="font-display text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">{p.passwordTitle}</h2>
+          </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-300">{p.oldPassword}</label>
+            <label className={label}>{p.oldPassword}</label>
             <input
               type="password"
               required
@@ -216,7 +316,7 @@ export default function ProfileClient({ t }) {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-300">{p.newPassword}</label>
+            <label className={label}>{p.newPassword}</label>
             <input
               type="password"
               required
@@ -227,28 +327,22 @@ export default function ProfileClient({ t }) {
               className={input}
             />
           </div>
-          <button className={btn}>{p.change}</button>
-          {msg.password && <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">{msg.password}</p>}
-          {msg.passwordErr && <p className="text-sm font-medium text-red-600 dark:text-red-400">{msg.passwordErr}</p>}
+          <div className="pt-1">
+            <button className={btn}>{p.change}</button>
+          </div>
+          {msg.password && (
+            <p className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-700 animate-fade-in dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+              <MdCheckCircle className="shrink-0" />
+              {msg.password}
+            </p>
+          )}
+          {msg.passwordErr && (
+            <p className="flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm font-medium text-rose-600 animate-fade-in dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+              <MdErrorOutline className="shrink-0" />
+              {msg.passwordErr}
+            </p>
+          )}
         </form>
-      </div>
-
-      {/* Actions */}
-      <div className="flex flex-wrap items-center gap-3">
-        {user?.role === "admin" && (
-          <Link
-            href="/admin/users"
-            className="rounded-xl border border-brand bg-brand/5 px-5 py-2.5 text-sm font-semibold text-brand hover:bg-brand hover:text-white transition"
-          >
-            {p.adminUsers}
-          </Link>
-        )}
-        <button
-          onClick={logout}
-          className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1a1b22] px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-        >
-          {p.logout}
-        </button>
       </div>
     </div>
   );
