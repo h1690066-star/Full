@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, memo } from "react";
@@ -15,7 +16,7 @@ import { formatPrice } from "@/lib/products";
 import { useCart } from "@/lib/cartContext";
 import { toast } from "./ToastContainer";
 
-function ProductCard({ product: p, t }) {
+function ProductCard({ product: p, t, priority = false }) {
   const router = useRouter();
   const c = t?.card || {
     add: "Savatga",
@@ -114,14 +115,15 @@ function ProductCard({ product: p, t }) {
         {/* Mahsulot rasmi */}
         <Link href={`/product/${pid}`} className="flex h-full w-full items-center justify-center">
           {imgUrl && !imgError ? (
-            <img
+            <Image
               src={imgUrl}
               alt={p.name}
               width={220}
               height={220}
               className="max-h-full max-w-full object-contain transition duration-300 group-hover:scale-105"
-              loading="lazy"
-              decoding="async"
+              priority={priority}
+              loading={priority ? "eager" : "lazy"}
+              sizes="(max-width: 640px) 180px, (max-width: 1024px) 220px, 240px"
               onError={() => setImgError(true)}
             />
           ) : (

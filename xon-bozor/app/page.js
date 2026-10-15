@@ -63,17 +63,18 @@ function SectionSkeleton({ id, title, href, allLabel }) {
 }
 
 // Orqa fonda ma'lumotlarni olib keluvchi asinxron komponent
-async function AsyncProductSection({ id, title, href, allLabel, filterFn, t }) {
-  const allProducts = (await fetchProducts({ limit: 60 })) || [];
+async function AsyncProductSection({ id, title, href, allLabel, filterFn, t, priority = false, productsPromise }) {
+  const allProducts = (await productsPromise) || [];
   const productsToShow = allProducts.filter(filterFn).slice(0, 10);
   return (
-    <ProductSection id={id} title={title} href={href} allLabel={allLabel} products={productsToShow} t={t} />
+    <ProductSection id={id} title={title} href={href} allLabel={allLabel} products={productsToShow} t={t} priority={priority} />
   );
 }
 
 export default async function Home() {
   const { t, lang } = await getT();
   const s = t.sections;
+  const productsPromise = fetchProducts({ limit: 60 });
 
   const jsonLd = [
     {
@@ -106,13 +107,15 @@ export default async function Home() {
         <h1 className="sr-only">Xon Bozor — Mobil &amp; Texnika</h1>
         <Hero t={t} />
 
-        {/* 1. Yangi telefonlar (Skelet bilan darhol yuklanadi) */}
+        {/* 1. Yangi telefonlar (Skelet bilan darhol yuklanadi, LCP priority) */}
         <Suspense fallback={<SectionSkeleton id="new" title={s.newPhones} href="/catalog/phones" allLabel={s.all} />}>
           <AsyncProductSection
             id="new"
             title={s.newPhones}
             href="/catalog/phones"
             allLabel={s.all}
+            productsPromise={productsPromise}
+            priority={true}
             filterFn={(p) => !p.used && (p.category === "Phones" || !p.category)}
             t={t}
           />
@@ -125,6 +128,7 @@ export default async function Home() {
             title={s.usedPhones}
             href="/catalog/used"
             allLabel={s.allUsed}
+            productsPromise={productsPromise}
             filterFn={(p) => p.used}
             t={t}
           />
@@ -137,6 +141,7 @@ export default async function Home() {
             title={s.appliances}
             href="/catalog/appliances"
             allLabel={s.allAppliances}
+            productsPromise={productsPromise}
             filterFn={(p) =>
               p.category === "Home appliances" ||
               p.category === "Elektronika" ||

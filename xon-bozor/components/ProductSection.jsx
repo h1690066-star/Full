@@ -11,7 +11,7 @@ import {
 import ProductCard from "./ProductCard";
 import ProductSkeleton from "./ProductSkeleton";
 
-export default function ProductSection({ title, href, allLabel, products, t, hot = false, id }) {
+export default function ProductSection({ title, href, allLabel, products, t, hot = false, id, priority = false }) {
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -95,8 +95,8 @@ export default function ProductSection({ title, href, allLabel, products, t, hot
         </div>
       ) : (
         <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 lg:gap-4">
-          {filtered.map((p) => (
-            <ProductCard key={p.id || p._id} product={p} t={t} />
+          {filtered.map((p, idx) => (
+            <ProductCard key={p.id || p._id} product={p} t={t} priority={priority && idx < 2} />
           ))}
         </div>
       )}

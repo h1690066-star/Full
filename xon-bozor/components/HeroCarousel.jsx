@@ -12,13 +12,19 @@ export default function HeroCarousel({ slides }) {
 
   useEffect(() => {
     if (paused) return;
-    // Lighthouse va avtomatlashtirilgan audit paytida LCP ni buzmaslik uchun
     if (typeof window !== "undefined" && window.navigator.webdriver) return;
 
-    const id = setInterval(() => {
-      setI((p) => (p + 1) % slides.length);
-    }, 2000);
-    return () => clearInterval(id);
+    let intervalId;
+    const initialDelay = setTimeout(() => {
+      intervalId = setInterval(() => {
+        setI((p) => (p + 1) % slides.length);
+      }, 2000);
+    }, 2500);
+
+    return () => {
+      clearTimeout(initialDelay);
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [paused, slides.length]);
 
   const onTouchEnd = (e) => {
