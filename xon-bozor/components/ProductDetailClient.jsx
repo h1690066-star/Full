@@ -411,45 +411,56 @@ export default function ProductDetailClient({ product, related = [], t }) {
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="space-y-2.5 pt-2">
-            <div className="flex gap-2">
-              {/* Quantity Counter */}
-              <div className="flex items-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2">
-                <button
-                  type="button"
-                  onClick={() => setQty((q) => Math.max(1, q - 1))}
-                  aria-label="Kamaytirish"
-                  className="flex h-11 w-8 items-center justify-center text-slate-500 dark:text-slate-300 hover:text-brand font-bold"
-                >
-                  <MdRemove />
-                </button>
-                <span className="w-8 text-center text-sm font-bold text-slate-900 dark:text-white">{qty}</span>
-                <button
-                  type="button"
-                  onClick={() => setQty((q) => q + 1)}
-                  aria-label="Ko'paytirish"
-                  className="flex h-11 w-8 items-center justify-center text-slate-500 dark:text-slate-300 hover:text-brand font-bold"
-                >
-                  <MdAdd />
-                </button>
-              </div>
+          {/* Miqdor (Quantity) */}
+          <div className="pt-1">
+            <label className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block mb-1.5">
+              Miqdor:
+            </label>
+            <div className="inline-flex items-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setQty((q) => Math.max(1, q - 1))}
+                aria-label="Kamaytirish"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-brand transition active:scale-90 cursor-pointer"
+              >
+                <MdRemove className="text-base font-black" />
+              </button>
+              <span className="w-12 text-center text-sm font-black text-slate-900 dark:text-white select-none">
+                {qty}
+              </span>
+              <button
+                type="button"
+                onClick={() => setQty((q) => q + 1)}
+                aria-label="Ko'paytirish"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-brand transition active:scale-90 cursor-pointer"
+              >
+                <MdAdd className="text-base font-black" />
+              </button>
+            </div>
+          </div>
 
+          {/* Action Buttons */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center gap-2.5">
               {/* Main Savatga qo'shish button */}
               <button
                 type="button"
                 onClick={handleAddToCart}
-                className={`flex-1 flex h-11 items-center justify-center gap-2 rounded-2xl text-sm font-extrabold text-white shadow-md transition ${
-                  added ? "bg-emerald-600 hover:bg-emerald-700" : "bg-brand hover:bg-brand-dark shadow-brand/20"
+                className={`flex-1 flex h-12 items-center justify-center gap-2 rounded-2xl text-sm sm:text-base font-extrabold text-white shadow-md transition-all active:scale-[0.98] cursor-pointer ${
+                  added
+                    ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/25"
+                    : "bg-brand hover:bg-brand-dark shadow-brand/25"
                 }`}
               >
                 {added ? (
                   <>
-                    <MdCheck className="text-lg" /> Savatga qo'shildi
+                    <MdCheck className="text-xl" />
+                    <span className="whitespace-nowrap">Savatga qo'shildi</span>
                   </>
                 ) : (
                   <>
-                    <MdShoppingCart className="text-lg" /> Savatga qo'shish
+                    <MdShoppingCart className="text-xl" />
+                    <span className="whitespace-nowrap">Savatga qo'shish</span>
                   </>
                 )}
               </button>
@@ -458,13 +469,14 @@ export default function ProductDetailClient({ product, related = [], t }) {
               <button
                 type="button"
                 onClick={handleWishlistClick}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-brand hover:text-brand transition"
-                aria-label="Wishlist"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-brand hover:text-brand hover:bg-brand/5 dark:hover:bg-brand/10 transition active:scale-95 shadow-2xs cursor-pointer"
+                aria-label="Saralanganlarga qo'shish"
+                title="Saralanganlarga qo'shish"
               >
                 {isLiked ? (
-                  <MdFavorite className="text-xl text-rose-500" />
+                  <MdFavorite className="text-2xl text-rose-500 animate-in zoom-in-75 duration-200" />
                 ) : (
-                  <MdFavoriteBorder className="text-xl text-slate-600 dark:text-slate-300" />
+                  <MdFavoriteBorder className="text-2xl" />
                 )}
               </button>
             </div>
@@ -473,9 +485,10 @@ export default function ProductDetailClient({ product, related = [], t }) {
             <button
               type="button"
               onClick={handleBuyNow}
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-brand/10 dark:bg-brand/20 text-sm font-bold text-brand dark:text-purple-300 hover:bg-brand/20 transition"
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-brand/10 dark:bg-brand/20 border border-brand/25 dark:border-brand/40 text-sm sm:text-base font-extrabold text-brand dark:text-purple-300 hover:bg-brand/20 active:scale-[0.98] transition cursor-pointer"
             >
-              <MdFlashOn className="text-lg" /> 1 klikda xarid qilish
+              <MdFlashOn className="text-xl text-brand dark:text-purple-300" />
+              <span className="whitespace-nowrap">1 klikda xarid qilish</span>
             </button>
           </div>
         </div>
