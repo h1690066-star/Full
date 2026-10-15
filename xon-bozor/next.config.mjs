@@ -14,9 +14,6 @@ const nextConfig = {
       { protocol: "https", hostname: "**" },
     ],
   },
-  compiler: {
-    removeConsole: process.env.NODE_ENV === "production",
-  },
   experimental: {
     optimizePackageImports: ["react-icons", "react-icons/md", "react-icons/si", "axios"],
   },

@@ -21,18 +21,21 @@
 
   html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
 
-  /* Smooth dark/light mode transition */
-  html.theme-transitioning,
-  html.theme-transitioning *,
-  html.theme-transitioning *::before,
-  html.theme-transitioning *::after {
-    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                color 0.3s ease,
-                fill 0.3s ease,
-                stroke 0.3s ease,
-                box-shadow 0.4s ease !important;
-    transition-delay: 0s !important;
+  /* Smooth GPU-accelerated theme transition with 0 lag */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  body,
+  header,
+  footer,
+  main,
+  article,
+  .glass,
+  nav {
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
   }
 
   body {

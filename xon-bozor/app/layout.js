@@ -57,7 +57,6 @@ export const metadata = {
     images: ["/images/hero/hero-1.png"],
   },
   icons: { icon: "/logo.png", apple: "/logo.png" },
-
   verification: {
     google: "tHKpRJq_GqG1ktEjHmDCrVMbeCEy5NPOShEJGsz8m5c",
   },

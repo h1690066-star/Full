@@ -39,21 +39,26 @@ export default function FloatingBottomNav() {
 
   const toggleTheme = () => {
     if (typeof window === "undefined") return;
-    document.documentElement.classList.add("theme-transitioning");
     const nextDark = !isDark;
-    setIsDark(nextDark);
-    if (nextDark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-      window.dispatchEvent(new CustomEvent("theme-change", { detail: "dark" }));
+
+    const apply = () => {
+      setIsDark(nextDark);
+      if (nextDark) {
+        document.documentElement.classList.add("dark");
+        localStorage.setItem("theme", "dark");
+        window.dispatchEvent(new CustomEvent("theme-change", { detail: "dark" }));
+      } else {
+        document.documentElement.classList.remove("dark");
+        localStorage.setItem("theme", "light");
+        window.dispatchEvent(new CustomEvent("theme-change", { detail: "light" }));
+      }
+    };
+
+    if (typeof document !== "undefined" && document.startViewTransition) {
+      document.startViewTransition(apply);
     } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-      window.dispatchEvent(new CustomEvent("theme-change", { detail: "light" }));
+      apply();
     }
-    setTimeout(() => {
-      document.documentElement.classList.remove("theme-transitioning");
-    }, 450);
   };
 
   const tabs = [

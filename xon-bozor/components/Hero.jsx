@@ -5,7 +5,6 @@ import HeroCarousel from "./HeroCarousel";
 const IMAGES = [
   { image: "/images/hero/hero-1.png", href: "/catalog/phones", align: "center" },
   { image: "/images/hero/hero-2.png", href: "/catalog/iphone", align: "center" },
-  { image: "/images/hero/hero-3.png", href: "/catalog/appliances", align: "center" },
 ];
 const QUICK = [
   { icon: MdSmartphone, href: "/catalog/phones", tone: "bg-purple-100 dark:bg-brand/20 text-brand", keyIndex: 0 },
