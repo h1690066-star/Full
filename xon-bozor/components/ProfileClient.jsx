@@ -16,6 +16,7 @@ import {
 } from "react-icons/md";
 import { getMe, updateMe, changePassword, clearToken } from "@/lib/services/users";
 import { apiError } from "@/lib/api";
+import { toast } from "./ToastContainer";
 
 export default function ProfileClient({ t }) {
   const p = t.profile;
@@ -24,6 +25,7 @@ export default function ProfileClient({ t }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [pw, setPw] = useState({ oldPassword: "", newPassword: "" });
   const [msg, setMsg] = useState({ profile: "", profileErr: "", password: "", passwordErr: "" });
   const [state, setState] = useState("loading");
@@ -62,16 +64,38 @@ export default function ProfileClient({ t }) {
       });
   }, []);
 
-  const handleAvatarChange = (e) => {
+  const handleAvatarChange = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
+        toast("Rasm hajmi 5MB dan oshmasligi kerak", "warning");
         setMsg((m) => ({ ...m, profileErr: "Rasm hajmi 5MB dan oshmasligi kerak" }));
         return;
       }
       setAvatarFile(file);
       setAvatarPreview(URL.createObjectURL(file));
       setMsg((m) => ({ ...m, profileErr: "" }));
+
+      try {
+        setUploadingAvatar(true);
+        const formData = new FormData();
+        formData.append("name", form.name || user?.name || "");
+        formData.append("email", form.email || user?.email || "");
+        if (form.phone || user?.phone) formData.append("phone", form.phone || user?.phone || "");
+        formData.append("avatar", file);
+
+        const d = await updateMe(formData);
+        const updated = d?.user || d;
+        const merged = { ...user, ...updated };
+        setUser(merged);
+        localStorage.setItem("user", JSON.stringify(merged));
+        window.dispatchEvent(new CustomEvent("auth-change", { detail: merged }));
+        toast("Profil rasmi muvaffaqiyatli yuklandi!", "success");
+      } catch (err) {
+        toast("Rasmni saqlash uchun pastdagi 'O'zgarishlarni saqlash' tugmasini bosing", "info");
+      } finally {
+        setUploadingAvatar(false);
+      }
     }
   };
 
@@ -164,7 +188,8 @@ export default function ProfileClient({ t }) {
         </div>
 
         <div className="flex flex-col gap-4 px-6 pb-6 sm:flex-row sm:items-end sm:gap-5">
-          <div className="relative group -mt-12 w-max sm:-mt-14">
+          {/* Avatar Upload */}
+          <div className="relative -mt-12 w-max sm:-mt-14 select-none">
             <input
               ref={fileInputRef}
               type="file"
@@ -175,22 +200,33 @@ export default function ProfileClient({ t }) {
             />
             <label
               htmlFor="profile-avatar"
-              className="relative flex h-24 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-brand-gradient-soft shadow-lift ring-4 ring-white transition hover:shadow-glow sm:h-28 sm:w-28 dark:ring-night-100"
+              className="relative flex h-24 w-24 sm:h-28 sm:w-28 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800 shadow-xl border-4 border-white dark:border-[#161623] transition hover:scale-[1.03] active:scale-95 group"
+              title="Profil rasmini o'zgartirish"
             >
               {currentAvatar ? (
-                <img src={currentAvatar} alt={user?.name} className="h-full w-full object-cover" />
+                <img src={currentAvatar} alt={user?.name || "Avatar"} className="h-full w-full object-cover" />
               ) : (
-                <div className="flex flex-col items-center text-brand dark:text-brand-300">
-                  <MdPersonOutline className="text-4xl" />
+                <div className="flex h-full w-full items-center justify-center bg-brand/10 dark:bg-brand/20 text-brand dark:text-purple-300 font-black text-3xl sm:text-4xl select-none">
+                  {user?.name ? user.name.trim().charAt(0).toUpperCase() : <MdPersonOutline className="text-4xl" />}
                 </div>
               )}
-              <div className="absolute inset-0 flex items-center justify-center bg-ink/50 text-white opacity-0 backdrop-blur-[2px] transition group-hover:opacity-100">
-                <MdCameraAlt className="text-2xl" />
-              </div>
+
+              {/* Yuklanayotganda aylanuvchi spinner */}
+              {uploadingAvatar && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                </div>
+              )}
             </label>
-            <span className="pointer-events-none absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full bg-brand-gradient text-white shadow-glow ring-2 ring-white dark:ring-night-100">
-              <MdCameraAlt className="text-sm" />
-            </span>
+
+            {/* O'ng pastki burchakdagi toza kamera tugmasi */}
+            <label
+              htmlFor="profile-avatar"
+              title="Rasm yuklash"
+              className="absolute -bottom-1 -right-1 flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-brand text-white shadow-md shadow-brand/30 border-2 border-white dark:border-[#161623] hover:bg-brand-dark active:scale-90 transition cursor-pointer"
+            >
+              <MdCameraAlt className="text-sm sm:text-base" />
+            </label>
           </div>
 
           <div className="min-w-0 flex-1 sm:pb-1">
