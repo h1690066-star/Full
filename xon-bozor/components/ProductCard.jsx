@@ -8,6 +8,7 @@ import {
   MdFavoriteBorder,
   MdStar,
   MdShoppingCart,
+  MdCheck,
   MdAdd,
   MdRemove,
   MdPhoneIphone,
@@ -185,32 +186,47 @@ function ProductCard({ product: p, t, priority = false }) {
                   onClick={handleAddToCart}
                   aria-label="Savatga qo'shish"
                   title="Savatga qo'shish"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-white shadow-md shadow-brand/20 hover:bg-brand-dark active:scale-95 transition cursor-pointer"
+                  className="flex h-9 px-2.5 sm:px-3 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-brand text-white shadow-md shadow-brand/20 hover:bg-brand-dark active:scale-95 transition cursor-pointer"
                 >
-                  <MdShoppingCart className="text-base sm:text-lg" />
+                  <MdShoppingCart className="text-base" />
+                  <span className="text-[11px] sm:text-xs font-bold whitespace-nowrap hidden min-[380px]:inline">
+                    {c.add}
+                  </span>
                 </button>
               </>
             ) : (
-              /* Tanlangandan keyin: Narx o'rniga to'liq kenglikdagi (full-width) son hisoblagich */
-              <div className="flex w-full items-center justify-between rounded-xl bg-slate-100 dark:bg-slate-800/90 p-1 border border-slate-200/90 dark:border-slate-700/80 shadow-2xs">
+              /* Tanlangandan keyin: [- 1 +] va galochka bilan "✓ Savatda" */
+              <div
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                className="flex w-full items-center justify-between rounded-xl bg-slate-100 dark:bg-slate-800/90 p-1 border border-emerald-500/40 dark:border-emerald-500/50 shadow-2xs transition"
+              >
                 <button
                   type="button"
                   onClick={handleMinus}
                   aria-label="Kamaytirish"
                   title="Kamaytirish"
-                  className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-xs hover:bg-brand hover:text-white dark:hover:bg-brand dark:hover:text-white transition active:scale-90 cursor-pointer"
+                  className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-xs hover:bg-rose-500 hover:text-white dark:hover:bg-rose-500 dark:hover:text-white transition active:scale-90 cursor-pointer shrink-0"
                 >
                   <MdRemove className="text-sm font-black" />
                 </button>
-                <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white select-none px-2">
-                  {qtyInCart}
-                </span>
+
+                <div
+                  className="flex items-center gap-1 sm:gap-1.5 px-1.5 text-emerald-600 dark:text-emerald-400 select-none cursor-default font-black text-xs sm:text-[13px]"
+                  title="Mahsulot savatda mavjud"
+                >
+                  <MdCheck className="text-sm sm:text-base font-black shrink-0" />
+                  <span className="whitespace-nowrap">Savatda {qtyInCart > 1 ? `(${qtyInCart})` : ""}</span>
+                </div>
+
                 <button
                   type="button"
                   onClick={handlePlus}
                   aria-label="Ko'paytirish"
                   title="Ko'paytirish"
-                  className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-xs hover:bg-brand hover:text-white dark:hover:bg-brand dark:hover:text-white transition active:scale-90 cursor-pointer"
+                  className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-xs hover:bg-brand hover:text-white dark:hover:bg-brand dark:hover:text-white transition active:scale-90 cursor-pointer shrink-0"
                 >
                   <MdAdd className="text-sm font-black" />
                 </button>

@@ -114,10 +114,12 @@ function parseProductColor(c) {
 
 export default function ProductDetailClient({ product, related = [], t }) {
   const router = useRouter();
-  const { addToCart, toggleWishlist, isInWishlist } = useCart();
+  const { cart, addToCart, toggleWishlist, isInWishlist } = useCart();
 
   const pid = product.id || product._id;
   const isLiked = isInWishlist(pid);
+  const cartItem = cart?.find((i) => (i.id || i._id) === pid);
+  const isAlreadyInCart = Boolean(cartItem);
 
   // Dynamic Colors from API (e.g. ["Qora Titan", "Oq Titan", "Tabiiy Titan"])
   const apiColors = Array.isArray(product.colors) && product.colors.length > 0 ? product.colors : [];
@@ -162,9 +164,13 @@ export default function ProductDetailClient({ product, related = [], t }) {
 
   const handleAddToCart = () => {
     if (!requireAuth()) return;
+    if (isAlreadyInCart) {
+      toast("Mahsulot allaqachon savatda mavjud", "info");
+      return;
+    }
     addToCart(product, qty, { color: selectedColor, storage: selectedStorage });
     setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    toast("Mahsulot savatga qo'shildi", "success");
   };
 
   const handleBuyNow = () => {
@@ -447,15 +453,15 @@ export default function ProductDetailClient({ product, related = [], t }) {
                 type="button"
                 onClick={handleAddToCart}
                 className={`flex-1 flex h-12 items-center justify-center gap-2 rounded-2xl text-sm sm:text-base font-extrabold text-white shadow-md transition-all active:scale-[0.98] cursor-pointer ${
-                  added
+                  added || isAlreadyInCart
                     ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/25"
                     : "bg-brand hover:bg-brand-dark shadow-brand/25"
                 }`}
               >
-                {added ? (
+                {added || isAlreadyInCart ? (
                   <>
-                    <MdCheck className="text-xl" />
-                    <span className="whitespace-nowrap">Savatga qo'shildi</span>
+                    <MdCheck className="text-xl font-black" />
+                    <span className="whitespace-nowrap">Savatda</span>
                   </>
                 ) : (
                   <>
