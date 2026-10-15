@@ -189,13 +189,13 @@ function ProductCard({ product: p, t, priority = false }) {
               <span>Savatga qo'shish</span>
             </button>
           ) : (
-            /* Tanlangandan keyin: [- 1 +] va galochka bilan "✓ Savatda" */
+            /* Tanlangandan keyin: [- 1 +], nechta kerakligini tanlash va oldida chiroyli animatsiyali galochka */
             <div
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
               }}
-              className="flex w-full h-9 items-center justify-between rounded-xl bg-slate-100 dark:bg-slate-800/90 p-1 border border-emerald-500/40 dark:border-emerald-500/50 shadow-2xs transition"
+              className="flex w-full h-9 items-center justify-between rounded-xl bg-slate-100 dark:bg-slate-800/90 p-1 border border-emerald-500/40 dark:border-emerald-500/40 shadow-2xs transition"
             >
               <button
                 type="button"
@@ -207,12 +207,20 @@ function ProductCard({ product: p, t, priority = false }) {
                 <MdRemove className="text-sm font-black" />
               </button>
 
+              {/* Tanlangan soni va oldida chiroyli animatsiyali galochka */}
               <div
-                className="flex items-center gap-1 sm:gap-1.5 px-1.5 text-emerald-600 dark:text-emerald-400 select-none cursor-default font-black text-xs sm:text-[13px]"
-                title="Mahsulot savatda mavjud"
+                className="flex items-center gap-1.5 px-2 select-none cursor-default"
+                title={`${qtyInCart} ta savatga tanlangan`}
               >
-                <MdCheck className="text-sm sm:text-base font-black shrink-0" />
-                <span className="whitespace-nowrap">Savatda {qtyInCart > 1 ? `(${qtyInCart})` : ""}</span>
+                <span
+                  key={qtyInCart}
+                  className="flex h-4 w-4 sm:h-4.5 sm:w-4.5 items-center justify-center rounded-full bg-emerald-500 text-white shadow-xs animate-check-pop"
+                >
+                  <MdCheck className="text-[11px] sm:text-xs font-black" />
+                </span>
+                <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white tabular-nums">
+                  {qtyInCart}
+                </span>
               </div>
 
               <button
