@@ -187,17 +187,17 @@ function ProductCard({ product: p, t }) {
                 <MdShoppingCart className="text-base sm:text-lg" />
               </button>
             ) : (
-              <div className="flex items-center gap-1.5 rounded-xl bg-brand/10 dark:bg-brand/20 p-1 border border-brand/20">
+              <div className="flex items-center rounded-xl bg-slate-100 dark:bg-slate-800/80 p-0.5 border border-slate-200 dark:border-slate-700/80 shadow-xs">
                 <button
                   type="button"
                   onClick={handleMinus}
                   aria-label="Kamaytirish"
                   title="Kamaytirish"
-                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-white dark:bg-slate-800 text-brand dark:text-brand-light font-bold shadow-xs hover:bg-brand hover:text-white transition active:scale-90 cursor-pointer"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-white hover:bg-brand-dark transition shadow-xs active:scale-90 cursor-pointer"
                 >
-                  <MdRemove className="text-xs font-black" />
+                  <MdRemove className="text-sm font-black" />
                 </button>
-                <span className="px-1 text-xs font-black text-brand dark:text-brand-light min-w-[1.1rem] text-center">
+                <span className="px-2 text-xs font-black text-slate-900 dark:text-white min-w-[1.4rem] text-center select-none">
                   {qtyInCart}
                 </span>
                 <button
@@ -205,9 +205,9 @@ function ProductCard({ product: p, t }) {
                   onClick={handlePlus}
                   aria-label="Ko'paytirish"
                   title="Ko'paytirish"
-                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-white font-bold shadow-xs hover:bg-brand-dark transition active:scale-90 cursor-pointer"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-white hover:bg-brand-dark transition shadow-xs active:scale-90 cursor-pointer"
                 >
-                  <MdAdd className="text-xs font-black" />
+                  <MdAdd className="text-sm font-black" />
                 </button>
               </div>
             )}

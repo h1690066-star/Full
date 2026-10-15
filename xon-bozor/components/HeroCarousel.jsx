@@ -49,19 +49,35 @@ export default function HeroCarousel({ slides }) {
                 className={`object-cover ${s.align === "right" ? "object-right" : "object-center"}`}
               />
             )}
-            {s.text && <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent sm:via-black/30" />}
-            <div className="absolute inset-0 flex flex-col justify-end gap-2 p-5 sm:justify-center sm:gap-3 sm:p-10 lg:max-w-[55%] lg:pl-14">
-              {s.badge && <span className="w-fit rounded-full bg-brand px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white sm:text-xs">{s.badge}</span>}
-              {s.text && (
-                <>
+            {s.text ? (
+              <>
+                <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent sm:via-black/30" />
+                <div className="absolute inset-0 flex flex-col justify-end gap-2 p-5 sm:justify-center sm:gap-3 sm:p-10 lg:max-w-[55%] lg:pl-14">
+                  {s.badge && (
+                    <span className="w-fit rounded-full bg-brand px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white sm:text-xs">
+                      {s.badge}
+                    </span>
+                  )}
                   <h2 className="text-xl font-extrabold leading-tight text-white sm:text-3xl lg:text-4xl">{s.title}</h2>
                   <p className="hidden max-w-md text-sm text-white/80 sm:block">{s.text}</p>
-                </>
-              )}
-              <Link href={s.href} tabIndex={idx === i ? 0 : -1} className={`mt-1 flex w-fit items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-dark sm:mt-3 ${s.text ? "" : "sm:absolute sm:bottom-6 sm:left-14"}`}>
-                {s.cta}<MdArrowForward />
-              </Link>
-            </div>
+                  <Link
+                    href={s.href}
+                    tabIndex={idx === i ? 0 : -1}
+                    className="mt-1 flex w-fit items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-dark sm:mt-3 shadow-lg shadow-brand/25 active:scale-95 transition"
+                  >
+                    {s.cta}
+                    <MdArrowForward />
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <Link
+                href={s.href}
+                tabIndex={idx === i ? 0 : -1}
+                aria-label={s.title || "Katalog"}
+                className="absolute inset-0 z-10 block"
+              />
+            )}
           </div>
         ))}
       </div>

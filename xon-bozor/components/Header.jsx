@@ -56,19 +56,7 @@ export default function Header({ t, lang }) {
 
   return (
     <>
-      {/* ===== Mobile compact bar (<600px) ===== */}
-      <div className="sticky top-0 z-30 min-[601px]:hidden">
-        <div className="glass border-x-0 border-t-0 px-4 py-3">
-          <div className="flex items-center justify-between">
-            <Logo compact />
-            <div className="flex items-center gap-2">
-              <HeaderActions t={t} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ===== Desktop header ===== */}
+      {/* ===== Header (>600px screens) — On mobile <=600px top header is off, bottom floating nav is active ===== */}
       <header className="max-[600px]:hidden sticky top-0 z-30">
         {/* Top utility bar */}
         <div className="relative overflow-hidden bg-ink text-[12px] text-white/70 dark:bg-black">
