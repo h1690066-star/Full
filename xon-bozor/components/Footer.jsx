@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { MdPhone, MdSmartDisplay, MdPhotoCamera, MdSend } from "react-icons/md";
+import { SiInstagram, SiYoutube } from "react-icons/si";
 import { PHONE } from "./Header";
 
 export default function Footer({ t }) {
@@ -42,22 +43,22 @@ export default function Footer({ t }) {
               <MdSend className="text-base" />
             </a>
             <a
-              href="https://instagram.com"
+              href="https://www.instagram.com/xon.bazzar?igsh=aHRhbXNpa3R6OTg4&utm_source=qr"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-slate-800 dark:text-white shadow-sm hover:bg-brand hover:text-white dark:hover:bg-brand transition"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-slate-800 text-pink-600 dark:text-pink-400 shadow-sm hover:bg-brand hover:text-white dark:hover:bg-brand transition"
               aria-label="Instagram"
             >
-              <MdPhotoCamera className="text-base" />
+              <SiInstagram className="text-sm" />
             </a>
             <a
-              href="https://youtube.com"
+              href="https://www.youtube.com/@Xonbazar"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-slate-800 dark:text-white shadow-sm hover:bg-brand hover:text-white dark:hover:bg-brand transition"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-slate-800 text-red-600 dark:text-red-400 shadow-sm hover:bg-brand hover:text-white dark:hover:bg-brand transition"
               aria-label="YouTube"
             >
-              <MdSmartDisplay className="text-base" />
+              <SiYoutube className="text-sm" />
             </a>
           </div>
         </div>
@@ -103,35 +104,39 @@ export default function Footer({ t }) {
           </ul>
         </div>
 
-        {/* Ustun 4: Mobil ilovamiz */}
+        {/* Ustun 4: Ijtimoiy tarmoqlar */}
         <div className="space-y-3">
-          <h3 className="font-bold text-slate-900 dark:text-white">Mobil ilovamiz</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Xarid qilish yanada oson va qulayroq</p>
+          <h3 className="font-bold text-slate-900 dark:text-white">Ijtimoiy tarmoqlar</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Bizning rasmiy sahifalarimizga obuna bo'ling</p>
           <div className="space-y-2">
             <a
-              href="https://apple.com/app-store"
+              href="https://www.instagram.com/xon.bazzar?igsh=aHRhbXNpa3R6OTg4&utm_source=qr"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="App Store ilovasini yuklab olish"
-              className="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1b22] px-4 py-2.5 shadow-sm hover:border-brand dark:hover:border-brand transition"
+              aria-label="Instagram sahifamiz"
+              className="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1b22] px-4 py-2.5 shadow-sm hover:border-pink-500/50 hover:bg-pink-500/5 transition group"
             >
-              <span className="text-xl">🍏</span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white shadow-sm shrink-0">
+                <SiInstagram className="text-lg" />
+              </span>
               <div className="text-left text-xs">
-                <span className="block text-[10px] text-slate-500 dark:text-slate-400">Yuklab oling</span>
-                <span className="font-bold text-slate-800 dark:text-slate-100">App Store</span>
+                <span className="block text-[10px] text-slate-500 dark:text-slate-400">Bizni kuzating</span>
+                <span className="font-bold text-slate-800 dark:text-slate-100 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition">Instagram</span>
               </div>
             </a>
             <a
-              href="https://play.google.com/store"
+              href="https://www.youtube.com/@Xonbazar"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Google Play ilovasini yuklab olish"
-              className="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1b22] px-4 py-2.5 shadow-sm hover:border-brand dark:hover:border-brand transition"
+              aria-label="YouTube kanalimiz"
+              className="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1b22] px-4 py-2.5 shadow-sm hover:border-red-500/50 hover:bg-red-500/5 transition group"
             >
-              <span className="text-xl">🤖</span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#ff0000] text-white shadow-sm shrink-0">
+                <SiYoutube className="text-lg" />
+              </span>
               <div className="text-left text-xs">
-                <span className="block text-[10px] text-slate-500 dark:text-slate-400">Yuklab oling</span>
-                <span className="font-bold text-slate-800 dark:text-slate-100">Google Play</span>
+                <span className="block text-[10px] text-slate-500 dark:text-slate-400">Obuna bo'ling</span>
+                <span className="font-bold text-slate-800 dark:text-slate-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition">YouTube</span>
               </div>
             </a>
           </div>

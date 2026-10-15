@@ -17,7 +17,7 @@ export default function HeroCarousel({ slides }) {
 
     const id = setInterval(() => {
       setI((p) => (p + 1) % slides.length);
-    }, 7000);
+    }, 2000);
     return () => clearInterval(id);
   }, [paused, slides.length]);
 

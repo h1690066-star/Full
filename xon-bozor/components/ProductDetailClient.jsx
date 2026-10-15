@@ -24,6 +24,94 @@ import { useCart } from "@/lib/cartContext";
 import ProductCard from "./ProductCard";
 import { toast } from "./ToastContainer";
 
+const COLOR_NAME_MAP = {
+  "#000000": "Qora",
+  "#ffffff": "Oq",
+  "#fff": "Oq",
+  "#000": "Qora",
+  "#808080": "Kulrang",
+  "#c0c0c0": "Kumush",
+  "#ffd700": "Tilla (Gold)",
+  "#ff0000": "Qizil",
+  "#0000ff": "Ko'k",
+  "#008000": "Yashil",
+  "#6b21a8": "Binafsha",
+  "#8b5cf6": "Binafsha",
+  "#a855f7": "Binafsha",
+  "#2563eb": "Ko'k",
+  "#3b82f6": "Moviy",
+  "#059669": "Yashil",
+  "#d4c5b9": "Bej (Beige)",
+  "#1e293b": "To'q kulrang",
+  "#334155": "Kulrang",
+  black: { hex: "#111827", name: "Qora" },
+  white: { hex: "#ffffff", name: "Oq" },
+  blue: { hex: "#2563eb", name: "Ko'k" },
+  red: { hex: "#ef4444", name: "Qizil" },
+  green: { hex: "#10b981", name: "Yashil" },
+  purple: { hex: "#8b5cf6", name: "Binafsha" },
+  gold: { hex: "#eab308", name: "Tilla" },
+  silver: { hex: "#cbd5e1", name: "Kumush" },
+  gray: { hex: "#64748b", name: "Kulrang" },
+  grey: { hex: "#64748b", name: "Kulrang" },
+  beige: { hex: "#d4c5b9", name: "Bej" },
+  qora: { hex: "#111827", name: "Qora" },
+  oq: { hex: "#ffffff", name: "Oq" },
+  kok: { hex: "#2563eb", name: "Ko'k" },
+  "ko'k": { hex: "#2563eb", name: "Ko'k" },
+  qizil: { hex: "#ef4444", name: "Qizil" },
+  yashil: { hex: "#10b981", name: "Yashil" },
+  binafsha: { hex: "#8b5cf6", name: "Binafsha" },
+  tilla: { hex: "#eab308", name: "Tilla" },
+  kumush: { hex: "#cbd5e1", name: "Kumush" },
+  kulrang: { hex: "#64748b", name: "Kulrang" },
+};
+
+function parseProductColor(c) {
+  if (!c) return { hex: "#6b00ff", name: "", isLight: false };
+  const raw = String(c).trim();
+  const lower = raw.toLowerCase();
+
+  if (COLOR_NAME_MAP[lower]) {
+    const val = COLOR_NAME_MAP[lower];
+    if (typeof val === "string") {
+      const isLight = lower === "#ffffff" || lower === "#fff" || lower === "#cbd5e1";
+      return { hex: lower, name: val, isLight };
+    }
+    const isLight =
+      val.hex.toLowerCase() === "#ffffff" ||
+      val.hex.toLowerCase() === "#fff" ||
+      val.hex.toLowerCase() === "#cbd5e1";
+    return { hex: val.hex, name: val.name, isLight };
+  }
+
+  if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(raw)) {
+    const isLight = lower === "#ffffff" || lower === "#fff";
+    return { hex: raw, name: COLOR_NAME_MAP[lower] || raw, isLight };
+  }
+
+  if (lower.includes("qora") || lower.includes("black") || lower.includes("dark")) {
+    return { hex: "#18181b", name: raw, isLight: false };
+  }
+  if (lower.includes("oq") || lower.includes("white") || lower.includes("silver") || lower.includes("kumush")) {
+    return { hex: "#ffffff", name: raw, isLight: true };
+  }
+  if (lower.includes("ko'k") || lower.includes("kok") || lower.includes("blue")) {
+    return { hex: "#2563eb", name: raw, isLight: false };
+  }
+  if (lower.includes("binafsha") || lower.includes("purple") || lower.includes("violet")) {
+    return { hex: "#8b5cf6", name: raw, isLight: false };
+  }
+  if (lower.includes("tilla") || lower.includes("gold") || lower.includes("yellow")) {
+    return { hex: "#eab308", name: raw, isLight: false };
+  }
+  if (lower.includes("titan") || lower.includes("natural")) {
+    return { hex: "#94a3b8", name: raw, isLight: false };
+  }
+
+  return { hex: "#6b00ff", name: raw, isLight: false };
+}
+
 export default function ProductDetailClient({ product, related = [], t }) {
   const router = useRouter();
   const { addToCart, toggleWishlist, isInWishlist } = useCart();
@@ -258,25 +346,41 @@ export default function ProductDetailClient({ product, related = [], t }) {
           {/* Dynamic Colors from API */}
           {apiColors.length > 0 && (
             <div>
-              <label className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block mb-1.5">
-                Rang: <span className="font-semibold text-brand dark:text-purple-300">{selectedColor}</span>
+              <label className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block mb-2">
+                Rang: <span className="font-semibold text-brand dark:text-purple-300">{parseProductColor(selectedColor).name || selectedColor}</span>
               </label>
-              <div className="flex flex-wrap gap-2">
-                {apiColors.map((colName) => (
-                  <button
-                    key={colName}
-                    type="button"
-                    onClick={() => setSelectedColor(colName)}
-                    className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition ${
-                      selectedColor === colName
-                        ? "border-brand bg-brand text-white shadow-sm"
-                        : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-brand/40"
-                    }`}
-                  >
-                    {selectedColor === colName && <MdCheck className="text-sm text-white font-bold" />}
-                    <span>{colName}</span>
-                  </button>
-                ))}
+              <div className="flex flex-wrap items-center gap-2.5">
+                {apiColors.map((colName) => {
+                  const info = parseProductColor(colName);
+                  const isSelected = selectedColor === colName;
+                  return (
+                    <button
+                      key={colName}
+                      type="button"
+                      onClick={() => setSelectedColor(colName)}
+                      title={info.name || colName}
+                      aria-label={info.name || colName}
+                      className={`group relative flex h-10 w-10 items-center justify-center rounded-full transition-all cursor-pointer ${
+                        isSelected
+                          ? "ring-2 ring-brand ring-offset-2 dark:ring-offset-slate-900 scale-105 shadow-md shadow-brand/20"
+                          : "hover:scale-105 opacity-85 hover:opacity-100"
+                      }`}
+                    >
+                      <span
+                        className="flex h-8 w-8 items-center justify-center rounded-full shadow-inner border border-slate-300/80 dark:border-white/20 transition-transform"
+                        style={{ backgroundColor: info.hex }}
+                      >
+                        {isSelected && (
+                          <MdCheck
+                            className={`text-base font-black ${
+                              info.isLight ? "text-slate-900" : "text-white"
+                            }`}
+                          />
+                        )}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

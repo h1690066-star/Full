@@ -59,13 +59,13 @@ export default function Header({ t, lang }) {
       {/* ===== Header (>600px screens) — On mobile <=600px top header is off, bottom floating nav is active ===== */}
       <header className="max-[600px]:hidden sticky top-0 z-30">
         {/* Top utility bar */}
-        <div className="relative overflow-hidden bg-ink text-[12px] text-white/70 dark:bg-black">
-          <div className="pointer-events-none absolute inset-0 bg-brand-gradient opacity-[0.18]" />
+        <div className="relative overflow-hidden bg-slate-100/90 text-[12px] text-slate-600 dark:bg-ink dark:text-white/70 border-b border-slate-200/80 dark:border-white/5">
+          <div className="pointer-events-none absolute inset-0 bg-brand-gradient opacity-[0.05] dark:opacity-[0.18]" />
           <div className="relative mx-auto flex h-9 max-w-7xl items-center justify-between px-4">
             <div className="flex items-center gap-5">
               <RegionSelector label={t.city || "Shahar"} />
-              <Link href="/pickup" className="hidden items-center gap-1.5 transition hover:text-white lg:flex">
-                <MdStorefront className="text-sm" />
+              <Link href="/pickup" className="hidden items-center gap-1.5 transition hover:text-brand dark:hover:text-white lg:flex">
+                <MdStorefront className="text-sm text-brand" />
                 {t.pickup}
               </Link>
             </div>
@@ -73,17 +73,17 @@ export default function Header({ t, lang }) {
             <div className="hidden items-center gap-6 md:flex">
               {perks.map(({ icon: Icon, text }) => (
                 <span key={text} className="flex items-center gap-1.5">
-                  <Icon className="text-sm text-brand-300" />
+                  <Icon className="text-sm text-brand dark:text-brand-300" />
                   {text}
                 </span>
               ))}
             </div>
 
             <div className="flex items-center gap-5">
-              <Link href="/faq" className="hidden transition hover:text-white sm:inline">
+              <Link href="/faq" className="hidden transition hover:text-brand dark:hover:text-white sm:inline">
                 {t.faq}
               </Link>
-              <Link href="/orders" className="hidden transition hover:text-white sm:inline">
+              <Link href="/orders" className="hidden transition hover:text-brand dark:hover:text-white sm:inline">
                 {t.orders}
               </Link>
               <LanguageSwitcher current={lang} />

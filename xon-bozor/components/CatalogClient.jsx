@@ -117,24 +117,28 @@ const SidebarFilters = memo(function SidebarFilters({
       <div className={`space-y-3 ${onApplyMobile ? "" : "border-t border-slate-100 dark:border-white/[0.06] pt-5"}`}>
         <h3 className={SECTION_TITLE}>Narx oralig'i (so'm)</h3>
         <div className="grid grid-cols-2 gap-2">
-          <div className="relative">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase text-slate-400">dan</span>
+          <div className="space-y-1">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              Dan
+            </label>
             <input
               type="text"
               value={minPriceInput}
               onChange={handleMinPriceChange}
               placeholder="100 000"
-              className={`${PRICE_INPUT} pl-9`}
+              className="input h-10 w-full px-2.5 text-left text-xs font-semibold font-display tabular-nums focus:border-brand"
             />
           </div>
-          <div className="relative">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase text-slate-400">gacha</span>
+          <div className="space-y-1">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              Gacha
+            </label>
             <input
               type="text"
               value={maxPriceInput}
               onChange={handleMaxPriceChange}
               placeholder="20 000 000"
-              className={`${PRICE_INPUT} pl-12`}
+              className="input h-10 w-full px-2.5 text-left text-xs font-semibold font-display tabular-nums focus:border-brand"
             />
           </div>
         </div>

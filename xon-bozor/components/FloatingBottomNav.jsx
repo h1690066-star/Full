@@ -39,6 +39,7 @@ export default function FloatingBottomNav() {
 
   const toggleTheme = () => {
     if (typeof window === "undefined") return;
+    document.documentElement.classList.add("theme-transitioning");
     const nextDark = !isDark;
     setIsDark(nextDark);
     if (nextDark) {
@@ -50,6 +51,9 @@ export default function FloatingBottomNav() {
       localStorage.setItem("theme", "light");
       window.dispatchEvent(new CustomEvent("theme-change", { detail: "light" }));
     }
+    setTimeout(() => {
+      document.documentElement.classList.remove("theme-transitioning");
+    }, 450);
   };
 
   const tabs = [
