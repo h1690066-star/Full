@@ -93,9 +93,6 @@ export default function ProfileClient({ t }) {
       try {
         setUploadingAvatar(true);
         const formData = new FormData();
-        formData.append("name", form.name || user?.name || "");
-        formData.append("email", form.email || user?.email || "");
-        if (form.phone || user?.phone) formData.append("phone", form.phone || user?.phone || "");
         formData.append("avatar", file);
 
         const d = await updateMe(formData);
@@ -106,7 +103,7 @@ export default function ProfileClient({ t }) {
         window.dispatchEvent(new CustomEvent("auth-change", { detail: merged }));
         toast("Profil rasmi muvaffaqiyatli yuklandi!", "success");
       } catch (err) {
-        toast("Rasmni saqlash uchun pastdagi 'O'zgarishlarni saqlash' tugmasini bosing", "info");
+        toast(apiError(err, "Rasmni yuklashda xatolik yuz berdi"), "error");
       } finally {
         setUploadingAvatar(false);
       }
@@ -120,8 +117,8 @@ export default function ProfileClient({ t }) {
       let payload = form;
       if (avatarFile) {
         const formData = new FormData();
-        formData.append("name", form.name);
-        formData.append("email", form.email);
+        if (form.name) formData.append("name", form.name);
+        if (form.email) formData.append("email", form.email);
         if (form.phone) formData.append("phone", form.phone);
         formData.append("avatar", avatarFile);
         payload = formData;
@@ -133,8 +130,10 @@ export default function ProfileClient({ t }) {
       localStorage.setItem("user", JSON.stringify(merged));
       window.dispatchEvent(new CustomEvent("auth-change", { detail: merged }));
       setMsg((m) => ({ ...m, profile: p.saved }));
+      toast(p.saved, "success");
     } catch (err) {
       setMsg((m) => ({ ...m, profileErr: apiError(err, t.auth.error) }));
+      toast(apiError(err, t.auth.error), "error");
     }
   };
 

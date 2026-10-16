@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema(
     phone: { type: String, unique: true, sparse: true, trim: true },
     email: { type: String, unique: true, sparse: true, lowercase: true, trim: true },
     avatar: { type: String, default: '' }, // "/uploads/xxxx.jpg"
+    avatarData: { filename: String, data: String, mime: String },
     password: { type: String, required: true, select: false },
   },
   { timestamps: true }

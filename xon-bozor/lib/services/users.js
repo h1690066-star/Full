@@ -2,11 +2,9 @@ import { api } from "../api";
 
 export const registerUser = async (data) => {
   let body = data;
-  let headers = {};
 
   if (data instanceof FormData) {
     body = data;
-    headers["Content-Type"] = "multipart/form-data";
   } else if (data.avatarFile) {
     const formData = new FormData();
     formData.append("name", data.name || "");
@@ -15,10 +13,9 @@ export const registerUser = async (data) => {
     formData.append("password", data.password || "");
     formData.append("avatar", data.avatarFile);
     body = formData;
-    headers["Content-Type"] = "multipart/form-data";
   }
 
-  const res = await api.post("/api/users/register", body, { headers });
+  const res = await api.post("/api/users/register", body);
   return res.data;
 };
 

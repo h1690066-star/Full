@@ -49,6 +49,19 @@ app.get('/uploads/:filename', async (req, res, next) => {
         return res.send(buf);
       }
     }
+
+    const User = require('./models/User');
+    const user = await User.findOne({
+      $or: [
+        { 'avatarData.filename': filename },
+        { avatar: new RegExp(filename, 'i') },
+      ],
+    });
+    if (user && user.avatarData && user.avatarData.data) {
+      const buf = Buffer.from(user.avatarData.data, 'base64');
+      res.type(user.avatarData.mime || 'image/jpeg');
+      return res.send(buf);
+    }
   } catch (err) {
     console.error('Upload retrieval error:', err);
   }

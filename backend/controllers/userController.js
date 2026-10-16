@@ -1,3 +1,4 @@
+const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { normPhone, emailRx } = require('../utils/validators');
@@ -19,6 +20,19 @@ const publicUser = (u) => ({
 
 const avatarUrl = (file) => (file ? `/uploads/${file.filename}` : undefined);
 
+const fileToAvatarData = (file) => {
+  try {
+    const buf = fs.readFileSync(file.path);
+    return {
+      filename: file.filename,
+      data: buf.toString('base64'),
+      mime: file.mimetype || 'image/jpeg',
+    };
+  } catch (e) {
+    return null;
+  }
+};
+
 // Xatolik bo'lsa yuklangan rasmni ham o'chirib tashlaydi
 const fail = (req, res, status, message) => {
   if (req.file) removeUpload(avatarUrl(req.file));
@@ -37,7 +51,10 @@ exports.register = async (req, res) => {
     if (password.length < 6) return fail(req, res, 400, 'Parol kamida 6 ta belgi bolsin');
 
     const data = { name, email: String(email).toLowerCase().trim(), password };
-    if (req.file) data.avatar = avatarUrl(req.file);
+    if (req.file) {
+      data.avatar = avatarUrl(req.file);
+      data.avatarData = fileToAvatarData(req.file);
+    }
 
     if (phone) {
       const p = normPhone(phone);
@@ -100,24 +117,29 @@ exports.updateMe = async (req, res) => {
     if (!user) return fail(req, res, 404, 'Foydalanuvchi topilmadi');
 
     const { phone, email, removeAvatar } = req.body;
-    if (req.body.name !== undefined) {
+    if (req.body.name !== undefined && String(req.body.name).trim() !== '') {
       const name = String(req.body.name).trim();
       if (name.length < 2) return fail(req, res, 400, 'Ism kamida 2 ta belgi bolsin');
       user.name = name;
     }
-    if (phone) {
+    if (phone && String(phone).trim() !== '') {
       const p = normPhone(phone);
       if (!p) return fail(req, res, 400, 'Telefon raqam notogri');
       user.phone = p;
     }
-    if (email) {
+    if (email && String(email).trim() !== '') {
       if (!emailRx.test(String(email))) return fail(req, res, 400, 'Email notogri');
       user.email = String(email).toLowerCase().trim();
     }
 
     const oldAvatar = user.avatar;
-    if (req.file) user.avatar = avatarUrl(req.file);
-    else if (removeAvatar === 'true') user.avatar = '';
+    if (req.file) {
+      user.avatar = avatarUrl(req.file);
+      user.avatarData = fileToAvatarData(req.file);
+    } else if (removeAvatar === 'true') {
+      user.avatar = '';
+      user.avatarData = null;
+    }
 
     await user.save();
     if (oldAvatar && oldAvatar !== user.avatar) removeUpload(oldAvatar);

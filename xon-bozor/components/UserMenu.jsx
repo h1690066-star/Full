@@ -28,6 +28,7 @@ export default function UserMenu({ loginLabel }) {
             if (fresh && fresh.name) {
               setUser(fresh);
               localStorage.setItem("user", JSON.stringify(fresh));
+              window.dispatchEvent(new CustomEvent("auth-change", { detail: fresh }));
             }
           })
           .catch(() => {});
