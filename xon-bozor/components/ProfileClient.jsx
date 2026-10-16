@@ -25,6 +25,7 @@ export default function ProfileClient({ t }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarError, setAvatarError] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [pw, setPw] = useState({ oldPassword: "", newPassword: "" });
   const [msg, setMsg] = useState({ profile: "", profileErr: "", password: "", passwordErr: "" });
@@ -33,6 +34,18 @@ export default function ProfileClient({ t }) {
 
   const fileInputRef = useRef(null);
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://full-nbal.onrender.com";
+
+  const currentAvatar =
+    avatarPreview ||
+    (user?.avatar
+      ? user.avatar.startsWith("http://") || user.avatar.startsWith("https://") || user.avatar.startsWith("data:") || user.avatar.startsWith("blob:")
+        ? user.avatar
+        : `${apiBase}${user.avatar.startsWith("/") ? "" : "/"}${user.avatar}`
+      : null);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [currentAvatar]);
 
   useEffect(() => {
     if (!localStorage.getItem("token")) return setState("guest");
@@ -178,19 +191,6 @@ export default function ProfileClient({ t }) {
         </Link>
       </div>
     );
-
-  const [avatarError, setAvatarError] = useState(false);
-  const currentAvatar =
-    avatarPreview ||
-    (user?.avatar
-      ? user.avatar.startsWith("http://") || user.avatar.startsWith("https://") || user.avatar.startsWith("data:") || user.avatar.startsWith("blob:")
-        ? user.avatar
-        : `${apiBase}${user.avatar.startsWith("/") ? "" : "/"}${user.avatar}`
-      : null);
-
-  useEffect(() => {
-    setAvatarError(false);
-  }, [currentAvatar]);
 
   const input = "input font-medium";
   const btn = "btn-primary h-12 w-full sm:w-auto px-7";
