@@ -62,7 +62,7 @@ export default function RegionSelector({ label = "Shahar" }) {
       </button>
 
       {open && (
-        <div className="absolute left-0 top-7 z-50 w-56 max-h-80 overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1b22] py-2 shadow-2xl animate-in fade-in zoom-in-95 duration-150 custom-scrollbar">
+        <div className="absolute left-0 top-full mt-2 z-50 w-56 max-h-80 overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1b22] py-2 shadow-2xl animate-in fade-in zoom-in-95 duration-150 custom-scrollbar">
           <div className="px-3 py-1.5 mb-1 border-b border-slate-100 dark:border-slate-800 text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
             Viloyatni tanlang
           </div>

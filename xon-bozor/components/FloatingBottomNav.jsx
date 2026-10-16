@@ -20,11 +20,22 @@ export default function FloatingBottomNav() {
   const { cartCount, wishlistCount, hydrated } = useCart();
   const [user, setUser] = useState(null);
   const [isDark, setIsDark] = useState(false);
+  const [lang, setLang] = useState("uz");
 
   useEffect(() => {
     setUser(getCurrentUser());
     const handleAuth = (e) => setUser(e.detail || getCurrentUser());
     window.addEventListener("auth-change", handleAuth);
+
+    const updateLang = () => {
+      if (typeof document !== "undefined") {
+        const m = document.cookie.match(/(^|;\s*)lang=([^;]+)/);
+        const l = m && (m[2] === "ru" || m[2] === "en" || m[2] === "uz") ? m[2] : (localStorage.getItem("lang") || "uz");
+        setLang(l);
+      }
+    };
+    updateLang();
+    window.addEventListener("lang-change", updateLang);
 
     const dark = document.documentElement.classList.contains("dark");
     setIsDark(dark);
@@ -33,9 +44,16 @@ export default function FloatingBottomNav() {
 
     return () => {
       window.removeEventListener("auth-change", handleAuth);
+      window.removeEventListener("lang-change", updateLang);
       window.removeEventListener("theme-change", handleThemeChange);
     };
   }, []);
+
+  const navLabels = {
+    uz: { home: "Bosh sahifa", catalog: "Katalog", cart: "Savat", wishlist: "Saralangan", profile: "Profil" },
+    ru: { home: "Главная", catalog: "Каталог", cart: "Корзина", wishlist: "Избранное", profile: "Профиль" },
+    en: { home: "Home", catalog: "Catalog", cart: "Cart", wishlist: "Wishlist", profile: "Profile" },
+  }[lang] || { home: "Bosh sahifa", catalog: "Katalog", cart: "Savat", wishlist: "Saralangan", profile: "Profil" };
 
   const toggleTheme = () => {
     if (typeof window === "undefined") return;
@@ -64,21 +82,21 @@ export default function FloatingBottomNav() {
   const tabs = [
     {
       id: "home",
-      label: "Bosh sahifa",
+      label: navLabels.home,
       href: "/",
       icon: MdHome,
       isActive: pathname === "/",
     },
     {
       id: "catalog",
-      label: "Katalog",
+      label: navLabels.catalog,
       href: "/catalog",
       icon: MdGridView,
       isActive: pathname.startsWith("/catalog") || pathname.startsWith("/search"),
     },
     {
       id: "cart",
-      label: "Savat",
+      label: navLabels.cart,
       href: "/cart",
       icon: MdShoppingCart,
       count: hydrated ? cartCount : 0,
@@ -86,7 +104,7 @@ export default function FloatingBottomNav() {
     },
     {
       id: "wishlist",
-      label: "Saralangan",
+      label: navLabels.wishlist,
       href: "/wishlist",
       icon: MdFavoriteBorder,
       activeIcon: MdFavorite,
@@ -95,7 +113,7 @@ export default function FloatingBottomNav() {
     },
     {
       id: "profile",
-      label: "Profil",
+      label: navLabels.profile,
       href: user ? "/profile" : "/login",
       icon: MdPersonOutline,
       isActive: pathname === "/profile" || pathname === "/login" || pathname === "/register",

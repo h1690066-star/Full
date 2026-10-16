@@ -13,9 +13,11 @@ import {
   MdMailOutline,
   MdPhone,
   MdVerified,
+  MdLanguage,
 } from "react-icons/md";
 import { getMe, updateMe, changePassword, clearToken } from "@/lib/services/users";
 import { apiError } from "@/lib/api";
+import { LANGS } from "@/lib/dictionaries";
 import { toast } from "./ToastContainer";
 
 export default function ProfileClient({ t }) {
@@ -31,6 +33,29 @@ export default function ProfileClient({ t }) {
   const [msg, setMsg] = useState({ profile: "", profileErr: "", password: "", passwordErr: "" });
   const [state, setState] = useState("loading");
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [currentLang, setCurrentLang] = useState("uz");
+
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      const m = document.cookie.match(/(^|;\s*)lang=([^;]+)/);
+      if (m && (m[2] === "ru" || m[2] === "en" || m[2] === "uz")) {
+        setCurrentLang(m[2]);
+      } else {
+        const saved = localStorage.getItem("lang");
+        if (saved) setCurrentLang(saved);
+      }
+    }
+  }, []);
+
+  const handleLangChange = (code) => {
+    if (code === currentLang) return;
+    document.cookie = `lang=${code}; path=/; max-age=31536000; samesite=lax`;
+    try {
+      localStorage.setItem("lang", code);
+      window.dispatchEvent(new CustomEvent("lang-change", { detail: code }));
+    } catch {}
+    window.location.reload();
+  };
 
   const fileInputRef = useRef(null);
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://full-nbal.onrender.com";
@@ -403,6 +428,51 @@ export default function ProfileClient({ t }) {
             </p>
           )}
         </form>
+      </div>
+
+      {/* Tilni tanlash / Language Selector */}
+      <div className="surface p-6 animate-fade-up" style={{ animationDelay: "120ms" }}>
+        <div className="flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-white/[0.06]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-gradient-soft text-brand dark:text-brand-300">
+            <MdLanguage className="text-xl" />
+          </div>
+          <div>
+            <h2 className="font-display text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">
+              {currentLang === "ru" ? "Язык интерфейса" : currentLang === "en" ? "Language" : "Tilni tanlash"}
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {currentLang === "ru" ? "Выберите удобный язык" : currentLang === "en" ? "Choose your preferred language" : "O'zingizga qulay tilni tanlang"}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
+          {LANGS.map((l) => {
+            const isSelected = currentLang === l.code;
+            return (
+              <button
+                key={l.code}
+                type="button"
+                onClick={() => handleLangChange(l.code)}
+                className={`flex items-center justify-between p-3.5 rounded-2xl border transition cursor-pointer active:scale-98 ${
+                  isSelected
+                    ? "border-brand bg-brand/10 dark:bg-brand/20 text-brand dark:text-brand-300 font-bold shadow-xs"
+                    : "border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium"
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className={`flex h-8 w-8 items-center justify-center rounded-xl text-xs font-mono font-bold uppercase ${
+                    isSelected ? "bg-brand text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                  }`}>
+                    {l.short}
+                  </span>
+                  <span>{l.label}</span>
+                </div>
+                {isSelected && <MdCheckCircle className="text-lg text-brand" />}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Logout Confirmation Modal */}

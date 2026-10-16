@@ -59,7 +59,7 @@ export default function Header({ t, lang }) {
       {/* ===== Header (>600px screens) — On mobile <=600px top header is off, bottom floating nav is active ===== */}
       <header className="max-[600px]:hidden sticky top-0 z-30">
         {/* Top utility bar */}
-        <div className="relative overflow-hidden bg-slate-100/90 text-[12px] text-slate-600 dark:bg-ink dark:text-white/70 border-b border-slate-200/80 dark:border-white/5">
+        <div className="relative z-40 bg-slate-100/90 text-[12px] text-slate-600 dark:bg-ink dark:text-white/70 border-b border-slate-200/80 dark:border-white/5">
           <div className="pointer-events-none absolute inset-0 bg-brand-gradient opacity-[0.05] dark:opacity-[0.18]" />
           <div className="relative mx-auto flex h-9 max-w-7xl items-center justify-between px-4">
             <div className="flex items-center gap-5">
