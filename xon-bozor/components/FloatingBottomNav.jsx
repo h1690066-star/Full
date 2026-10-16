@@ -102,6 +102,21 @@ export default function FloatingBottomNav() {
     },
   ];
 
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://full-nbal.onrender.com";
+  const avatar = user?.avatar;
+  const avatarUrl =
+    avatar && typeof avatar === "string" && avatar.trim()
+      ? avatar.startsWith("http://") || avatar.startsWith("https://") || avatar.startsWith("data:") || avatar.startsWith("blob:")
+        ? avatar
+        : `${apiBase}${avatar.startsWith("/") ? "" : "/"}${avatar}`
+      : null;
+  const initialLetter = user?.name && user.name.trim().length > 0 ? user.name.trim().charAt(0).toUpperCase() : "";
+  const [avatarErr, setAvatarErr] = useState(false);
+
+  useEffect(() => {
+    setAvatarErr(false);
+  }, [avatarUrl]);
+
   if (pathname.startsWith("/admin")) return null;
 
   return (
@@ -109,6 +124,28 @@ export default function FloatingBottomNav() {
       <nav className="flex items-center gap-1 sm:gap-1.5 rounded-full bg-[#1a1b20]/90 p-1.5 shadow-2xl backdrop-blur-xl border border-white/10 transition-all duration-300">
         {tabs.map((tab) => {
           const Icon = tab.isActive && tab.activeIcon ? tab.activeIcon : tab.icon;
+          const isProfileTab = tab.id === "profile" && Boolean(user);
+
+          const renderProfileIcon = (active) => {
+            if (avatarUrl && !avatarErr) {
+              return (
+                <img
+                  src={avatarUrl}
+                  alt={user?.name || "User"}
+                  className={`${active ? "h-5 w-5" : "h-6 w-6"} rounded-full object-cover shrink-0 ring-1 ring-white/30`}
+                  onError={() => setAvatarErr(true)}
+                />
+              );
+            }
+            if (initialLetter) {
+              return (
+                <span className={`flex ${active ? "h-5 w-5 text-[10px]" : "h-6 w-6 text-xs"} items-center justify-center rounded-full bg-brand/30 text-white font-black shrink-0`}>
+                  {initialLetter}
+                </span>
+              );
+            }
+            return <Icon className={active ? "text-lg sm:text-xl shrink-0" : "text-xl sm:text-2xl"} />;
+          };
 
           if (tab.isActive) {
             return (
@@ -117,7 +154,7 @@ export default function FloatingBottomNav() {
                 href={tab.href}
                 className="flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-brand/40 transition-all duration-300 scale-105"
               >
-                <Icon className="text-lg sm:text-xl shrink-0" />
+                {isProfileTab ? renderProfileIcon(true) : <Icon className="text-lg sm:text-xl shrink-0" />}
                 <span className="whitespace-nowrap leading-none tracking-tight">{tab.label}</span>
               </Link>
             );
@@ -130,7 +167,7 @@ export default function FloatingBottomNav() {
               aria-label={tab.label}
               className="relative flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all duration-200"
             >
-              <Icon className="text-xl sm:text-2xl" />
+              {isProfileTab ? renderProfileIcon(false) : <Icon className="text-xl sm:text-2xl" />}
 
               {tab.count > 0 && (
                 <span className="absolute top-1 right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-brand px-1 text-[9px] font-black text-white shadow-sm border border-[#1a1b20]">

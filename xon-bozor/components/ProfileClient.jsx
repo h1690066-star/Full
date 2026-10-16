@@ -32,7 +32,7 @@ export default function ProfileClient({ t }) {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const fileInputRef = useRef(null);
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://full-nbal.onrender.com";
 
   useEffect(() => {
     if (!localStorage.getItem("token")) return setState("guest");
@@ -179,7 +179,19 @@ export default function ProfileClient({ t }) {
       </div>
     );
 
-  const currentAvatar = avatarPreview || (user?.avatar ? (user.avatar.startsWith("http") ? user.avatar : `${apiBase}${user.avatar}`) : null);
+  const [avatarError, setAvatarError] = useState(false);
+  const currentAvatar =
+    avatarPreview ||
+    (user?.avatar
+      ? user.avatar.startsWith("http://") || user.avatar.startsWith("https://") || user.avatar.startsWith("data:") || user.avatar.startsWith("blob:")
+        ? user.avatar
+        : `${apiBase}${user.avatar.startsWith("/") ? "" : "/"}${user.avatar}`
+      : null);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [currentAvatar]);
+
   const input = "input font-medium";
   const btn = "btn-primary h-12 w-full sm:w-auto px-7";
   const label = "mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300";
@@ -210,8 +222,13 @@ export default function ProfileClient({ t }) {
               className="relative flex h-24 w-24 sm:h-28 sm:w-28 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800 shadow-xl border-4 border-white dark:border-[#161623] transition hover:scale-[1.03] active:scale-95 group"
               title="Profil rasmini o'zgartirish"
             >
-              {currentAvatar ? (
-                <img src={currentAvatar} alt={user?.name || "Avatar"} className="h-full w-full object-cover" />
+              {currentAvatar && !avatarError ? (
+                <img
+                  src={currentAvatar}
+                  alt={user?.name || "Avatar"}
+                  className="h-full w-full object-cover"
+                  onError={() => setAvatarError(true)}
+                />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-brand/10 dark:bg-brand/20 text-brand dark:text-purple-300 font-black text-3xl sm:text-4xl select-none">
                   {user?.name ? user.name.trim().charAt(0).toUpperCase() : <MdPersonOutline className="text-4xl" />}
