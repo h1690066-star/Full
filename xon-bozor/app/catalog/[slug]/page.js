@@ -13,6 +13,16 @@ const BRAND_MAP = {
   xiaomi: "Xiaomi",
   honor: "Honor",
   redmi: "Xiaomi",
+  artel: "Artel",
+  lg: "LG",
+  midea: "Midea",
+  hofmann: "Hofmann",
+  bosch: "Bosch",
+  shivaki: "Shivaki",
+  haier: "Haier",
+  avalon: "Avalon",
+  tefal: "Tefal",
+  panasonic: "Panasonic",
 };
 
 const CATEGORY_MAP = {
@@ -62,23 +72,36 @@ export default async function Catalog({ params }) {
   const { t, lang } = await getT();
 
   let list = [];
-  const cat = CATEGORY_MAP[slug];
-  const brand = BRAND_MAP[slug];
+  const slugLower = (slug || "").toLowerCase();
+  const cat = CATEGORY_MAP[slugLower];
+  const brand = BRAND_MAP[slugLower];
 
   if (cat) {
-    list = await fetchProductsByCategory(cat, [], 1000);
+    list = await fetchProductsByCategory(cat, [], 10000);
   } else {
-    list = await fetchProducts({ limit: 1000 });
+    list = await fetchProducts({ limit: 10000 });
   }
 
   if (brand && list.length > 0) {
-    const brandFiltered = list.filter((p) =>
-      p.brand ? p.brand.toLowerCase() === brand.toLowerCase() : p.name.toLowerCase().includes(slug.toLowerCase())
-    );
+    const brandLower = brand.toLowerCase();
+    const brandFiltered = list.filter((p) => {
+      const pBrand = (p.brand || "").toLowerCase();
+      const pName = (p.name || "").toLowerCase();
+      return pBrand === brandLower || pBrand.includes(brandLower) || pName.includes(brandLower);
+    });
     if (brandFiltered.length > 0) list = brandFiltered;
+  } else if (!cat && list.length > 0) {
+    // Agar slug toifada ham, brend xaritasida ham bo'lmasa, erkin qidiramiz
+    const matched = list.filter((p) => {
+      const pBrand = (p.brand || "").toLowerCase();
+      const pName = (p.name || "").toLowerCase();
+      const pCat = (p.category || "").toLowerCase();
+      return pBrand.includes(slugLower) || pName.includes(slugLower) || pCat.includes(slugLower);
+    });
+    if (matched.length > 0) list = matched;
   }
 
-  if (slug === "used" && list.length > 0) {
+  if (slugLower === "used" && list.length > 0) {
     const usedFiltered = list.filter((p) => p.used);
     if (usedFiltered.length > 0) list = usedFiltered;
   }

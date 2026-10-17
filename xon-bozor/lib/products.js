@@ -122,9 +122,9 @@ export async function fetchProducts(params = {}) {
       cached.refreshing = true;
       (async () => {
         try {
-          const q = new URLSearchParams(params).toString();
+          const q = new URLSearchParams({ limit: "10000", ...params }).toString();
           const url = `${API_BASE}/api/products${q ? `?${q}` : ""}`;
-          const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+          const res = await fetch(url, { signal: AbortSignal.timeout(40000) });
           if (res.ok) {
             const data = await res.json();
             const items = data?.items || (Array.isArray(data) ? data : []);
@@ -144,11 +144,11 @@ export async function fetchProducts(params = {}) {
 
   // Kesh yo'q bo'lsa yoki eskirgan bo'lsa
   try {
-    const q = new URLSearchParams(params).toString();
+    const q = new URLSearchParams({ limit: "10000", ...params }).toString();
     const url = `${API_BASE}/api/products${q ? `?${q}` : ""}`;
     const res = await fetch(url, {
       next: { revalidate: 30 },
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(40000),
     });
     if (res.ok) {
       const data = await res.json();
@@ -162,7 +162,7 @@ export async function fetchProducts(params = {}) {
     throw new Error(`Fetch status: ${res.status}`);
   } catch (err) {
     try {
-      const res = await api.get("/api/products", { params: { limit: 100, ...params } });
+      const res = await api.get("/api/products", { params: { limit: 10000, ...params } });
       const items = res.data?.items || (Array.isArray(res.data) ? res.data : []);
       const mapped = items.map(mapApiProduct).filter(Boolean);
       if (mapped.length > 0) {
@@ -176,8 +176,8 @@ export async function fetchProducts(params = {}) {
   }
 }
 
-// 2️⃣ Kategoriya bo'yicha olish: limit 100
-export async function fetchProductsByCategory(category, fallback = [], limit = 100) {
+// 2️⃣ Kategoriya bo'yicha olish (cheksiz limit)
+export async function fetchProductsByCategory(category, fallback = [], limit = 10000) {
   const cacheKey = `cat_${category}_${limit}`;
   const now = Date.now();
   const cached = memoryCache.get(cacheKey);
@@ -207,10 +207,10 @@ export async function fetchProductsByCategory(category, fallback = [], limit = 1
     const results = await Promise.all(
       categoriesToFetch.map(async (cat) => {
         try {
-          const q = new URLSearchParams({ category: cat, limit: String(limit) }).toString();
+          const q = new URLSearchParams({ category: cat, limit: String(limit || 10000) }).toString();
           const res = await fetch(`${API_BASE}/api/products?${q}`, {
             next: { revalidate: 30 },
-            signal: AbortSignal.timeout(15000),
+            signal: AbortSignal.timeout(40000),
           });
           if (res.ok) {
             const data = await res.json();
@@ -218,7 +218,7 @@ export async function fetchProductsByCategory(category, fallback = [], limit = 1
           }
         } catch (_) {}
         try {
-          const res = await api.get("/api/products", { params: { category: cat, limit } });
+          const res = await api.get("/api/products", { params: { category: cat, limit: limit || 10000 } });
           return res.data?.items || (Array.isArray(res.data) ? res.data : []);
         } catch {
           return [];
@@ -251,5 +251,5 @@ export async function fetchProductsByCategory(category, fallback = [], limit = 1
 
 // Server ishga tushishi bilan keshni orqa fonda isitish (Pre-warming)
 if (typeof window === "undefined") {
-  fetchProducts({ limit: 60 }).catch(() => { });
+  fetchProducts({ limit: 10000 }).catch(() => { });
 }

@@ -22,7 +22,7 @@ export const revalidate = 30;
 
 export default async function Page() {
   const { t, lang } = await getT();
-  const products = await fetchProducts({ limit: 100 });
+  const products = await fetchProducts({ limit: 10000 });
   return (
     <div className="min-h-screen flex flex-col bg-slate-50/50 dark:bg-[#0f1015]">
       <Header t={t} lang={lang} />

@@ -65,7 +65,7 @@ function SectionSkeleton({ id, title, href, allLabel }) {
 // Orqa fonda ma'lumotlarni olib keluvchi asinxron komponent
 async function AsyncProductSection({ id, title, href, allLabel, filterFn, t, priority = false, productsPromise }) {
   const allProducts = (await productsPromise) || [];
-  const productsToShow = allProducts.filter(filterFn).slice(0, 10);
+  const productsToShow = allProducts.filter(filterFn);
   return (
     <ProductSection id={id} title={title} href={href} allLabel={allLabel} products={productsToShow} t={t} priority={priority} />
   );
@@ -74,7 +74,7 @@ async function AsyncProductSection({ id, title, href, allLabel, filterFn, t, pri
 export default async function Home() {
   const { t, lang } = await getT();
   const s = t.sections;
-  const productsPromise = fetchProducts({ limit: 60 });
+  const productsPromise = fetchProducts({ limit: 10000 });
 
   const jsonLd = [
     {

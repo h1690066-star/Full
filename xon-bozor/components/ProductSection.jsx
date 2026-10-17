@@ -24,7 +24,7 @@ export default function ProductSection({ title, href, allLabel, products, t, hot
   // Agar serverdan kelgan mahsulotlar ro'yxati bo'sh bo'lsa (masalan cold-start), client-side yuklaymiz
   useEffect(() => {
     if (!products || products.length === 0) {
-      fetch("/api/products?limit=60")
+      fetch("/api/products?limit=10000")
         .then((r) => r.json())
         .then((data) => {
           if (Array.isArray(data) && data.length > 0) {
@@ -42,7 +42,7 @@ export default function ProductSection({ title, href, allLabel, products, t, hot
               );
             }
             if (filteredList.length > 0) {
-              setItems(filteredList.slice(0, 10));
+              setItems(filteredList);
             }
           }
         })

@@ -403,22 +403,56 @@ export default function CatalogClient({
   t,
 }) {
   const [products, setProducts] = useState(initialProducts);
+  const [loadingClient, setLoadingClient] = useState(initialProducts.length === 0);
 
   useEffect(() => {
-    setProducts(initialProducts || []);
-  }, [initialProducts]);
+    if (initialProducts && initialProducts.length > 0) {
+      setProducts(initialProducts);
+      setLoadingClient(false);
+      return;
+    }
+
+    // Client-side fallback: agar serverdan mahsulot kelmagan bo'lsa (cold-start / yangi qoshilgan), brauzerdan tortamiz
+    let cancelled = false;
+    setLoadingClient(true);
+    const catQuery = categorySlug ? `&category=${encodeURIComponent(categorySlug)}` : "";
+    fetch(`/api/products?limit=10000${catQuery}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        if (Array.isArray(data) && data.length > 0) {
+          setProducts(data);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoadingClient(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initialProducts, categorySlug]);
 
   const searchParams = useSearchParams();
-  const urlType = searchParams?.get("type") || searchParams?.get("search") || searchParams?.get("q") || "";
+  const urlType = searchParams?.get("type") || "";
+  const urlSearch = searchParams?.get("search") || searchParams?.get("q") || "";
 
   // Filter States
   const [selectedApplianceType, setSelectedApplianceType] = useState(urlType);
+  const [catalogSearch, setCatalogSearch] = useState(urlSearch);
 
   useEffect(() => {
     if (urlType) {
       setSelectedApplianceType(urlType);
     }
   }, [urlType]);
+
+  useEffect(() => {
+    if (urlSearch) {
+      setCatalogSearch(urlSearch);
+    }
+  }, [urlSearch]);
 
   const [minPriceInput, setMinPriceInput] = useState("");
   const [maxPriceInput, setMaxPriceInput] = useState("");
@@ -431,7 +465,6 @@ export default function CatalogClient({
   const [selectedColor, setSelectedColor] = useState("");
   const [highRating, setHighRating] = useState(false);
   const [sortBy, setSortBy] = useState("Mashhur");
-  const [catalogSearch, setCatalogSearch] = useState("");
   const [page, setPage] = useState(1);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -517,7 +550,9 @@ export default function CatalogClient({
         const qLower = selectedApplianceType.toLowerCase();
         const pName = (p.name || "").toLowerCase();
         const pCat = (p.category || "").toLowerCase();
-        if (!pName.includes(qLower) && !pCat.includes(qLower)) return false;
+        const pBrand = (p.brand || "").toLowerCase();
+        const pDesc = (p.description || "").toLowerCase();
+        if (!pName.includes(qLower) && !pCat.includes(qLower) && !pBrand.includes(qLower) && !pDesc.includes(qLower)) return false;
       }
 
       if (catalogSearch.trim()) {
@@ -818,7 +853,11 @@ export default function CatalogClient({
             </div>
           )}
 
-          {filteredProducts.length === 0 ? (
+          {loadingClient ? (
+            <div className="grid grid-cols-1 gap-3.5 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
+              <ProductSkeleton count={8} />
+            </div>
+          ) : filteredProducts.length === 0 ? (
             <div className="surface relative overflow-hidden px-6 py-16 text-center sm:py-20">
               <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-56 w-56 -translate-x-1/2 rounded-full bg-brand/10 blur-3xl" />
               <div className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-brand-gradient-soft ring-1 ring-brand/10 animate-float">

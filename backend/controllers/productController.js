@@ -38,7 +38,7 @@ const LISTS = ['colors', 'storage'];
 // GET /api/products  (web + admin)  -> filter, search, sort, pagination
 exports.getProducts = async (req, res) => {
   try {
-    const { search, category, used, minPrice, maxPrice, inStock, sort, page = 1, limit = 12, all } = req.query;
+    const { search, category, used, minPrice, maxPrice, inStock, sort, page = 1, limit, all } = req.query;
     const filter = {};
 
     // admin panel ?all=true yuborsa nofaol mahsulotlar ham chiqadi (token bilan)
@@ -90,7 +90,7 @@ exports.getProducts = async (req, res) => {
     const sortBy = sortMap[sort] || sortMap.newest;
 
     const pageNum = Math.max(1, Number(page) || 1);
-    const limitNum = limit === 'all' || limit === '0' ? 1000 : Math.min(1000, Math.max(1, Number(limit) || 1000));
+    const limitNum = (!limit || limit === 'all' || limit === '0') ? 10000 : Math.max(1, Number(limit) || 10000);
 
     const [items, total] = await Promise.all([
       Product.find(filter).sort(sortBy).skip((pageNum - 1) * limitNum).limit(limitNum),
