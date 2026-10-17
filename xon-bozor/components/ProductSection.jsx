@@ -13,40 +13,49 @@ import ProductSkeleton from "./ProductSkeleton";
 
 export default function ProductSection({ title, href, allLabel, products, t, hot = false, id, priority = false }) {
   const [items, setItems] = useState(products || []);
+  const [loading, setLoading] = useState(!products || products.length === 0);
   const [query, setQuery] = useState("");
 
   useEffect(() => {
     if (products && products.length > 0) {
       setItems(products);
+      setLoading(false);
     }
   }, [products]);
 
   // Agar serverdan kelgan mahsulotlar ro'yxati bo'sh bo'lsa (masalan cold-start), client-side yuklaymiz
   useEffect(() => {
     if (!products || products.length === 0) {
+      setLoading(true);
       fetch("/api/products?limit=10000")
         .then((r) => r.json())
         .then((data) => {
           if (Array.isArray(data) && data.length > 0) {
             let filteredList = data;
             if (id === "new") {
-              filteredList = data.filter((p) => !p.used && (p.category === "Phones" || !p.category));
+              filteredList = data.filter((p) => {
+                const cat = (p.category || "").toLowerCase();
+                return !p.used && (cat === "phones" || cat === "smartfonlar" || !cat);
+              });
             } else if (id === "used") {
               filteredList = data.filter((p) => p.used);
             } else if (id === "appliances") {
-              filteredList = data.filter(
-                (p) =>
-                  p.category === "Home appliances" ||
-                  p.category === "Elektronika" ||
-                  p.category === "Maishiy texnika"
-              );
+              filteredList = data.filter((p) => {
+                const cat = (p.category || "").toLowerCase();
+                return (
+                  cat.includes("appliance") ||
+                  cat.includes("maishiy") ||
+                  cat.includes("elektronika")
+                );
+              });
             }
             if (filteredList.length > 0) {
               setItems(filteredList);
             }
           }
         })
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => setLoading(false));
     }
   }, [products, id]);
 
@@ -113,7 +122,7 @@ export default function ProductSection({ title, href, allLabel, products, t, hot
         </div>
       </div>
 
-      {!products && items.length === 0 ? (
+      {loading && items.length === 0 ? (
         <div className="grid grid-cols-1 min-[400px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 lg:gap-4">
           <ProductSkeleton count={5} />
         </div>

@@ -116,7 +116,10 @@ export default async function Home() {
             allLabel={s.all}
             productsPromise={productsPromise}
             priority={true}
-            filterFn={(p) => !p.used && (p.category === "Phones" || !p.category)}
+            filterFn={(p) => {
+              const cat = (p.category || "").toLowerCase();
+              return !p.used && (cat === "phones" || cat === "smartfonlar" || !cat);
+            }}
             t={t}
           />
         </Suspense>
@@ -142,11 +145,10 @@ export default async function Home() {
             href="/catalog/appliances"
             allLabel={s.allAppliances}
             productsPromise={productsPromise}
-            filterFn={(p) =>
-              p.category === "Home appliances" ||
-              p.category === "Elektronika" ||
-              p.category === "Maishiy texnika"
-            }
+            filterFn={(p) => {
+              const cat = (p.category || "").toLowerCase();
+              return cat.includes("appliance") || cat.includes("maishiy") || cat.includes("elektronika");
+            }}
             t={t}
           />
         </Suspense>

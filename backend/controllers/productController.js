@@ -93,7 +93,7 @@ exports.getProducts = async (req, res) => {
     const limitNum = (!limit || limit === 'all' || limit === '0') ? 10000 : Math.max(1, Number(limit) || 10000);
 
     const [items, total] = await Promise.all([
-      Product.find(filter).sort(sortBy).skip((pageNum - 1) * limitNum).limit(limitNum),
+      Product.find(filter).select('-imagesData').sort(sortBy).skip((pageNum - 1) * limitNum).limit(limitNum),
       Product.countDocuments(filter),
     ]);
 
@@ -119,7 +119,7 @@ exports.getProduct = async (req, res) => {
     const { id } = req.params;
     if (!mongoose.isValidObjectId(id)) return res.status(400).json({ message: 'ID notogri' });
 
-    const product = await Product.findById(id);
+    const product = await Product.findById(id).select('-imagesData');
     if (!product) return res.status(404).json({ message: 'Mahsulot topilmadi' });
 
     // oddiy foydalanuvchi nofaol mahsulotni kora olmaydi
@@ -129,7 +129,7 @@ exports.getProduct = async (req, res) => {
       category: product.category,
       _id: { $ne: product._id },
       isActive: { $ne: false },
-    }).limit(4);
+    }).select('-imagesData').limit(4);
 
     res.json({ product, related });
   } catch (err) {
@@ -165,7 +165,9 @@ exports.createProduct = async (req, res) => {
     data.imagesData = (req.files || []).map(fileToImageData).filter(Boolean);
 
     const product = await Product.create(data);
-    res.status(201).json(product);
+    const prodObj = product.toObject();
+    delete prodObj.imagesData;
+    res.status(201).json(prodObj);
   } catch (err) {
     cleanupFiles(req.files);
     const status = err.name === 'ValidationError' || err.name === 'CastError' ? 400 : 500;
@@ -208,7 +210,9 @@ exports.updateProduct = async (req, res) => {
     }
 
     await product.save();
-    res.json(product);
+    const prodObj = product.toObject();
+    delete prodObj.imagesData;
+    res.json(prodObj);
   } catch (err) {
     cleanupFiles(req.files);
     const status = err.name === 'ValidationError' || err.name === 'CastError' ? 400 : 500;
