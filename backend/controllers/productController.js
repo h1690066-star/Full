@@ -162,12 +162,22 @@ exports.createProduct = async (req, res) => {
       data.used = true;
     }
     data.images = (req.files || []).map(toUrl);
-    data.imagesData = (req.files || []).map(fileToImageData).filter(Boolean);
+
+    // Rasmlarni alohida uploaded_images to'plamiga saqlash (mahsulot hujjatini og'irlashtirmaslik uchun)
+    const imgDataList = (req.files || []).map(fileToImageData).filter(Boolean);
+    if (imgDataList.length > 0 && mongoose.connection && mongoose.connection.db) {
+      const coll = mongoose.connection.db.collection('uploaded_images');
+      for (const img of imgDataList) {
+        coll.updateOne(
+          { filename: img.filename },
+          { $set: { filename: img.filename, data: img.data, mime: img.mime, updatedAt: new Date() } },
+          { upsert: true }
+        ).catch(() => {});
+      }
+    }
 
     const product = await Product.create(data);
-    const prodObj = product.toObject();
-    delete prodObj.imagesData;
-    res.status(201).json(prodObj);
+    res.status(201).json(product);
   } catch (err) {
     cleanupFiles(req.files);
     const status = err.name === 'ValidationError' || err.name === 'CastError' ? 400 : 500;
@@ -205,14 +215,21 @@ exports.updateProduct = async (req, res) => {
 
     if (req.files && req.files.length) {
       product.images.push(...req.files.map(toUrl));
-      if (!product.imagesData) product.imagesData = [];
-      product.imagesData.push(...req.files.map(fileToImageData).filter(Boolean));
+      const imgDataList = req.files.map(fileToImageData).filter(Boolean);
+      if (imgDataList.length > 0 && mongoose.connection && mongoose.connection.db) {
+        const coll = mongoose.connection.db.collection('uploaded_images');
+        for (const img of imgDataList) {
+          coll.updateOne(
+            { filename: img.filename },
+            { $set: { filename: img.filename, data: img.data, mime: img.mime, updatedAt: new Date() } },
+            { upsert: true }
+          ).catch(() => {});
+        }
+      }
     }
 
     await product.save();
-    const prodObj = product.toObject();
-    delete prodObj.imagesData;
-    res.json(prodObj);
+    res.json(product);
   } catch (err) {
     cleanupFiles(req.files);
     const status = err.name === 'ValidationError' || err.name === 'CastError' ? 400 : 500;

@@ -34,6 +34,16 @@ app.get('/uploads/:filename', async (req, res, next) => {
     return res.sendFile(localPath);
   }
   try {
+    const mongoose = require('mongoose');
+    if (mongoose.connection && mongoose.connection.db) {
+      const uploadedImg = await mongoose.connection.db.collection('uploaded_images').findOne({ filename });
+      if (uploadedImg && uploadedImg.data) {
+        const buf = Buffer.from(uploadedImg.data, 'base64');
+        res.type(uploadedImg.mime || 'image/jpeg');
+        return res.send(buf);
+      }
+    }
+
     const Product = require('./models/Product');
     const product = await Product.findOne({
       $or: [
