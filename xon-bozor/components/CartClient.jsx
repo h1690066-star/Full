@@ -299,69 +299,90 @@ export default function CartClient({ t }) {
     setCustomerInfo({ ...customerInfo, [e.target.name]: e.target.value });
   };
 
-  const handleDetectLocation = () => {
+  const handleOpenGoogleMaps = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const query = [
+      customerInfo.street,
+      customerInfo.district,
+      customerInfo.region || "Toshkent shahri",
+      "O'zbekiston",
+    ]
+      .filter(Boolean)
+      .join(", ");
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+    toast("Google Xaritadan manzilingizni tanlab, ko'cha va uy raqamiga kiritishingiz mumkin", "info");
+  };
+
+  const handleDetectLocation = (e) => {
+    if (e) e.preventDefault();
     if (typeof window === "undefined" || !navigator.geolocation) {
-      toast("Brauzeringiz geolokatsiyani qo'llab-quvvatlamaydi", "error");
+      toast("Brauzeringiz geolokatsiyani qo'llab-quvvatlamaydi. Xaritadan tanlashingiz mumkin.", "error");
       return;
     }
 
     setIsLocating(true);
-    toast("Lokatsiyangiz aniqlanmoqda...", "info");
+    toast("GPS orqali lokatsiyangiz aniqlanmoqda...", "info");
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
         try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 6000);
           const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`,
+            { signal: controller.signal }
           );
-          const data = await res.json();
-          if (data && data.address) {
-            const addr = data.address;
-            const road = addr.road || addr.street || addr.pedestrian || addr.suburb || "";
-            const house = addr.house_number ? `${addr.house_number}-uy` : "";
-            const neighbourhood = addr.neighbourhood || addr.suburb || addr.district || "";
-            const city = addr.city || addr.town || addr.county || addr.state || "";
+          clearTimeout(timeoutId);
 
-            const formattedStreet =
-              [road, house, neighbourhood].filter(Boolean).join(", ") ||
-              `GPS: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.address) {
+              const addr = data.address;
+              const road = addr.road || addr.street || addr.pedestrian || addr.suburb || "";
+              const house = addr.house_number ? `${addr.house_number}-uy` : "";
+              const neighbourhood = addr.neighbourhood || addr.suburb || addr.district || "";
+              const city = addr.city || addr.town || addr.county || addr.state || "";
 
-            setCustomerInfo((prev) => ({
-              ...prev,
-              street: formattedStreet,
-              ...(city.toLowerCase().includes("tashkent") || city.toLowerCase().includes("toshkent")
-                ? { region: "Toshkent shahri" }
-                : {}),
-              ...(addr.suburb || addr.district ? { district: addr.suburb || addr.district } : {}),
-            }));
-            toast("Lokatsiya muvaffaqiyatli aniqlandi!", "success");
-          } else {
-            setCustomerInfo((prev) => ({
-              ...prev,
-              street: `GPS: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`,
-            }));
-            toast("Lokatsiya koordinatalari olindi!", "success");
+              const formattedStreet =
+                [road, house, neighbourhood].filter(Boolean).join(", ") ||
+                `GPS: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+
+              setCustomerInfo((prev) => ({
+                ...prev,
+                street: formattedStreet,
+                ...(city.toLowerCase().includes("tashkent") || city.toLowerCase().includes("toshkent")
+                  ? { region: "Toshkent shahri" }
+                  : {}),
+                ...(addr.suburb || addr.district ? { district: addr.suburb || addr.district } : {}),
+              }));
+              toast("Lokatsiya muvaffaqiyatli aniqlandi!", "success");
+              setIsLocating(false);
+              return;
+            }
           }
-        } catch (err) {
-          setCustomerInfo((prev) => ({
-            ...prev,
-            street: `GPS: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`,
-          }));
-          toast("Lokatsiya koordinatalari olindi!", "success");
-        } finally {
-          setIsLocating(false);
-        }
+        } catch (_) {}
+
+        setCustomerInfo((prev) => ({
+          ...prev,
+          street: `GPS: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`,
+        }));
+        toast("GPS koordinatalaringiz olindi!", "success");
+        setIsLocating(false);
       },
       (error) => {
         setIsLocating(false);
         if (error.code === error.PERMISSION_DENIED) {
-          toast("Lokatsiyadan foydalanish uchun ruxsat berilmadi", "error");
+          toast("Lokatsiyadan foydalanish uchun ruxsat berilmadi. Xaritadan o'zingiz tanlashingiz mumkin.", "warning");
         } else {
-          toast("Lokatsiyani aniqlashda xatolik yuz berdi", "error");
+          toast("Lokatsiyani aniqlashda xatolik yuz berdi. Xaritadan tanlashingiz mumkin.", "error");
         }
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
     );
   };
 
@@ -488,6 +509,10 @@ export default function CartClient({ t }) {
             <div className="space-y-4 lg:col-span-2">
               {cart.map((item, idx) => {
                 const pid = item.id || item._id;
+                const itemImg = (typeof item.image === "string" && item.image.startsWith("/uploads/"))
+                  ? `https://full-nbal.onrender.com${item.image}`
+                  : item.image || (item.images && item.images[0]) || "https://images.unsplash.com/photo-1511707267537-b85faf00021e?w=400&h=400&fit=crop";
+
                 return (
                   <div
                     key={pid}
@@ -496,17 +521,18 @@ export default function CartClient({ t }) {
                   >
                     <Link
                       href={`/product/${pid}`}
-                      className="relative flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-50 p-3 ring-1 ring-inset ring-slate-100 dark:bg-white/[0.03] dark:ring-white/[0.06]"
+                      className="relative flex h-24 w-24 sm:h-28 sm:w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-50 p-2 sm:p-3 ring-1 ring-inset ring-slate-100 dark:bg-white/[0.03] dark:ring-white/[0.06]"
                     >
-                      {item.image ? (
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="h-full w-full object-contain transition duration-500 group-hover:scale-105"
-                        />
-                      ) : (
-                        <MdShoppingCart className="text-4xl text-brand/30" />
-                      )}
+                      <img
+                        src={itemImg}
+                        alt={item.name}
+                        loading="eager"
+                        fetchPriority="high"
+                        className="h-full w-full object-contain transition duration-500 group-hover:scale-105"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://images.unsplash.com/photo-1511707267537-b85faf00021e?w=400&h=400&fit=crop";
+                        }}
+                      />
                     </Link>
 
                     <div className="min-w-0 flex-1">
@@ -728,22 +754,22 @@ export default function CartClient({ t }) {
                     name="region"
                     value={customerInfo.region}
                     onChange={handleInputChange}
-                    className="input w-full cursor-pointer"
+                    className="input w-full cursor-pointer bg-white dark:bg-[#1a1b22] text-slate-900 dark:text-white"
                   >
-                    <option value="Toshkent shahri">Toshkent shahri</option>
-                    <option value="Toshkent viloyati">Toshkent viloyati</option>
-                    <option value="Samarqand">Samarqand</option>
-                    <option value="Farg'ona">Farg'ona</option>
-                    <option value="Andijon">Andijon</option>
-                    <option value="Namangan">Namangan</option>
-                    <option value="Buxoro">Buxoro</option>
-                    <option value="Qashqadaryo">Qashqadaryo</option>
-                    <option value="Surxondaryo">Surxondaryo</option>
-                    <option value="Xorazm">Xorazm</option>
-                    <option value="Navoiy">Navoiy</option>
-                    <option value="Jizzax">Jizzax</option>
-                    <option value="Sirdaryo">Sirdaryo</option>
-                    <option value="Qoraqalpog'iston">Qoraqalpog'iston</option>
+                    <option value="Toshkent shahri" className="bg-white dark:bg-[#1a1b22] text-slate-900 dark:text-white">Toshkent shahri</option>
+                    <option value="Toshkent viloyati" className="bg-white dark:bg-[#1a1b22] text-slate-900 dark:text-white">Toshkent viloyati</option>
+                    <option value="Samarqand" className="bg-white dark:bg-[#1a1b22] text-slate-900 dark:text-white">Samarqand</option>
+                    <option value="Farg'ona" className="bg-white dark:bg-[#1a1b22] text-slate-900 dark:text-white">Farg'ona</option>
+                    <option value="Andijon" className="bg-white dark:bg-[#1a1b22] text-slate-900 dark:text-white">Andijon</option>
+                    <option value="Namangan" className="bg-white dark:bg-[#1a1b22] text-slate-900 dark:text-white">Namangan</option>
+                    <option value="Buxoro" className="bg-white dark:bg-[#1a1b22] text-slate-900 dark:text-white">Buxoro</option>
+                    <option value="Qashqadaryo" className="bg-white dark:bg-[#1a1b22] text-slate-900 dark:text-white">Qashqadaryo</option>
+                    <option value="Surxondaryo" className="bg-white dark:bg-[#1a1b22] text-slate-900 dark:text-white">Surxondaryo</option>
+                    <option value="Xorazm" className="bg-white dark:bg-[#1a1b22] text-slate-900 dark:text-white">Xorazm</option>
+                    <option value="Navoiy" className="bg-white dark:bg-[#1a1b22] text-slate-900 dark:text-white">Navoiy</option>
+                    <option value="Jizzax" className="bg-white dark:bg-[#1a1b22] text-slate-900 dark:text-white">Jizzax</option>
+                    <option value="Sirdaryo" className="bg-white dark:bg-[#1a1b22] text-slate-900 dark:text-white">Sirdaryo</option>
+                    <option value="Qoraqalpog'iston" className="bg-white dark:bg-[#1a1b22] text-slate-900 dark:text-white">Qoraqalpog'iston</option>
                   </select>
                 </div>
 
@@ -763,31 +789,50 @@ export default function CartClient({ t }) {
 
                 {/* Street */}
                 <div className="sm:col-span-2">
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    Ko'cha va uy raqami
-                  </label>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      Ko'cha va uy raqami
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleOpenGoogleMaps}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 hover:underline cursor-pointer transition"
+                    >
+                      <MdLocationOn className="text-sm" />
+                      <span>Xaritada tanlash (Google Maps)</span>
+                    </button>
+                  </div>
+
                   <div className="relative flex items-center">
-                    <div className={iconSlot}>
-                      <MdLocationOn className="text-lg" />
-                    </div>
+                    <button
+                      type="button"
+                      onClick={handleOpenGoogleMaps}
+                      title="Google Maps orqali xaritada tanlash (bosing)"
+                      className="absolute left-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-lg text-rose-500 hover:bg-rose-500/10 active:scale-90 transition cursor-pointer"
+                    >
+                      <MdLocationOn className="text-xl" />
+                    </button>
                     <input
                       name="street"
                       placeholder="Bunyodkor ko'chasi, 42-uy, 18-xonadon"
                       value={customerInfo.street}
                       onChange={handleInputChange}
-                      className="input w-full pl-11 pr-36"
+                      className="input w-full pl-11 pr-32 sm:pr-36 text-xs sm:text-sm"
                     />
                     <button
                       type="button"
                       onClick={handleDetectLocation}
                       disabled={isLocating}
-                      title="GPS orqali joylashuvni aniqlash"
-                      className="absolute right-1.5 flex h-9 items-center gap-1.5 rounded-xl bg-brand/10 hover:bg-brand/20 dark:bg-brand/20 dark:hover:bg-brand/30 px-3 text-xs font-bold text-brand dark:text-brand-light transition active:scale-95 disabled:opacity-50 cursor-pointer shadow-xs"
+                      title="GPS orqali joylashuvni avtomatik aniqlash"
+                      className="absolute right-1.5 flex h-9 items-center gap-1.5 rounded-xl bg-brand/10 hover:bg-brand/20 dark:bg-brand/20 dark:hover:bg-brand/30 px-2.5 sm:px-3 text-xs font-bold text-brand dark:text-brand-light transition active:scale-95 disabled:opacity-50 cursor-pointer shadow-xs whitespace-nowrap"
                     >
-                      <MdMyLocation className={`text-sm ${isLocating ? "animate-spin" : ""}`} />
-                      <span>{isLocating ? "Aniqlanmoqda..." : "Joylashuvni aniqlash"}</span>
+                      <MdMyLocation className={`text-sm ${isLocating ? "animate-spin text-brand" : ""}`} />
+                      <span>{isLocating ? "Aniqlanmoqda..." : "Avto aniqlash"}</span>
                     </button>
                   </div>
+                  <p className="mt-1.5 text-[11px] text-slate-400 dark:text-slate-500">
+                    Qizil nishoncha yoki yuqoridagi havola orqali Google Maps&apos;da manzilingizni aniq ko&apos;rib tanlashingiz mumkin.
+                  </p>
                 </div>
 
                 {/* Notes */}
@@ -824,24 +869,34 @@ export default function CartClient({ t }) {
                 <MdShoppingCart className="text-lg text-slate-400 dark:text-slate-500" />
               </div>
               <div className="max-h-64 divide-y divide-slate-100 overflow-y-auto px-5 dark:divide-white/[0.06]">
-                {cart.map((item) => (
-                  <div key={item.id || item._id} className="flex items-center gap-3 py-3 text-xs">
-                    <div className="relative shrink-0">
-                      <img
-                        src={item.image}
-                        alt=""
-                        className="h-12 w-12 rounded-xl bg-slate-50 object-contain p-1 ring-1 ring-inset ring-slate-100 dark:bg-white/[0.03] dark:ring-white/[0.06]"
-                      />
-                      <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-slate-900 px-1 text-[10px] font-bold text-white dark:bg-white dark:text-slate-900">
-                        {item.quantity}
-                      </span>
+                {cart.map((item) => {
+                  const itemImg = (typeof item.image === "string" && item.image.startsWith("/uploads/"))
+                    ? `https://full-nbal.onrender.com${item.image}`
+                    : item.image || (item.images && item.images[0]) || "https://images.unsplash.com/photo-1511707267537-b85faf00021e?w=400&h=400&fit=crop";
+
+                  return (
+                    <div key={item.id || item._id} className="flex items-center gap-3 py-3 text-xs">
+                      <div className="relative shrink-0">
+                        <img
+                          src={itemImg}
+                          alt=""
+                          loading="eager"
+                          className="h-12 w-12 rounded-xl bg-slate-50 object-contain p-1 ring-1 ring-inset ring-slate-100 dark:bg-white/[0.03] dark:ring-white/[0.06]"
+                          onError={(e) => {
+                            e.currentTarget.src = "https://images.unsplash.com/photo-1511707267537-b85faf00021e?w=400&h=400&fit=crop";
+                          }}
+                        />
+                        <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-slate-900 px-1 text-[10px] font-bold text-white dark:bg-white dark:text-slate-900">
+                          {item.quantity}
+                        </span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-semibold text-slate-800 dark:text-slate-100">{item.name}</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">{item.quantity} x {formatPrice(item.price)} so'm</p>
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-semibold text-slate-800 dark:text-slate-100">{item.name}</p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">{item.quantity} x {formatPrice(item.price)} so'm</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <div className="p-4">
                 <div className="relative overflow-hidden rounded-2xl bg-brand-gradient p-4 text-white shadow-glow">
