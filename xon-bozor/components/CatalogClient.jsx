@@ -854,7 +854,7 @@ export default function CatalogClient({
           )}
 
           {loadingClient ? (
-            <div className="grid grid-cols-1 gap-3.5 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
               <ProductSkeleton count={8} />
             </div>
           ) : filteredProducts.length === 0 ? (
@@ -874,7 +874,7 @@ export default function CatalogClient({
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3.5 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
               {paginatedProducts.map((p) => (
                 <ProductCard key={p.id || p._id} product={p} t={t} />
               ))}
