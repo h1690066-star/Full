@@ -55,7 +55,7 @@ function SectionSkeleton({ id, title, href, allLabel }) {
           {allLabel}
         </span>
       </div>
-      <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 lg:gap-4">
+      <div className="grid grid-cols-1 min-[400px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 lg:gap-4">
         <ProductSkeleton count={5} />
       </div>
     </section>

@@ -114,7 +114,7 @@ export default function ProductSection({ title, href, allLabel, products, t, hot
       </div>
 
       {!products && items.length === 0 ? (
-        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 lg:gap-4">
+        <div className="grid grid-cols-1 min-[400px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 lg:gap-4">
           <ProductSkeleton count={5} />
         </div>
       ) : filtered.length === 0 ? (
@@ -130,7 +130,7 @@ export default function ProductSection({ title, href, allLabel, products, t, hot
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 lg:gap-4">
+        <div className="grid grid-cols-1 min-[400px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 lg:gap-4">
           {filtered.map((p, idx) => (
             <ProductCard key={p.id || p._id} product={p} t={t} priority={priority && idx < 2} />
           ))}

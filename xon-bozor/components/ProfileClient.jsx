@@ -14,9 +14,14 @@ import {
   MdPhone,
   MdVerified,
   MdLanguage,
+  MdShoppingBag,
+  MdFavorite,
+  MdArrowForward,
+  MdExpandMore,
 } from "react-icons/md";
 import { getMe, updateMe, changePassword, clearToken } from "@/lib/services/users";
-import { apiError } from "@/lib/api";
+import { api, apiError } from "@/lib/api";
+import { useCart } from "@/lib/cartContext";
 import { LANGS } from "@/lib/dictionaries";
 import { toast } from "./ToastContainer";
 
@@ -32,8 +37,22 @@ export default function ProfileClient({ t }) {
   const [pw, setPw] = useState({ oldPassword: "", newPassword: "" });
   const [msg, setMsg] = useState({ profile: "", profileErr: "", password: "", passwordErr: "" });
   const [state, setState] = useState("loading");
+  const { wishlistCount } = useCart();
+  const [ordersCount, setOrdersCount] = useState(0);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [currentLang, setCurrentLang] = useState("uz");
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && localStorage.getItem("token")) {
+      api.get("/api/orders/my")
+        .then((res) => {
+          const list = Array.isArray(res.data) ? res.data : res.data?.orders || [];
+          setOrdersCount(list.length);
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -319,19 +338,65 @@ export default function ProfileClient({ t }) {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Profile Info Form */}
-        <form
-          onSubmit={saveProfile}
-          className="surface space-y-4 p-6 animate-fade-up"
-          style={{ animationDelay: "80ms" }}
+      {/* Tezkor bo'limlar: Buyurtmalarim va Sevimlilar */}
+      <div className="grid grid-cols-2 gap-3.5 sm:gap-4 animate-fade-up">
+        <Link
+          href="/orders"
+          className="surface group relative overflow-hidden p-4 sm:p-5 transition-all hover:scale-[1.01] hover:border-brand/40 hover:shadow-lg active:scale-98 cursor-pointer flex flex-col justify-between"
         >
-          <div className="flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-white/[0.06]">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-gradient-soft text-brand dark:text-brand-300">
-              <MdPersonOutline className="text-xl" />
+          <div className="flex items-center justify-between">
+            <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand-300">
+              <MdShoppingBag className="text-2xl" />
             </div>
-            <h1 className="font-display text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">{p.title}</h1>
+            <MdArrowForward className="text-lg text-slate-400 group-hover:text-brand group-hover:translate-x-1 transition" />
           </div>
+          <div className="mt-3">
+            <span className="font-display text-xl sm:text-2xl font-black text-slate-900 dark:text-white tabular-nums">
+              {ordersCount}
+            </span>
+            <p className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 mt-0.5">
+              Buyurtmalarim
+            </p>
+          </div>
+        </Link>
+
+        <Link
+          href="/wishlist"
+          className="surface group relative overflow-hidden p-4 sm:p-5 transition-all hover:scale-[1.01] hover:border-rose-400/40 hover:shadow-lg active:scale-98 cursor-pointer flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-500 dark:bg-rose-500/20 dark:text-rose-400">
+              <MdFavorite className="text-2xl" />
+            </div>
+            <MdArrowForward className="text-lg text-slate-400 group-hover:text-rose-500 group-hover:translate-x-1 transition" />
+          </div>
+          <div className="mt-3">
+            <span className="font-display text-xl sm:text-2xl font-black text-slate-900 dark:text-white tabular-nums">
+              {wishlistCount}
+            </span>
+            <p className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 mt-0.5">
+              Sevimlilar
+            </p>
+          </div>
+        </Link>
+      </div>
+
+      {/* Profile Info Form */}
+      <form
+        onSubmit={saveProfile}
+        className="surface space-y-4 p-6 animate-fade-up"
+        style={{ animationDelay: "80ms" }}
+      >
+        <div className="flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-white/[0.06]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-gradient-soft text-brand dark:text-brand-300">
+            <MdPersonOutline className="text-xl" />
+          </div>
+          <div>
+            <h1 className="font-display text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">{p.title}</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Shaxsiy ma'lumotlaringizni tahrirlang</p>
+          </div>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <label className={label}>{t.auth.name}</label>
             <input
@@ -360,74 +425,96 @@ export default function ProfileClient({ t }) {
               className={input}
             />
           </div>
-          <div className="pt-1">
-            <button className={btn}>{p.save}</button>
-          </div>
-          {msg.profile && (
-            <p className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-700 animate-fade-in dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
-              <MdCheckCircle className="shrink-0" />
-              {msg.profile}
-            </p>
-          )}
-          {msg.profileErr && (
-            <p className="flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm font-medium text-rose-600 animate-fade-in dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
-              <MdErrorOutline className="shrink-0" />
-              {msg.profileErr}
-            </p>
-          )}
-        </form>
+        </div>
+        <div className="pt-2 flex justify-end">
+          <button className={btn}>{p.save}</button>
+        </div>
+        {msg.profile && (
+          <p className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-700 animate-fade-in dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+            <MdCheckCircle className="shrink-0" />
+            {msg.profile}
+          </p>
+        )}
+        {msg.profileErr && (
+          <p className="flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm font-medium text-rose-600 animate-fade-in dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+            <MdErrorOutline className="shrink-0" />
+            {msg.profileErr}
+          </p>
+        )}
+      </form>
 
-        {/* Change Password Form */}
-        <form
-          onSubmit={savePassword}
-          className="surface space-y-4 p-6 animate-fade-up"
-          style={{ animationDelay: "160ms" }}
+      {/* Parolni almashtirish (Accordion) */}
+      <div className="surface overflow-hidden p-6 animate-fade-up" style={{ animationDelay: "100ms" }}>
+        <button
+          type="button"
+          onClick={() => setShowPasswordForm(!showPasswordForm)}
+          className="flex w-full items-center justify-between text-left cursor-pointer select-none group"
         >
-          <div className="flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-white/[0.06]">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 dark:bg-amber-500/20 dark:text-amber-300">
               <MdLockOutline className="text-xl" />
             </div>
-            <h2 className="font-display text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">{p.passwordTitle}</h2>
+            <div>
+              <h2 className="font-display text-lg font-extrabold tracking-tight text-slate-900 dark:text-white group-hover:text-brand transition-colors">
+                {p.passwordTitle || "Parolni almashtirish"}
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {showPasswordForm ? "Parolni o'zgartirish formasini yopish" : "Yangi parol o'rnatish uchun bosing"}
+              </p>
+            </div>
           </div>
-          <div>
-            <label className={label}>{p.oldPassword}</label>
-            <input
-              type="password"
-              required
-              value={pw.oldPassword}
-              onChange={(e) => setPw({ ...pw, oldPassword: e.target.value })}
-              placeholder={p.oldPassword}
-              className={input}
-            />
+          <div className={`flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 transition-transform duration-200 ${showPasswordForm ? "rotate-180" : ""}`}>
+            <MdExpandMore className="text-xl" />
           </div>
-          <div>
-            <label className={label}>{p.newPassword}</label>
-            <input
-              type="password"
-              required
-              minLength={6}
-              value={pw.newPassword}
-              onChange={(e) => setPw({ ...pw, newPassword: e.target.value })}
-              placeholder={p.newPassword}
-              className={input}
-            />
-          </div>
-          <div className="pt-1">
-            <button className={btn}>{p.change}</button>
-          </div>
-          {msg.password && (
-            <p className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-700 animate-fade-in dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
-              <MdCheckCircle className="shrink-0" />
-              {msg.password}
-            </p>
-          )}
-          {msg.passwordErr && (
-            <p className="flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm font-medium text-rose-600 animate-fade-in dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
-              <MdErrorOutline className="shrink-0" />
-              {msg.passwordErr}
-            </p>
-          )}
-        </form>
+        </button>
+
+        {showPasswordForm && (
+          <form
+            onSubmit={savePassword}
+            className="mt-5 space-y-4 border-t border-slate-100 dark:border-white/[0.06] pt-5 animate-in fade-in duration-200"
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className={label}>{p.oldPassword}</label>
+                <input
+                  type="password"
+                  required
+                  value={pw.oldPassword}
+                  onChange={(e) => setPw({ ...pw, oldPassword: e.target.value })}
+                  placeholder={p.oldPassword}
+                  className={input}
+                />
+              </div>
+              <div>
+                <label className={label}>{p.newPassword}</label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={pw.newPassword}
+                  onChange={(e) => setPw({ ...pw, newPassword: e.target.value })}
+                  placeholder={p.newPassword}
+                  className={input}
+                />
+              </div>
+            </div>
+            <div className="pt-2 flex justify-end">
+              <button className={btn}>{p.change}</button>
+            </div>
+            {msg.password && (
+              <p className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-700 animate-fade-in dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+                <MdCheckCircle className="shrink-0" />
+                {msg.password}
+              </p>
+            )}
+            {msg.passwordErr && (
+              <p className="flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm font-medium text-rose-600 animate-fade-in dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+                <MdErrorOutline className="shrink-0" />
+                {msg.passwordErr}
+              </p>
+            )}
+          </form>
+        )}
       </div>
 
       {/* Tilni tanlash / Language Selector */}

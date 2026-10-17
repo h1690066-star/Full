@@ -14,7 +14,7 @@ export default async function CartPage() {
   return (
     <>
       <Header t={t} lang={lang} />
-      <main className="relative min-h-[60vh] overflow-hidden bg-slate-50/60 pb-28 transition-colors dark:bg-night min-[601px]:pb-0">
+      <main className="relative min-h-[60vh] overflow-hidden bg-slate-50/60 pb-28 transition-colors dark:bg-night min-[801px]:pb-0">
         {/* Decorative ambient background */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-0 h-[420px]">
           <div className="absolute inset-0 bg-grid opacity-[0.35] [mask-image:linear-gradient(to_bottom,black,transparent)] dark:opacity-[0.15]" />

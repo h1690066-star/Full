@@ -11,12 +11,13 @@ import {
   MdExpandMore,
   MdKitchen,
   MdSearchOff,
+  MdSearch,
   MdTune,
   MdVerified,
   MdStar,
 } from "react-icons/md";
 import ProductCard from "./ProductCard";
-import ProductSkeleton from "./ProductSkeleton";
+import ProductSkeleton from "./ProductSkeleton"; F
 
 const APPLIANCE_TYPES = [
   { name: "Muzlatgichlar", match: "Muzlatgich" },
@@ -25,6 +26,7 @@ const APPLIANCE_TYPES = [
   { name: "Mikroto'lqinli pechlar", match: "Mikrotolqinli" },
   { name: "Changyutgichlar", match: "Changyutgich" },
 ];
+
 
 const MODELS_LIST = ["iPhone 18 Pro", "iPhone 17", "iPhone 16", "Galaxy S25", "Galaxy A55", "Xiaomi 15"];
 const STORAGE_LIST = ["64GB", "128GB", "256GB", "512GB", "1TB"];
@@ -429,6 +431,7 @@ export default function CatalogClient({
   const [selectedColor, setSelectedColor] = useState("");
   const [highRating, setHighRating] = useState(false);
   const [sortBy, setSortBy] = useState("Mashhur");
+  const [catalogSearch, setCatalogSearch] = useState("");
   const [page, setPage] = useState(1);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -494,6 +497,7 @@ export default function CatalogClient({
     setSelectedColor("");
     setHighRating(false);
     setSelectedApplianceType("");
+    setCatalogSearch("");
   }, []);
 
   // Safe filter logic
@@ -514,6 +518,15 @@ export default function CatalogClient({
         const pName = (p.name || "").toLowerCase();
         const pCat = (p.category || "").toLowerCase();
         if (!pName.includes(qLower) && !pCat.includes(qLower)) return false;
+      }
+
+      if (catalogSearch.trim()) {
+        const q = catalogSearch.trim().toLowerCase();
+        const pName = (p.name || "").toLowerCase();
+        const pBrand = (p.brand || "").toLowerCase();
+        const pCat = (p.category || "").toLowerCase();
+        const pDesc = (p.description || "").toLowerCase();
+        if (!pName.includes(q) && !pBrand.includes(q) && !pCat.includes(q) && !pDesc.includes(q)) return false;
       }
 
       if (onlyOriginal && p.used) return false;
@@ -541,6 +554,7 @@ export default function CatalogClient({
   }, [
     products,
     selectedApplianceType,
+    catalogSearch,
     minPriceInput,
     maxPriceInput,
     onlyOriginal,
@@ -575,6 +589,7 @@ export default function CatalogClient({
     setPage(1);
   }, [
     selectedApplianceType,
+    catalogSearch,
     minPriceInput,
     maxPriceInput,
     onlyOriginal,
@@ -588,7 +603,7 @@ export default function CatalogClient({
   ]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pt-4 sm:pt-6 pb-28 min-[601px]:pb-0">
+    <div className="mx-auto max-w-7xl px-4 pt-4 sm:pt-6 pb-28 min-[801px]:pb-0">
       {/* Page Hero Header */}
       <section className="relative mb-6 overflow-hidden rounded-3xl border border-slate-200/70 dark:border-white/[0.06] bg-white dark:bg-night-100 px-5 py-7 sm:px-8 sm:py-10 shadow-soft animate-fade-up">
         <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid opacity-60 dark:opacity-30" />
@@ -727,41 +742,54 @@ export default function CatalogClient({
 
         {/* Right Main Product Grid (9 columns) */}
         <div className="space-y-4 lg:col-span-9 animate-fade-up" style={{ animationDelay: "120ms" }}>
-          {/* Toolbar: filter trigger + sort */}
-          <div className="glass flex items-center justify-between gap-3 rounded-2xl border border-slate-200/70 dark:border-white/[0.06] px-3 py-2.5 shadow-2xs sm:px-4">
-            <div className="flex items-center gap-2.5">
+          {/* Toolbar: Search input + filter trigger */}
+          <div className="glass flex items-center justify-between gap-2.5 sm:gap-3 rounded-2xl border border-slate-200/70 dark:border-white/[0.06] p-2.5 sm:px-4 shadow-2xs">
+            <div className="flex flex-1 items-center gap-2">
+              {/* Search input in front of filter */}
+              <div className="relative flex-1 max-w-md">
+                <MdSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-slate-400" />
+                <input
+                  type="text"
+                  value={catalogSearch}
+                  onChange={(e) => {
+                    setCatalogSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  placeholder="Mahsulotlarni qidirish..."
+                  className="input h-10 w-full pl-9 pr-8 text-xs sm:text-sm rounded-xl"
+                />
+                {catalogSearch && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCatalogSearch("");
+                      setPage(1);
+                    }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+                    aria-label="Qidiruvni tozalash"
+                  >
+                    <MdClose className="text-base" />
+                  </button>
+                )}
+              </div>
+
+              {/* Filter button (mobile/tablet < lg) */}
               <button
                 type="button"
                 onClick={() => setMobileFilterOpen(true)}
-                className="btn btn-secondary h-10 gap-2 px-4 lg:hidden"
+                className="btn btn-secondary h-10 shrink-0 gap-1.5 px-3.5 sm:px-4 lg:hidden"
               >
                 <MdTune className="text-base text-brand dark:text-brand-light" />
-                <span>Filtrlar</span>
+                <span className="text-xs sm:text-sm font-semibold">Filtrlar</span>
               </button>
-              <span className="hidden text-[13px] font-medium text-slate-500 dark:text-slate-400 sm:inline">
-                <span className="font-display font-bold tabular-nums text-slate-900 dark:text-white">
-                  {filteredProducts.length}
-                </span>{" "}
-                ta mahsulot topildi
-              </span>
             </div>
 
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-              <span className="hidden sm:inline">Saralash:</span>
-              <div className="relative">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="input h-10 w-auto cursor-pointer appearance-none py-0 pl-3.5 pr-9 text-[13px] font-semibold"
-                >
-                  <option value="Mashhur">Mashhur</option>
-                  <option value="Arzonroq">Arzonroq</option>
-                  <option value="Qimmatroq">Qimmatroq</option>
-                  <option value="Yangi">Yangi kelganlar</option>
-                </select>
-                <MdExpandMore className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-base text-slate-400" />
-              </div>
-            </div>
+            <span className="hidden text-[13px] font-medium text-slate-500 dark:text-slate-400 sm:inline shrink-0 pr-1">
+              <span className="font-display font-bold tabular-nums text-slate-900 dark:text-white">
+                {filteredProducts.length}
+              </span>{" "}
+              ta mahsulot
+            </span>
           </div>
 
           {selectedApplianceType && (
@@ -807,7 +835,7 @@ export default function CatalogClient({
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3.5 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
+            <div className="grid grid-cols-1 gap-3.5 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
               {paginatedProducts.map((p) => (
                 <ProductCard key={p.id || p._id} product={p} t={t} />
               ))}

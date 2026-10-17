@@ -22,7 +22,7 @@ export default function Loading() {
         </div>
 
         {/* 5 Cards Skeleton */}
-        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 lg:gap-4">
+        <div className="grid grid-cols-1 min-[400px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 lg:gap-4">
           {[1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}

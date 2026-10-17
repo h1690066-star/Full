@@ -15,7 +15,7 @@ export default async function Page() {
   return (
     <div className="min-h-screen flex flex-col transition-colors">
       <Header t={t} lang={lang} />
-      <main className="flex-1 px-4 py-8 pb-28 sm:py-12 min-[601px]:pb-12">
+      <main className="flex-1 px-4 py-8 pb-28 sm:py-12 min-[801px]:pb-12">
         <ProfileClient t={t} />
       </main>
       <Footer t={t} />
