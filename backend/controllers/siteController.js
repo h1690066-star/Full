@@ -140,3 +140,4 @@ exports.updateSiteContent = async (req, res) => {
     res.status(500).json({ message: 'Saqlashda xatolik yuz berdi', error: err.message });
   }
 };
+

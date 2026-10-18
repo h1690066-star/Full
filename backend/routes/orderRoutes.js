@@ -1,13 +1,13 @@
 const router = require('express').Router();
 const auth = require('../middleware/auth');
 const userAuth = require('../middleware/userAuth');
-const { orderLimiter } = require('../middleware/rateLimit');
+const optionalUserAuth = require('../middleware/optionalUserAuth');
 const uploadReceipt = require('../middleware/uploadReceipt');
 const c = require('../controllers/orderController');
 
 // ---- Web (mijoz) ----
 router.get('/payment-info', c.paymentInfo);
-router.post('/', userAuth, orderLimiter, uploadReceipt.single('receipt'), c.create);
+router.post('/', optionalUserAuth, uploadReceipt.single('receipt'), c.create);
 router.get('/my', userAuth, c.my);
 
 // ---- Admin ----

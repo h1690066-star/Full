@@ -55,3 +55,4 @@ const SiteContentSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model('SiteContent', SiteContentSchema);
+

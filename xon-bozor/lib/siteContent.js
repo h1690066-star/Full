@@ -13,3 +13,4 @@ export async function fetchSiteContent() {
     return null;
   }
 }
+

@@ -1,6 +1,8 @@
+// app/api/telegram-order/route.js
 import { NextResponse } from "next/server";
 
-const DEFAULT_BOT_TOKEN = "8832265019:AAGdOMzPWlcVOPZ-_5Upa7zELuKm0aNkDU8";
+export const runtime = "nodejs";
+
 const BOT_USERNAME = "xonbozorbuyurtma_bot";
 
 const esc = (s) =>
@@ -9,39 +11,24 @@ const esc = (s) =>
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 
-async function resolveChatId(botToken, configuredChatId) {
-  // Agar env da to'g'ri chat_id bo'lsa (va bot ID siga teng bo'lmasa)
-  if (configuredChatId && configuredChatId !== "8832265019" && configuredChatId !== "8215957478") {
-    return configuredChatId;
-  }
+const tgUrl = (token, method) => `https://api.telegram.org/bot${token}/${method}`;
 
-  try {
-    const res = await fetch(`https://api.telegram.org/bot${botToken}/getUpdates`, {
-      cache: "no-store",
-    });
-    const data = await res.json();
-    if (data.ok && Array.isArray(data.result) && data.result.length > 0) {
-      // Oxirgi xabarni olamiz
-      for (let i = data.result.length - 1; i >= 0; i--) {
-        const u = data.result[i];
-        const chat = u.message?.chat || u.channel_post?.chat || u.my_chat_member?.chat;
-        if (chat?.id) {
-          console.log(`[Telegram Auto-Detect] Topilgan Chat ID: ${chat.id} (${chat.title || chat.username || chat.first_name})`);
-          return String(chat.id);
-        }
-      }
-    }
-  } catch (err) {
-    console.error("[Telegram Auto-Detect xatosi]:", err.message);
-  }
-
-  return null;
+async function sendText(token, chatId, text) {
+  const res = await fetch(tgUrl(token, "sendMessage"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
+  });
+  const data = await res.json();
+  if (!data.ok) console.warn("[Telegram] sendMessage xatosi:", data.description);
+  return data;
 }
 
 export async function POST(req) {
   try {
-    const botToken = process.env.TELEGRAM_BOT_TOKEN || DEFAULT_BOT_TOKEN;
-    const configuredChatId = process.env.TELEGRAM_CHAT_ID;
+    // Token va chat ID faqat .env.local dan olinadi
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
 
     let items = [];
     let customerInfo = {};
@@ -76,7 +63,14 @@ export async function POST(req) {
       total = Number(body.total || 0);
     }
 
-    const chatId = await resolveChatId(botToken, configuredChatId);
+    if (!botToken || !chatId) {
+      console.warn("⚠️ [Telegram]: .env.local da TELEGRAM_BOT_TOKEN yoki TELEGRAM_CHAT_ID yo'q. Serverni qayta ishga tushirganmisiz?");
+      return NextResponse.json({
+        success: false,
+        warning: "TELEGRAM_BOT_TOKEN yoki TELEGRAM_CHAT_ID sozlanmagan",
+        botUsername: BOT_USERNAME,
+      });
+    }
 
     // Xabar matnini tayyorlash
     const name = customerInfo.name || "Noma'lum mijoz";
@@ -88,12 +82,14 @@ export async function POST(req) {
     const telegramUsername = customerInfo.telegram ? `@${customerInfo.telegram.replace("@", "")}` : "Mavjud emas";
     const notes = customerInfo.notes || "Yo'q";
 
-    const itemsText = items.map((it, idx) => {
-      const pName = it.name || "Mahsulot";
-      const pQty = it.qty || it.quantity || 1;
-      const pPrice = Number(it.price || 0).toLocaleString("ru-RU");
-      return `${idx + 1}. <b>${esc(pName)}</b> — ${pQty} dona × ${pPrice} so'm`;
-    }).join("\n");
+    const itemsText = items
+      .map((it, idx) => {
+        const pName = it.name || "Mahsulot";
+        const pQty = it.qty || it.quantity || 1;
+        const pPrice = Number(it.price || 0).toLocaleString("ru-RU");
+        return `${idx + 1}. <b>${esc(pName)}</b> — ${pQty} dona × ${pPrice} so'm`;
+      })
+      .join("\n");
 
     const formattedTotal = Number(total).toLocaleString("ru-RU");
     const payLabel = paymentMethod === "card" ? "💳 Karta orqali to'lov" : "💵 Naqd to'lov (Yetkazilganda)";
@@ -111,16 +107,9 @@ export async function POST(req) {
       `💵 <b>Jami summa:</b> <b>${formattedTotal} so'm</b>\n` +
       `🕒 <b>Vaqti:</b> ${esc(dateStr)}`;
 
-    if (!chatId) {
-      console.warn(`⚠️ [Telegram]: Chat ID topilmadi. Botga @${BOT_USERNAME} Telegram orqali /start bosilmagan.`);
-      return NextResponse.json({
-        success: false,
-        warning: "Telegram botga /start bosilmagan yoki Chat ID sozlanmagan",
-        botUsername: BOT_USERNAME,
-      });
-    }
+    let lastResult = null;
 
-    // Agar chek rasmi mavjud bo'lsa
+    // 1. Chek rasmi bo'lsa
     if (receiptFile && typeof receiptFile === "object" && receiptFile.size > 0) {
       const tgForm = new FormData();
       tgForm.append("chat_id", chatId);
@@ -128,30 +117,18 @@ export async function POST(req) {
       tgForm.append("caption", messageHtml.slice(0, 1024));
       tgForm.append("parse_mode", "HTML");
 
-      const res = await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-        method: "POST",
-        body: tgForm,
-      });
-      const data = await res.json();
-
-      if (!data.ok) {
-        // Agar rasm yuborishda xatolik bo'lsa, oddiy text qilib yuboramiz
-        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text: messageHtml,
-            parse_mode: "HTML",
-          }),
-        });
+      const res = await fetch(tgUrl(botToken, "sendPhoto"), { method: "POST", body: tgForm });
+      lastResult = await res.json();
+      if (!lastResult.ok) {
+        console.warn("[Telegram] sendPhoto (chek) xatosi:", lastResult.description);
+        lastResult = await sendText(botToken, chatId, messageHtml);
       }
     } else {
-      // Chek yo'q bo'lsa: mahsulotlardan birining rasmi bormi?
+      // 2. Chek yo'q: mahsulot rasmi bormi?
       const firstImage = items.find((i) => i.image)?.image;
-      if (firstImage && firstImage.startsWith("http")) {
+      if (firstImage && String(firstImage).startsWith("http")) {
         try {
-          const res = await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+          const res = await fetch(tgUrl(botToken, "sendPhoto"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -161,41 +138,28 @@ export async function POST(req) {
               parse_mode: "HTML",
             }),
           });
-          const data = await res.json();
-          if (!data.ok) throw new Error(data.description);
-        } catch {
-          // Fallback text
-          await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              chat_id: chatId,
-              text: messageHtml,
-              parse_mode: "HTML",
-            }),
-          });
+          lastResult = await res.json();
+          if (!lastResult.ok) throw new Error(lastResult.description);
+        } catch (e) {
+          console.warn("[Telegram] sendPhoto (mahsulot) xatosi:", e.message);
+          lastResult = await sendText(botToken, chatId, messageHtml);
         }
       } else {
-        // Oddiy matn yuborish
-        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text: messageHtml,
-            parse_mode: "HTML",
-          }),
-        });
+        // 3. Oddiy matn
+        lastResult = await sendText(botToken, chatId, messageHtml);
       }
+    }
+
+    if (!lastResult?.ok) {
+      return NextResponse.json(
+        { success: false, error: lastResult?.description || "Telegramga yuborilmadi" },
+        { status: 502 }
+      );
     }
 
     return NextResponse.json({ success: true, message: "Telegramga yuborildi" });
   } catch (error) {
     console.error("Order Telegram API error:", error);
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
-

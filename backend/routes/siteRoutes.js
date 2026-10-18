@@ -9,3 +9,4 @@ router.get('/', siteController.getSiteContent);
 router.put('/', auth, siteController.updateSiteContent);
 
 module.exports = router;
+

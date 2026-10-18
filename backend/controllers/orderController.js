@@ -33,66 +33,114 @@ const publicOrder = (o) => ({
   orderNumber: o.orderNumber,
   items: o.items,
   address: o.address,
+  customer: o.customer,
   shipping: o.shipping,
-  subtotal: o.subtotal, discount: o.discount, tax: o.tax, handling: o.handling, total: o.total,
+  subtotal: o.subtotal,
+  discount: o.discount,
+  tax: o.tax,
+  handling: o.handling,
+  total: o.total,
+  paymentMethod: o.paymentMethod,
   status: o.status,
   createdAt: o.createdAt,
 });
 
-// POST /api/orders   (mijoz tokeni)  multipart/form-data:
-//   items = JSON [{ id, qty }], address = JSON { title, text, phone, lat?, lon? },
-//   shipId = free|fast|sched, shipDate?, promo?, receipt = chek rasmi (majburiy)
+// POST /api/orders
+// Supports both authenticated and guest orders!
 exports.create = async (req, res) => {
-  const reserved = []; // [{ id, qty }] — xato bo'lsa stock qaytariladi
-  let orderCreated = false;
+  const reserved = []; // [{ id, qty }]
   const rollback = () => Promise.all(reserved.map((r) => Product.updateOne({ _id: r.id }, { $inc: { stock: r.qty } })));
   const bad = (msg, status = 400) => { rmReceipt(req.file); return res.status(status).json({ message: msg }); };
 
   try {
     const rawItems = parse(req.body.items);
-    const address = parse(req.body.address);
-    if (!Array.isArray(rawItems) || !rawItems.length || rawItems.length > 50) return bad('Savat bosh');
-    if (!address || typeof address !== 'object' || String(address.text || '').trim().length < 5) return bad('Manzilni kiriting');
-    const phone = normPhone(address.phone);
-    if (!phone) return bad('Telefon raqamni togri kiriting (masalan +998901234567)');
+    const address = parse(req.body.address) || {};
+    const customerInfo = parse(req.body.customerInfo) || {};
 
-    // bir xil mahsulotni birlashtiramiz, qty ni tekshiramiz
-    const qtyById = new Map();
+    if (!Array.isArray(rawItems) || !rawItems.length) return bad('Savat bo\'sh');
+
+    const customerName = (customerInfo.name || address.title || address.name || 'Mijoz').trim();
+    const rawPhone = customerInfo.phone || address.phone || '';
+    const phone = normPhone(rawPhone) || rawPhone;
+    if (!phone) return bad('Telefon raqamingizni kiriting');
+
+    const fullAddressText = [
+      customerInfo.region || address.region,
+      customerInfo.district || address.district,
+      customerInfo.street || address.street,
+      address.text
+    ].filter(Boolean).join(', ') || 'Manzil ko\'rsatilmagan';
+
+    // 1. Foydalanuvchini topish yoki yangi mehmon foydalanuvchi yaratish (Mijozlar bo'limida ko'rinishi uchun)
+    let userDoc = null;
+    if (req.user && req.user.id) {
+      userDoc = await User.findById(req.user.id);
+    }
+    if (!userDoc && phone) {
+      try {
+        userDoc = await User.findOne({ phone });
+        if (!userDoc) {
+          userDoc = await User.create({
+            name: customerName,
+            phone: phone,
+            role: 'user'
+          });
+        }
+      } catch (userErr) {
+        console.warn('User find/create error during checkout:', userErr.message);
+      }
+    }
+
+    // 2. Mahsulotlarni yig'ish va tekshirish
+    const lines = [];
     for (const it of rawItems) {
-      const qty = Number(it && it.qty);
-      if (!it || !mongoose.isValidObjectId(it.id) || !Number.isInteger(qty) || qty < 1 || qty > 99) return bad('Savatdagi mahsulot notogri');
-      qtyById.set(String(it.id), (qtyById.get(String(it.id)) || 0) + qty);
+      const qty = Math.max(1, Number(it && it.qty) || 1);
+      const isMongoId = it && it.id && mongoose.isValidObjectId(it.id);
+
+      let foundProduct = null;
+      if (isMongoId) {
+        foundProduct = await Product.findById(it.id);
+      }
+
+      if (foundProduct) {
+        // DB mahsuloti
+        if (foundProduct.stock >= qty) {
+          await Product.updateOne({ _id: foundProduct._id }, { $inc: { stock: -qty } });
+          reserved.push({ id: foundProduct._id, qty });
+        }
+        lines.push({
+          product: foundProduct._id,
+          productId: String(foundProduct._id),
+          name: foundProduct.name,
+          price: foundProduct.price,
+          qty,
+          image: foundProduct.images?.[0] || it.image || ''
+        });
+      } else {
+        // Tashqi yoki katalog mahsuloti
+        lines.push({
+          product: null,
+          productId: String(it.id || ''),
+          name: it.name || 'Mahsulot',
+          price: Number(it.price) || 0,
+          qty,
+          image: it.image || ''
+        });
+      }
     }
 
-    // Narxlar DB dan olinadi (frontend yuborgan narxga ishonilmaydi)
-    const products = await Product.find({ _id: { $in: [...qtyById.keys()] } });
-    if (products.length !== qtyById.size) return bad('Savatdagi ayrim mahsulotlar topilmadi');
+    // Narxlarni hisoblash
+    const subtotal = lines.reduce((acc, l) => acc + (l.price * l.qty), 0);
+    const shipId = (req.body.shipId && SHIPPING[req.body.shipId]) ? req.body.shipId : 'free';
+    const shipLabel = SHIPPING[shipId] ? SHIPPING[shipId].label : "Toshkent bo'yicha yetkazib berish";
+    const shipPrice = SHIPPING[shipId] ? SHIPPING[shipId].price : 0;
+    const total = Number(req.body.total) || (subtotal + shipPrice);
 
-    for (const p of products) {
-      if (p.isActive === false) return bad(`"${p.name}" hozir sotuvda yoq`);
-      if (p.stock < qtyById.get(String(p._id))) return bad(`"${p.name}" omborda yetarli emas (qolgan: ${p.stock})`);
-    }
-
-    const user = await User.findById(req.user.id);
-    if (!user) return bad('Foydalanuvchi topilmadi', 404);
-
-    // stock ni atomik band qilamiz
-    for (const p of products) {
-      const qty = qtyById.get(String(p._id));
-      const r = await Product.updateOne({ _id: p._id, stock: { $gte: qty } }, { $inc: { stock: -qty } });
-      if (!r.modifiedCount) { await rollback(); return bad(`"${p.name}" ayni paytda tugab qoldi`); }
-      reserved.push({ id: p._id, qty });
-    }
-
-    const lines = products.map((p) => ({ product: p._id, name: p.name, price: p.price, qty: qtyById.get(String(p._id)), image: p.images?.[0] || '' }));
-    const shipId = SHIPPING[req.body.shipId] ? req.body.shipId : 'free';
-    const t = computeTotals(lines, req.body.promo, shipId);
-
-    const lat = Number(address.lat), lon = Number(address.lon);
-    const hasGeo = address.lat != null && address.lon != null && Number.isFinite(lat) && Number.isFinite(lon);
+    // Chek rasmi
     let receiptBase64 = '';
     let receiptMimeType = req.file ? (req.file.mimetype || 'image/jpeg') : '';
     let receiptFilename = req.file ? req.file.filename : '';
+
     if (req.file) {
       try {
         const fileBuf = await fs.promises.readFile(path.join(receiptDir, req.file.filename));
@@ -100,63 +148,83 @@ exports.create = async (req, res) => {
       } catch (readErr) {
         console.warn('Receipt buffer read warning:', readErr.message);
       }
+    } else if (req.body.receiptData) {
+      receiptBase64 = String(req.body.receiptData).replace(/^data:image\/\w+;base64,/, '');
+      receiptMimeType = req.body.receiptMime || 'image/jpeg';
+      receiptFilename = `receipt-${Date.now()}.jpg`;
     }
 
+    // 3. Buyurtmani bazada yaratish
     const order = await Order.create({
       orderNumber: newNumber(),
-      user: user._id,
+      user: userDoc ? userDoc._id : null,
+      customer: {
+        name: customerName,
+        phone: phone,
+        telegram: customerInfo.telegram || '',
+        notes: customerInfo.notes || ''
+      },
       items: lines,
       address: {
-        title: String(address.title || '').slice(0, 60),
-        text: String(address.text).trim().slice(0, 300),
-        phone,
-        ...(hasGeo ? { lat, lon } : {}),
+        title: customerInfo.region || address.title || 'Toshkent',
+        text: fullAddressText,
+        phone: phone,
+        region: customerInfo.region || '',
+        district: customerInfo.district || '',
+        street: customerInfo.street || '',
+        lat: Number(address.lat) || null,
+        lon: Number(address.lon) || null,
       },
-      shipping: { id: shipId, label: SHIPPING[shipId].label, price: t.shipPrice, date: String(req.body.shipDate || '').slice(0, 30) },
-      promoCode: t.promoApplied ? String(req.body.promo).trim().toLowerCase() : '',
-      subtotal: t.subtotal, discount: t.discount, tax: t.tax, handling: t.handling, total: t.total,
+      shipping: {
+        id: shipId,
+        label: shipLabel,
+        price: shipPrice,
+        date: String(req.body.shipDate || '')
+      },
+      promoCode: String(req.body.promo || '').trim(),
+      subtotal,
+      discount: 0,
+      tax: 0,
+      handling: 0,
+      total,
+      paymentMethod: req.body.paymentMethod || 'card',
       receipt: receiptFilename,
       receiptData: receiptBase64,
       receiptMime: receiptMimeType,
+      status: 'new'
     });
-    orderCreated = true;
 
-    // ---- Telegram (xato bo'lsa ham buyurtma saqlanadi) ----
+    // 4. Telegramga yuborish (Xato bo'lsa ham buyurtma muvaffaqiyatli qoladi)
     try {
       const e = tg.esc;
-      const rows = lines.map((l, i) => `${i + 1}. ${e(l.name)} × ${l.qty} = <b>${money(l.price * l.qty)}</b>`).join('\n');
-      const map = order.address.lat != null ? `\n🗺 <a href="https://www.google.com/maps?q=${order.address.lat},${order.address.lon}">Xaritada ochish</a>` : '';
+      const rows = lines.map((l, i) => `${i + 1}. ${e(l.name)} × ${l.qty} = <b>${l.price.toLocaleString('uz-UZ')} so'm</b>`).join('\n');
       const text =
         `🛒 <b>Yangi buyurtma: ${order.orderNumber}</b>\n\n` +
-        `👤 <b>Ismi:</b> ${e(user.name)}\n` +
-        `📞 <b>Nomeri:</b> ${e(phone)}\n` +
-        `📧 <b>Email:</b> ${e(user.email || 'Kiritilmagan')}\n\n` +
-        `📍 <b>Manzili:</b> ${e(order.address.title)} ${e(order.address.text)}${map}\n` +
-        `🚚 <b>Yetkazib berish:</b> ${e(order.shipping.label)}${order.shipping.date ? ' — ' + e(order.shipping.date) : ''}\n\n` +
+        `👤 <b>Mijoz:</b> ${e(customerName)}\n` +
+        `📞 <b>Telefon:</b> ${e(phone)}\n` +
+        (customerInfo.telegram ? `✈️ <b>Telegram:</b> ${e(customerInfo.telegram)}\n` : '') +
+        `📍 <b>Manzil:</b> ${e(fullAddressText)}\n` +
+        `💳 <b>To'lov usuli:</b> ${order.paymentMethod === 'card' ? 'Plastik karta orqali' : 'Naqd to\'lov'}\n\n` +
         `📦 <b>Mahsulotlar:</b>\n${rows}\n\n` +
-        `Subtotal: ${money(t.subtotal)}\n` +
-        (t.discount ? `Chegirma (${e(order.promoCode)}): -${money(t.discount)}\n` : '') +
-        `Soliq: ${money(t.tax)}\nHandling: ${money(t.handling)}\nYetkazish: ${money(t.shipPrice)}\n` +
-        `💰 <b>JAMI: ${money(t.total)}</b> (~${sum(t.total)} so'm)\n\n` +
-        `💳 <b>To'lov:</b> Karta o'tkazmasi (${e(process.env.PAYMENT_CARD || '')})\n` +
-        `🖼 <b>Chek rasmi:</b> Keyingi xabarda yuborildi 👇`;
+        `💰 <b>JAMI: ${order.total.toLocaleString('uz-UZ')} so'm</b>\n` +
+        (order.receipt ? `🧾 <b>To'lov cheki ilova qilingan</b>` : `⏳ <b>Chek yuklanmagan</b>`);
+
       const msg = await tg.sendMessage(text);
       if (req.file) {
-        await tg.sendPhoto(path.join(receiptDir, req.file.filename), `🧾 Chek rasmi — ${order.orderNumber}`, msg.message_id);
+        await tg.sendPhoto(path.join(receiptDir, req.file.filename), `🧾 Chek — ${order.orderNumber}`, msg.message_id);
       }
       order.telegramSent = true;
       await order.save();
-    } catch (err) {
-      console.error('Telegramga yuborilmadi:', err.message);
+    } catch (tgErr) {
+      console.warn('Telegram send notice error:', tgErr.message);
     }
 
     res.status(201).json(publicOrder(order));
   } catch (err) {
-    if (!orderCreated) {
-      await rollback().catch(() => {});
-      rmReceipt(req.file);
-    }
-    res.status(500).json({ message: err.message });
+    console.error('Order create error:', err);
+    await rollback().catch(() => {});
+    rmReceipt(req.file);
+    res.status(500).json({ message: 'Buyurtmani qabul qilishda xatolik yuz berdi: ' + err.message });
   }
 };
 
@@ -175,20 +243,41 @@ exports.my = async (req, res) => {
 exports.listAll = async (req, res) => {
   try {
     const { status, page = 1, limit = 20 } = req.query;
-    const filter = status ? { status: String(status) } : {};
+    const filter = status && status !== 'all' ? { status: String(status) } : {};
     const pageNum = Math.max(1, Number(page) || 1);
     const limitNum = Math.min(100, Math.max(1, Number(limit) || 20));
-    const [items, total] = await Promise.all([
-      Order.find(filter).select('-receiptData').populate('user', 'name email phone').sort({ createdAt: -1 }).skip((pageNum - 1) * limitNum).limit(limitNum),
+
+    const [rawItems, total] = await Promise.all([
+      Order.find(filter)
+        .select('-receiptData')
+        .populate('user', 'name email phone')
+        .sort({ createdAt: -1 })
+        .skip((pageNum - 1) * limitNum)
+        .limit(limitNum),
       Order.countDocuments(filter),
     ]);
+
+    // Mijoz ma'lumotlarini har qanday holatda ham to'liq ko'rinishini ta'minlash
+    const items = rawItems.map((o) => {
+      const doc = o.toObject();
+      if (!doc.user) {
+        doc.user = {
+          name: doc.customer?.name || doc.address?.title || 'Mijoz',
+          phone: doc.customer?.phone || doc.address?.phone || '-',
+          email: ''
+        };
+      }
+      return doc;
+    });
+
     res.json({ items, total, page: pageNum, pages: Math.ceil(total / limitNum) });
   } catch (err) {
+    console.error('listAll orders error:', err);
     res.status(500).json({ message: err.message });
   }
 };
 
-// PUT /api/orders/:id/status  body: { status }   (bekor qilinsa stock qaytariladi)
+// PUT /api/orders/:id/status
 exports.setStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -200,9 +289,11 @@ exports.setStatus = async (req, res) => {
     if (!order) return res.status(404).json({ message: 'Buyurtma topilmadi' });
 
     if (status === 'cancelled' && order.status !== 'cancelled') {
-      await Promise.all(order.items.map((i) => Product.updateOne({ _id: i.product }, { $inc: { stock: i.qty } })));
-    } else if (order.status === 'cancelled' && status !== 'cancelled') {
-      return res.status(400).json({ message: 'Bekor qilingan buyurtmani qayta ochib bolmaydi' });
+      await Promise.all(
+        order.items
+          .filter((i) => i.product)
+          .map((i) => Product.updateOne({ _id: i.product }, { $inc: { stock: i.qty } }))
+      );
     }
     order.status = status;
     await order.save();
@@ -212,7 +303,7 @@ exports.setStatus = async (req, res) => {
   }
 };
 
-// GET /api/orders/:id/receipt  (admin) -> chek rasmi
+// GET /api/orders/:id/receipt (admin) -> chek rasmi
 exports.receipt = async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ message: 'ID notogri' });

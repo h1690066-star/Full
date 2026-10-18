@@ -1,6 +1,13 @@
-// Telegram Bot orqali buyurtmalarni Frontenddan to'g'ridan-to'g'ri yuborish
-export const TELEGRAM_BOT_TOKEN = "8832265019:AAGdOMzPWlcVOPZ-_5Upa7zELuKm0aNkDU8";
+// lib/telegram-bot/index.js
+// Token va chat ID faqat serverda (.env.local) saqlanadi, brauzerga chiqmaydi.
+//
+// .env.local:
+//   TELEGRAM_BOT_TOKEN=BotFather_bergan_yangi_token
+//   TELEGRAM_CHAT_ID=sizning_chat_id_raqamingiz   (guruh bo'lsa -100... bilan boshlanadi)
+
 export const TELEGRAM_BOT_USERNAME = "xonbozorbuyurtma_bot";
+export const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
+// DIQQAT: tokenni hech qachon kodga yozmang, faqat .env.local da saqlang.
 
 const esc = (s) =>
   String(s ?? "")
@@ -8,36 +15,9 @@ const esc = (s) =>
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 
-// Botga yozgan admin/guruh chat_id sini avtomatik topish
+// Chat ID ni .env dan olamiz (getUpdates ishonchsiz, shuning uchun ishlatilmaydi)
 export async function getTargetChatId() {
-  if (typeof window !== "undefined") {
-    const saved = localStorage.getItem("tg_admin_chat_id");
-    if (saved) return saved;
-  }
-
-  try {
-    const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`, {
-      cache: "no-store",
-    });
-    const data = await res.json();
-    if (data.ok && Array.isArray(data.result) && data.result.length > 0) {
-      for (let i = data.result.length - 1; i >= 0; i--) {
-        const u = data.result[i];
-        const chat = u.message?.chat || u.channel_post?.chat || u.my_chat_member?.chat;
-        if (chat?.id) {
-          const chatIdStr = String(chat.id);
-          if (typeof window !== "undefined") {
-            localStorage.setItem("tg_admin_chat_id", chatIdStr);
-          }
-          return chatIdStr;
-        }
-      }
-    }
-  } catch (err) {
-    console.warn("[Telegram Bot] getUpdates xatosi:", err);
-  }
-
-  return null;
+  return process.env.TELEGRAM_CHAT_ID || null;
 }
 
 export function formatOrderMessage({ items = [], customerInfo = {}, paymentMethod = "cash", total = 0 }) {
@@ -50,12 +30,14 @@ export function formatOrderMessage({ items = [], customerInfo = {}, paymentMetho
   const tgUser = customerInfo.telegram ? `@${customerInfo.telegram.replace("@", "")}` : "Mavjud emas";
   const notes = customerInfo.notes || "Yo'q";
 
-  const itemsList = items.map((it, idx) => {
-    const pName = it.name || "Mahsulot";
-    const pQty = it.qty || it.quantity || 1;
-    const pPrice = Number(it.price || 0).toLocaleString("ru-RU");
-    return `${idx + 1}. <b>${esc(pName)}</b> — ${pQty} dona × ${pPrice} so'm`;
-  }).join("\n");
+  const itemsList = items
+    .map((it, idx) => {
+      const pName = it.name || "Mahsulot";
+      const pQty = it.qty || it.quantity || 1;
+      const pPrice = Number(it.price || 0).toLocaleString("ru-RU");
+      return `${idx + 1}. <b>${esc(pName)}</b> — ${pQty} dona × ${pPrice} so'm`;
+    })
+    .join("\n");
 
   const formattedTotal = Number(total).toLocaleString("ru-RU");
   const payLabel = paymentMethod === "card" ? "💳 Karta orqali to'lov" : "💵 Naqd to'lov (Yetkazilganda)";
@@ -75,26 +57,20 @@ export function formatOrderMessage({ items = [], customerInfo = {}, paymentMetho
   );
 }
 
-// Frontenddan to'g'ridan-to'g'ri Telegram bot API ga yuborish
-export async function sendOrderToTelegram({ items, customerInfo, paymentMethod, total, receiptFile }) {
-  const messageHtml = formatOrderMessage({ items, customerInfo, paymentMethod, total });
-  const chatId = await getTargetChatId();
+// ===== SERVER TOMONI (app/api/telegram-order/route.js ichida ishlating) =====
+export async function sendTelegramServer({ items, customerInfo, paymentMethod, total, receiptFile }) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
 
-  if (!chatId) {
-    console.warn(`[Telegram Bot] Chat ID topilmadi. Iltimos, Telegram orqali @${TELEGRAM_BOT_USERNAME} botiga /start bosing.`);
-    // Shunda ham server route orqali sinab ko'ramiz
-    const tgForm = new FormData();
-    tgForm.append("items", JSON.stringify(items));
-    tgForm.append("customerInfo", JSON.stringify(customerInfo));
-    tgForm.append("paymentMethod", paymentMethod);
-    tgForm.append("total", String(total));
-    if (receiptFile) tgForm.append("receipt", receiptFile);
-    await fetch("/api/telegram-order", { method: "POST", body: tgForm }).catch(() => {});
-    return { success: false, reason: "no_chat_id" };
+  if (!token || !chatId) {
+    console.warn("[Telegram]: .env.local da TELEGRAM_BOT_TOKEN yoki TELEGRAM_CHAT_ID yo'q.");
+    return { success: false, reason: "missing_env" };
   }
 
+  const messageHtml = formatOrderMessage({ items, customerInfo, paymentMethod, total });
+
   try {
-    // 1. Agar to'lov cheki bo'lsa, rasmni sendPhoto orqali yuboramiz
+    // 1. Chek rasmi bo'lsa sendPhoto
     if (receiptFile && typeof receiptFile === "object" && receiptFile.size > 0) {
       const form = new FormData();
       form.append("chat_id", chatId);
@@ -102,39 +78,44 @@ export async function sendOrderToTelegram({ items, customerInfo, paymentMethod, 
       form.append("caption", messageHtml.slice(0, 1024));
       form.append("parse_mode", "HTML");
 
-      const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
+      const res = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
         method: "POST",
         body: form,
       });
       const data = await res.json();
       if (data.ok) return { success: true };
+      console.warn("[Telegram] sendPhoto xatosi:", data.description);
     }
 
-    // 2. Aks holda oddiy xabar sifatida sendMessage yuboramiz
-    const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    // 2. Oddiy xabar
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: messageHtml,
-        parse_mode: "HTML",
-      }),
+      body: JSON.stringify({ chat_id: chatId, text: messageHtml, parse_mode: "HTML" }),
     });
     const data = await res.json();
-    return { success: Boolean(data.ok) };
+    if (!data.ok) console.warn("[Telegram] sendMessage xatosi:", data.description);
+    return { success: Boolean(data.ok), error: data.description };
   } catch (err) {
-    console.error("[Telegram Direct Send Error]:", err);
-    // Server fallback
-    try {
-      const tgForm = new FormData();
-      tgForm.append("items", JSON.stringify(items));
-      tgForm.append("customerInfo", JSON.stringify(customerInfo));
-      tgForm.append("paymentMethod", paymentMethod);
-      tgForm.append("total", String(total));
-      if (receiptFile) tgForm.append("receipt", receiptFile);
-      await fetch("/api/telegram-order", { method: "POST", body: tgForm });
-    } catch {}
+    console.error("[Telegram Send Error]:", err);
     return { success: false, error: err.message };
   }
 }
 
+// ===== BRAUZER TOMONI: faqat server route'ga yuboradi, token ishlatilmaydi =====
+export async function sendOrderToTelegram({ items, customerInfo, paymentMethod, total, receiptFile }) {
+  try {
+    const form = new FormData();
+    form.append("items", JSON.stringify(items));
+    form.append("customerInfo", JSON.stringify(customerInfo));
+    form.append("paymentMethod", paymentMethod);
+    form.append("total", String(total));
+    if (receiptFile) form.append("receipt", receiptFile);
+
+    const res = await fetch("/api/telegram-order", { method: "POST", body: form });
+    return { success: res.ok };
+  } catch (err) {
+    console.error("[Telegram Order Error]:", err);
+    return { success: false, error: err.message };
+  }
+}

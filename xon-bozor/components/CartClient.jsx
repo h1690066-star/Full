@@ -414,16 +414,37 @@ export default function CartClient({ t }) {
       name: item.name,
       price: item.price,
       qty: item.quantity,
+      image: item.image || item.images?.[0] || '',
     }));
 
     const addressObj = {
       title: customerInfo.region || "Toshkent shahri",
       text: `${customerInfo.district || ''}, ${customerInfo.street || ''} (Mijoz: ${customerInfo.name}, Tel: ${customerInfo.phone}, TG: ${customerInfo.telegram || "yo'q"}, Izoh: ${customerInfo.notes || "yo'q"})`,
       phone: customerInfo.phone,
+      region: customerInfo.region || "Toshkent shahri",
+      district: customerInfo.district || '',
+      street: customerInfo.street || '',
     };
 
+    // 1. Backend serverga (MongoDB bazasiga) buyurtmani yuborish -> Admin panelda ko'rinadi
     try {
-      // Telegram botga Frontenddan to'g'ridan-to'g'ri yuborish
+      const formData = new FormData();
+      formData.append("items", JSON.stringify(items));
+      formData.append("address", JSON.stringify(addressObj));
+      formData.append("customerInfo", JSON.stringify(customerInfo));
+      formData.append("paymentMethod", paymentMethod);
+      formData.append("total", String(cartTotal));
+      if (receiptFile) {
+        formData.append("receipt", receiptFile);
+      }
+
+      await api.post("/api/orders", formData);
+    } catch (apiErr) {
+      console.error("Backend order submission error:", apiErr);
+    }
+
+    // 2. Telegram botga xabarnoma yuborish
+    try {
       await sendOrderToTelegram({
         items,
         customerInfo: {
