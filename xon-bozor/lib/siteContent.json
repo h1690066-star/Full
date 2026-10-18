@@ -47,7 +47,7 @@
       "title": "Endi Bizda IPhone 18 Pro Max "
     }
   ],
-  "lastPushedAt": 1792341714604,
+  "lastPushedAt": 1792341807830,
   "perks": [
     {
       "id": "p-1",
@@ -74,7 +74,7 @@
       "href": "/catalog/phones",
       "id": "q-1",
       "sub": "Kafolatli va yangi",
-      "title": "Yangi telefonlar"
+      "title": "Yangi telefon"
     },
     {
       "href": "/catalog/used",
@@ -92,7 +92,7 @@
       "href": "/catalog/appliances",
       "id": "q-4",
       "sub": "Uy qulayligi uchun",
-      "title": "UY Jihozlari"
+      "title": "Maishiy texnika"
     }
   ],
   "sections": {
