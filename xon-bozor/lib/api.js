@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://full-nbal.onrender.com",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3211",
   timeout: 25000,
 });
 

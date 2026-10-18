@@ -70,7 +70,7 @@ export default function UserMenu({ loginLabel }) {
 
   const name = user?.name || user?.fullName || "";
   const avatar = user?.avatar;
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://full-nbal.onrender.com";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3211";
 
   let avatarUrl = null;
   if (avatar && typeof avatar === "string" && avatar.trim()) {

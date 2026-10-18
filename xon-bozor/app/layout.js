@@ -81,8 +81,7 @@ export default async function RootLayout({ children }) {
         <meta name="twitter:title" content="Xon Bozor — Original telefonlar va maishiy texnika" />
         <meta name="twitter:description" content="Original telefonlar, B/U smartfonlar va maishiy texnika Toshkentda. 0% muddatli to'lov va rasmiy kafolat. Xon Bozor: Toshkentda original iPhone, Samsung, Xiaomi telefonlari, tekshirilgan B/U smartfonlar, aksessuarlar va maishiy texnika. 0% muddatli to'lov, kafolat va tezkor yetkazish. | Xon Bozor — Original telefonlar, B/U smartfonlar va maishiy texnika" />
         <meta name="twitter:image" content={`${SITE}/images/hero/hero-1.png`} />
-        <link rel="preconnect" href="https://full-nbal.onrender.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://full-nbal.onrender.com" />
+
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
         <meta name="format-detection" content="telephone=no" />

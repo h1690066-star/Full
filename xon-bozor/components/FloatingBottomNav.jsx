@@ -120,7 +120,7 @@ export default function FloatingBottomNav() {
     },
   ];
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://full-nbal.onrender.com";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3211";
   const avatar = user?.avatar;
   const avatarUrl =
     avatar && typeof avatar === "string" && avatar.trim()

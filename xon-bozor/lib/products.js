@@ -8,7 +8,7 @@ export const formatPrice = (n) => {
 // Faqat APIdan kelgan mahsulotlarni formatlash uchun helper
 export const mapApiProduct = (item) => {
   if (!item) return null;
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://full-nbal.onrender.com";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3211";
 
   // URL rasmlarni afzal ko'ramiz (HTML hajmini kichik va yuklanishni tez qilish uchun)
   const rawImages = (item.images || [])
@@ -68,7 +68,7 @@ export const usedPhones = [];
 export const appliances = [];
 export const accessories = [];
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://full-nbal.onrender.com";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3211";
 
 // Server-side in-memory cache
 const memoryCache = new Map();

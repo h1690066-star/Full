@@ -9,9 +9,10 @@ const nextConfig = {
     deviceSizes: [360, 420, 640, 750, 828, 1080, 1200],
     imageSizes: [64, 96, 128, 180, 220, 256],
     remotePatterns: [
+      { protocol: "http", hostname: "127.0.0.1" },
       { protocol: "http", hostname: "localhost" },
-      { protocol: "https", hostname: "full-nbal.onrender.com" },
       { protocol: "https", hostname: "**" },
+      { protocol: "http", hostname: "**" },
     ],
   },
   experimental: {

@@ -543,7 +543,7 @@ export default function CartClient({ t }) {
               {cart.map((item, idx) => {
                 const pid = item.id || item._id;
                 const itemImg = (typeof item.image === "string" && item.image.startsWith("/uploads/"))
-                  ? `https://full-nbal.onrender.com${item.image}`
+                  ? `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3211"}${item.image}`
                   : item.image || (item.images && item.images[0]) || "https://images.unsplash.com/photo-1511707267537-b85faf00021e?w=400&h=400&fit=crop";
 
                 return (
@@ -904,7 +904,7 @@ export default function CartClient({ t }) {
               <div className="max-h-64 divide-y divide-slate-100 overflow-y-auto px-5 dark:divide-white/[0.06]">
                 {cart.map((item) => {
                   const itemImg = (typeof item.image === "string" && item.image.startsWith("/uploads/"))
-                    ? `https://full-nbal.onrender.com${item.image}`
+                    ? `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3211"}${item.image}`
                     : item.image || (item.images && item.images[0]) || "https://images.unsplash.com/photo-1511707267537-b85faf00021e?w=400&h=400&fit=crop";
 
                   return (
