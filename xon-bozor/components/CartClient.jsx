@@ -277,47 +277,6 @@ export default function CartClient({ t }) {
     );
   }
 
-  // Empty Cart Screen
-  if (cart.length === 0 && !ordered) {
-    return (
-      <div className="mx-auto max-w-xl px-4 py-16 text-center sm:py-24">
-        <div className="relative mx-auto mb-8 h-32 w-32 animate-scale-in">
-          <div className="absolute inset-0 rounded-[2rem] bg-brand-gradient opacity-30 blur-2xl" />
-          <div className="relative flex h-32 w-32 items-center justify-center rounded-[2rem] border border-white/60 bg-brand-gradient-soft text-brand shadow-soft animate-float dark:border-white/10 dark:text-brand-light">
-            <MdShoppingCart className="text-6xl" />
-          </div>
-        </div>
-        <span className="eyebrow animate-fade-up">{t.cartPage?.cartEyebrow || t.cart || "Savat"}</span>
-        <h1
-          className="mt-4 font-display text-3xl font-extrabold tracking-tight text-slate-900 animate-fade-up dark:text-white sm:text-4xl"
-          style={{ animationDelay: "60ms" }}
-        >
-          {t.cartPage?.emptyTitle || "Savatingiz hozircha bo'sh"}
-        </h1>
-        <p
-          className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-slate-500 animate-fade-up dark:text-slate-400 sm:text-base"
-          style={{ animationDelay: "120ms" }}
-        >
-          {t.cartPage?.emptyText || "Xon Bozor katalogidan o'zingizga ma'qul mahsulotlarni tanlang va savatga qo'shing."}
-        </p>
-        <Link
-          href="/"
-          className="btn btn-primary mt-8 h-12 px-8 animate-fade-up"
-          style={{ animationDelay: "180ms" }}
-        >
-          {t.cartPage?.startShopping || "Xaridni boshlash"} <MdArrowForward className="text-lg" />
-        </Link>
-        <div
-          className="mx-auto mt-10 grid max-w-md grid-cols-1 gap-3 text-left text-xs text-slate-500 animate-fade-up dark:text-slate-400 sm:grid-cols-2"
-          style={{ animationDelay: "240ms" }}
-        >
-          <TrustRow icon={MdLocalShipping}>{t.cartPage?.fastDelivery || "Toshkent bo'yicha 2 soatda yetkazib berish"}</TrustRow>
-          <TrustRow icon={MdSecurity}>{t.cartPage?.warranty || "100% rasmiy kafolat va xavfsiz to'lov"}</TrustRow>
-        </div>
-      </div>
-    );
-  }
-
   const savings =
     cartOldTotal > cartTotal
       ? Math.max(0, Math.round(Number(cartOldTotal) - Number(cartTotal)))
