@@ -9,7 +9,7 @@
     "email": "info@xonbozor.uz"
   },
   "sections": {
-    "productsTitle": "Product",
+    "productsTitle": "Mahsulotlar",
     "allLabel": "Barchasini ko'rish",
     "categoriesTitle": "Kategoriya Bolimi ",
     "categoriesSub": "Kerakli bo'limni tez toping !",
@@ -110,8 +110,8 @@
     }
   ],
   "updatedBy": "admin",
-  "lastPushedAt": "2026-10-18T09:45:42.575Z",
+  "lastPushedAt": "2026-10-18T09:47:28.723Z",
   "createdAt": "2026-10-18T05:08:37.970Z",
-  "updatedAt": "2026-10-18T09:45:42.626Z",
+  "updatedAt": "2026-10-18T09:47:28.725Z",
   "__v": 6
 }
