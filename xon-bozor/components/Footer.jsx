@@ -4,8 +4,12 @@ import { MdPhone, MdSmartDisplay, MdPhotoCamera, MdSend } from "react-icons/md";
 import { SiInstagram, SiYoutube } from "react-icons/si";
 import { PHONE } from "./Header";
 
-export default function Footer({ t }) {
+export default function Footer({ t, siteContent }) {
   const f = t.footer;
+  const activePhone = siteContent?.contact?.phone || PHONE;
+  const tgLink = siteContent?.contact?.telegram || "https://t.me";
+  const instaLink = siteContent?.contact?.instagram || "https://www.instagram.com/xon.bazzar?igsh=aHRhbXNpa3R6OTg4&utm_source=qr";
+  const ytLink = siteContent?.contact?.youtube || "https://www.youtube.com/@Xonbazar";
   return (
     <footer className="border-t border-indigo-100 dark:border-slate-800 bg-[#eef0ff] dark:bg-[#15161c] pt-12 pb-8 transition-colors">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -26,15 +30,15 @@ export default function Footer({ t }) {
           <div className="pt-2">
             <p className="text-[11px] text-slate-500 dark:text-slate-400">Savollar bo'yicha yagona aloqa markazi:</p>
             <a
-              href={`tel:${PHONE.replace(/\s/g, "")}`}
+              href={`tel:${activePhone.replace(/\s/g, "")}`}
               className="mt-0.5 inline-block text-base font-black text-brand hover:underline"
             >
-              {PHONE}
+              {activePhone}
             </a>
           </div>
           <div className="flex gap-2 pt-1 text-brand">
             <a
-              href="https://t.me"
+              href={tgLink}
               target="_blank"
               rel="noopener noreferrer"
               className="flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-slate-800 dark:text-white shadow-sm hover:bg-brand hover:text-white dark:hover:bg-brand transition"
@@ -43,7 +47,7 @@ export default function Footer({ t }) {
               <MdSend className="text-base" />
             </a>
             <a
-              href="https://www.instagram.com/xon.bazzar?igsh=aHRhbXNpa3R6OTg4&utm_source=qr"
+              href={instaLink}
               target="_blank"
               rel="noopener noreferrer"
               className="flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-slate-800 text-pink-600 dark:text-pink-400 shadow-sm hover:bg-brand hover:text-white dark:hover:bg-brand transition"
@@ -52,7 +56,7 @@ export default function Footer({ t }) {
               <SiInstagram className="text-sm" />
             </a>
             <a
-              href="https://www.youtube.com/@Xonbazar"
+              href={ytLink}
               target="_blank"
               rel="noopener noreferrer"
               className="flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-slate-800 text-red-600 dark:text-red-400 shadow-sm hover:bg-brand hover:text-white dark:hover:bg-brand transition"

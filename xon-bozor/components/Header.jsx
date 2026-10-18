@@ -36,7 +36,8 @@ function Logo({ compact = false }) {
   );
 }
 
-export default function Header({ t, lang }) {
+export default function Header({ t, lang, siteContent }) {
+  const activePhone = siteContent?.contact?.phone || PHONE;
   const nav = [
     [t.nav.newPhones, "/catalog/phones"],
     [t.nav.usedPhones, "/catalog/used"],
@@ -48,11 +49,18 @@ export default function Header({ t, lang }) {
     [t.nav.appliances, "/catalog/appliances"],
   ];
 
-  const perks = [
+  const defaultPerks = [
     { icon: MdPercent, text: lang === "ru" ? "Рассрочка 0%" : lang === "en" ? "0% instalments" : "0% muddatli to'lov" },
     { icon: MdVerified, text: lang === "ru" ? "Официальная гарантия" : lang === "en" ? "Official warranty" : "Rasmiy kafolat" },
     { icon: MdLocalShipping, text: t.cartPage?.fastDelivery || (lang === "ru" ? "По Ташкенту за 2 часа" : lang === "en" ? "Tashkent in 2 hours" : "Toshkent bo'ylab 2 soatda") },
   ];
+
+  const perks = siteContent?.perks && siteContent.perks.length > 0
+    ? siteContent.perks.map((p, i) => ({
+        icon: [MdPercent, MdVerified, MdLocalShipping][i % 3],
+        text: p.text
+      }))
+    : defaultPerks;
 
   return (
     <>
@@ -96,7 +104,7 @@ export default function Header({ t, lang }) {
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 lg:gap-6">
             <div className="flex shrink-0 items-center gap-3 lg:gap-5">
               <Logo />
-              <CatalogMenu t={t} phone={PHONE} />
+              <CatalogMenu t={t} phone={activePhone} />
             </div>
 
             <div className="ml-auto">
@@ -123,14 +131,14 @@ export default function Header({ t, lang }) {
               ))}
               <li className="ml-auto hidden pl-4 lg:block">
                 <a
-                  href={`tel:${PHONE.replace(/\s/g, "")}`}
+                  href={`tel:${activePhone.replace(/\s/g, "")}`}
                   className="flex items-center gap-2 text-[13px] font-semibold text-slate-700 transition hover:text-brand dark:text-slate-300"
                 >
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-pulse-ring rounded-full bg-emerald-400" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                   </span>
-                  {PHONE}
+                  {activePhone}
                 </a>
               </li>
             </ul>

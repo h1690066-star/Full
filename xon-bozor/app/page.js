@@ -7,6 +7,7 @@ import CategoriesSection from "@/components/CategoriesSection";
 import Footer from "@/components/Footer";
 import { getT } from "@/lib/i18n";
 import { fetchProducts } from "@/lib/products";
+import { fetchSiteContent } from "@/lib/siteContent";
 
 export const revalidate = 30;
 
@@ -79,7 +80,10 @@ async function AsyncProductSection({ id = "products", title, href, allLabel, t, 
 }
 
 export default async function Home() {
-  const { t, lang } = await getT();
+  const [siteContent, { t, lang }] = await Promise.all([
+    fetchSiteContent(),
+    getT()
+  ]);
   const s = t.sections;
   const productsPromise = fetchProducts({ limit: 10000 });
 
@@ -109,10 +113,10 @@ export default async function Home() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <Header t={t} lang={lang} />
+      <Header t={t} lang={lang} siteContent={siteContent} />
       <main>
         <h1 className="sr-only">Xon Bozor — Mobil &amp; Texnika</h1>
-        <Hero t={t} />
+        <Hero t={t} siteContent={siteContent} />
 
         {/* Yagona Mahsulotlar bo'limi (Barcha toifalar aralash holda, bo'limlarga ajratilmagan) */}
         <Suspense
@@ -138,7 +142,7 @@ export default async function Home() {
 
         <CategoriesSection t={t} />
       </main>
-      <Footer t={t} />
+      <Footer t={t} siteContent={siteContent} />
     </>
   );
 }

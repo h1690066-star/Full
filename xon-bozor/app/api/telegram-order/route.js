@@ -15,7 +15,6 @@ async function resolveChatId(botToken, configuredChatId) {
     return configuredChatId;
   }
 
-  // Avtomatik ravishda getUpdates orqali oxirgi yozgan admin yoki guruhni topish
   try {
     const res = await fetch(`https://api.telegram.org/bot${botToken}/getUpdates`, {
       cache: "no-store",
