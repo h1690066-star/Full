@@ -11,7 +11,7 @@ export default async function Page() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header t={t} lang={lang} />
-      <main className="relative flex-1 overflow-hidden px-4 py-8 pb-28 sm:py-12 min-[801px]:pb-12">
+      <main className="relative flex-1 overflow-hidden px-4 py-8 pb-28 sm:py-12 min-[1121px]:pb-12">
         <div className="pointer-events-none absolute -left-24 top-1/4 h-80 w-80 rounded-full bg-brand/10 blur-3xl" />
         <div className="pointer-events-none absolute -right-24 bottom-1/4 h-80 w-80 rounded-full bg-accent/10 blur-3xl" />
 

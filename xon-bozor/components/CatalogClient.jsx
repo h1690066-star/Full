@@ -17,7 +17,7 @@ import {
   MdStar,
 } from "react-icons/md";
 import ProductCard from "./ProductCard";
-import ProductSkeleton from "./ProductSkeleton"; F
+import ProductSkeleton from "./ProductSkeleton";
 
 const APPLIANCE_TYPES = [
   { name: "Muzlatgichlar", match: "Muzlatgich" },
@@ -638,7 +638,7 @@ export default function CatalogClient({
   ]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pt-4 sm:pt-6 pb-28 min-[801px]:pb-0">
+    <div className="mx-auto max-w-7xl px-4 pt-4 sm:pt-6 pb-28 min-[1121px]:pb-0">
       {/* Page Hero Header */}
       <section className="relative mb-6 overflow-hidden rounded-3xl border border-slate-200/70 dark:border-white/[0.06] bg-white dark:bg-night-100 px-5 py-7 sm:px-8 sm:py-10 shadow-soft animate-fade-up">
         <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid opacity-60 dark:opacity-30" />

@@ -15,7 +15,7 @@ export const metadata = {
     siteName: "Xon Bozor",
     locale: "uz_UZ",
     type: "website",
-  },
+  },  
 };
 
 export const revalidate = 30;

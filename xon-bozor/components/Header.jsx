@@ -56,8 +56,8 @@ export default function Header({ t, lang }) {
 
   return (
     <>
-      {/* ===== Header (>800px screens) — On screens <=800px top header is off, bottom floating nav is active ===== */}
-      <header className="max-[800px]:hidden sticky top-0 z-30">
+      {/* ===== Header (>1120px screens) — On screens <=1120px top header is off, bottom floating nav is active ===== */}
+      <header className="max-[1120px]:hidden sticky top-0 z-30">
         {/* Top utility bar */}
         <div className="relative z-40 bg-slate-100/90 text-[12px] text-slate-600 dark:bg-ink dark:text-white/70 border-b border-slate-200/80 dark:border-white/5">
           <div className="pointer-events-none absolute inset-0 bg-brand-gradient opacity-[0.05] dark:opacity-[0.18]" />

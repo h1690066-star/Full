@@ -138,7 +138,7 @@ export default function FloatingBottomNav() {
   if (pathname.startsWith("/admin")) return null;
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 pointer-events-auto min-[801px]:hidden">
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 pointer-events-auto min-[1121px]:hidden">
       <nav className="flex items-center gap-1 sm:gap-1.5 rounded-full bg-[#1a1b20]/90 p-1.5 shadow-2xl backdrop-blur-xl border border-white/10 transition-all duration-300">
         {tabs.map((tab) => {
           const Icon = tab.isActive && tab.activeIcon ? tab.activeIcon : tab.icon;

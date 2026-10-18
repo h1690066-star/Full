@@ -18,16 +18,16 @@ export default function WishlistClient({ t }) {
   if (wishlist.length === 0) {
     return (
       <div className="mx-auto max-w-xl px-4 py-20 text-center">
-        <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+        <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20 shadow-lg shadow-rose-500/10">
           <MdFavoriteBorder className="text-5xl" />
         </div>
-        <h1 className="text-2xl font-extrabold text-slate-800">Saralanganlar bo'sh</h1>
-        <p className="mt-2 text-sm text-slate-500">
+        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Saralanganlar bo'sh</h1>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
           O'zingizga yoqqan mahsulotlarning yurakcha belgisini bosib, keyinroq xarid qilish uchun saqlab qo'ying.
         </p>
         <Link
           href="/"
-          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3 font-semibold text-white hover:bg-brand-dark transition"
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3 font-semibold text-white hover:bg-brand-dark transition shadow-md shadow-brand/20"
         >
           Mahsulotlarni ko'rish <MdArrowForward />
         </Link>
@@ -39,8 +39,8 @@ export default function WishlistClient({ t }) {
     <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">Saralanganlar</h1>
-          <p className="text-sm text-slate-500">{wishlist.length} ta saqlangan mahsulot</p>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white sm:text-3xl">Saralanganlar</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{wishlist.length} ta saqlangan mahsulot</p>
         </div>
       </div>
 

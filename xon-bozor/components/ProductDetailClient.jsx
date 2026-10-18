@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   MdStar,
   MdFavorite,
@@ -184,18 +184,81 @@ export default function ProductDetailClient({ product, related = [], t }) {
     toggleWishlist(product);
   };
 
-  // Dynamic Specs List from API
-  const specsList = Array.isArray(product.specs) && product.specs.length > 0
-    ? product.specs
-    : (product.longDescription
-        ? product.longDescription.split("\n").filter(Boolean).map((line) => {
-            const parts = line.split(":");
-            return { label: parts[0]?.trim() || "Xususiyat", value: parts.slice(1).join(":")?.trim() || line };
-          })
-        : []);
+  // Dynamic Specs & Description Extraction
+  const { specsList, cleanDescription } = useMemo(() => {
+    const rawSpecs = Array.isArray(product.specs) ? product.specs : [];
+    const descText = product.description || "";
+    const longDescText = product.longDescription || "";
+
+    const isNonPhone =
+      /^(home appliances|maishiy texnika|elektronika|accessories|aksessuarlar)$/i.test(product.category || "") ||
+      /(televizor|smart tv|tv|muzlatgich|konditsioner|gaz plita|kir yuvish|changyutgich|dazmol|mikroto'lqinli)/i.test(product.name || "");
+
+    const parsedSpecs = [];
+    const userTextLines = [];
+
+    // Helper to validate and add spec
+    const addSpec = (label, value) => {
+      const l = String(label || "").trim();
+      const v = String(value || "").trim();
+      if (!l || !v) return;
+      if (v === l || v === ":" || v === "-") return;
+
+      // Filter bogus defaults for TVs/Appliances
+      if (isNonPhone) {
+        if (/apple a19 pro/i.test(v)) return; // phone CPU injected into TVs
+        if (/^avtonomlik$/i.test(l) && (/yangi/i.test(v) || !v)) return;
+      }
+
+      // Avoid duplicates
+      if (!parsedSpecs.some((s) => s.label.toLowerCase() === l.toLowerCase())) {
+        parsedSpecs.push({ label: l, value: v });
+      }
+    };
+
+    // 1. Process structured specs if available
+    if (rawSpecs.length > 0) {
+      rawSpecs.forEach((s) => {
+        if (s && s.label && s.value) addSpec(s.label, s.value);
+      });
+    }
+
+    // 2. Process longDescription for specs
+    if (longDescText) {
+      const lines = longDescText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      for (const line of lines) {
+        const colonIdx = line.indexOf(":");
+        if (colonIdx > 0) {
+          const l = line.slice(0, colonIdx).trim();
+          const v = line.slice(colonIdx + 1).trim();
+          addSpec(l, v);
+        }
+      }
+    }
+
+    // 3. Process description: separate user narrative text from specs
+    if (descText) {
+      const lines = descText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      for (const line of lines) {
+        const colonIdx = line.indexOf(":");
+        if (colonIdx > 0 && colonIdx < 35 && !line.includes(". ") && !line.endsWith(".")) {
+          // Looks like a spec line
+          const l = line.slice(0, colonIdx).trim();
+          const v = line.slice(colonIdx + 1).trim();
+          addSpec(l, v);
+        } else {
+          // Actual user description line!
+          userTextLines.push(line);
+        }
+      }
+    }
+
+    const cleanDesc = userTextLines.join("\n\n").trim();
+    return { specsList: parsedSpecs, cleanDescription: cleanDesc };
+  }, [product]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6">
+    <div className="mx-auto max-w-7xl px-4 py-6 pb-28 min-[1121px]:pb-8">
       {/* Breadcrumbs */}
       <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
         <Link href="/" className="hover:text-brand transition">Bosh sahifa</Link>
@@ -320,17 +383,17 @@ export default function ProductDetailClient({ product, related = [], t }) {
           {/* Narx qutisi va Muddatli to'lov */}
           <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-[#1a1b22] p-4 space-y-3">
             <div>
-              <div className="flex items-baseline gap-3">
-                <span className="text-3xl font-black text-brand tracking-tight">
+              <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
+                <span className="text-2xl sm:text-3xl font-black text-brand tracking-tight whitespace-nowrap">
                   {formatPrice(price)} so'm
                 </span>
                 {oldPrice > price && (
-                  <span className="text-sm font-semibold text-slate-400 line-through">
+                  <span className="text-xs sm:text-sm font-semibold text-slate-400 line-through whitespace-nowrap">
                     {formatPrice(oldPrice)} so'm
                   </span>
                 )}
                 {discountPercent > 0 && (
-                  <span className="rounded-md bg-rose-100 dark:bg-rose-950/60 px-1.5 py-0.5 text-xs font-bold text-rose-600 dark:text-rose-400">
+                  <span className="rounded-md bg-rose-100 dark:bg-rose-950/60 px-1.5 py-0.5 text-xs font-bold text-rose-600 dark:text-rose-400 whitespace-nowrap">
                     -{discountPercent}%
                   </span>
                 )}
@@ -339,13 +402,13 @@ export default function ProductDetailClient({ product, related = [], t }) {
 
             {/* Muddatli to'lov banner */}
             <div className="flex items-center justify-between rounded-xl bg-amber-400 border border-amber-500/30 p-2.5 text-xs font-bold text-slate-900 shadow-xs">
-              <div className="flex items-center gap-2">
-                <span className="rounded-md bg-amber-950 px-2 py-0.5 text-[11px] font-extrabold text-white">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <span className="rounded-md bg-amber-950 px-2 py-0.5 text-[11px] font-extrabold text-white whitespace-nowrap">
                   {formatPrice(monthlyPrice)} so'm / oyiga
                 </span>
-                <span className="font-bold text-slate-900">12 oyga muddatli to'lov</span>
+                <span className="font-bold text-slate-900 whitespace-nowrap text-[11px] sm:text-xs">12 oyga muddatli to'lov</span>
               </div>
-              <MdChevronRight className="text-xl text-slate-900" />
+              <MdChevronRight className="text-xl text-slate-900 shrink-0" />
             </div>
           </div>
 
@@ -610,7 +673,7 @@ export default function ProductDetailClient({ product, related = [], t }) {
         {activeTab === "desc" && (
           <div className="mt-6 text-sm text-slate-700 dark:text-slate-300 leading-relaxed max-w-3xl space-y-3 font-medium whitespace-pre-line">
             <p>
-              {product.longDescription || product.description || "Mahsulot tavsifi kiritilmagan."}
+              {cleanDescription || (product.description && !product.description.includes(":") ? product.description : "") || `${product.name} — original mahsulot. Rasmiy kafolat va tezkor yetkazib berish xizmati bilan.`}
             </p>
           </div>
         )}

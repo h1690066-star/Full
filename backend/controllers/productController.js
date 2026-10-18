@@ -31,6 +31,16 @@ const toArray = (v) => {
   return v.split(',').map((s) => s.trim()).filter(Boolean);
 };
 
+const parseSpecs = (v) => {
+  if (Array.isArray(v)) return v.filter((s) => s && s.label && s.value);
+  if (typeof v !== 'string' || !v.trim()) return [];
+  try {
+    const j = JSON.parse(v);
+    if (Array.isArray(j)) return j.filter((s) => s && s.label && s.value);
+  } catch {}
+  return [];
+};
+
 const SCALAR = ['name', 'description', 'longDescription', 'brand', 'category'];
 const NUMERIC = ['price', 'oldPrice', 'discount', 'stock'];
 const LISTS = ['colors', 'storage'];
@@ -161,6 +171,7 @@ exports.createProduct = async (req, res) => {
     } else if (/^(used(\s*phones?)?|b\/u(\s*telefonlar)?)$/i.test(String(b.category || ''))) {
       data.used = true;
     }
+    if (b.specs !== undefined) data.specs = parseSpecs(b.specs);
     data.images = (req.files || []).map(toUrl);
 
     // Rasmlarni alohida uploaded_images to'plamiga saqlash (mahsulot hujjatini og'irlashtirmaslik uchun)
@@ -204,6 +215,7 @@ exports.updateProduct = async (req, res) => {
     } else if (b.category && /^(used(\s*phones?)?|b\/u(\s*telefonlar)?)$/i.test(String(b.category))) {
       product.used = true;
     }
+    if (b.specs !== undefined) product.specs = parseSpecs(b.specs);
 
     // ochirilishi kerak bolgan eski rasmlar: removeImages = ["/uploads/a.jpg", ...]
     const toRemove = toArray(b.removeImages);
