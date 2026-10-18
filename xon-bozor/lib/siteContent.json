@@ -8,6 +8,13 @@
     "youtube": "https://www.youtube.com/@Xonbazar",
     "email": "info@xonbozor.uz"
   },
+  "sections": {
+    "productsTitle": "Product",
+    "allLabel": "Barchasini ko'rish",
+    "categoriesTitle": "Kategoriya Bolimi ",
+    "categoriesSub": "Kerakli bo'limni tez toping !",
+    "footerAbout": "O'zbekistonda original smartfonlar, noutbuklar va eng so'nggi maishiy texnikaning ishonchli do'koni. Rasmiy kafolat va tezkor yetkazib berish."
+  },
   "promo": {
     "tag": "Eksklyuziv",
     "title": "iPhone 18 Pro",
@@ -103,8 +110,8 @@
     }
   ],
   "updatedBy": "admin",
-  "lastPushedAt": "2026-10-18T09:44:23.245Z",
+  "lastPushedAt": "2026-10-18T09:45:42.575Z",
   "createdAt": "2026-10-18T05:08:37.970Z",
-  "updatedAt": "2026-10-18T09:44:23.246Z",
+  "updatedAt": "2026-10-18T09:45:42.626Z",
   "__v": 6
 }
