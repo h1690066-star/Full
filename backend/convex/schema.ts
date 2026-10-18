@@ -92,6 +92,7 @@ export default defineSchema({
     sections: v.optional(v.any()),
     promo: v.optional(v.any()),
     announcement: v.optional(v.any()),
+    doGitPush: v.optional(v.any()),
     lastPushedAt: v.optional(v.number()),
     updatedBy: v.optional(v.string()),
   }),

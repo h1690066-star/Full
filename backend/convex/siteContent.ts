@@ -77,6 +77,7 @@ export const update = mutation({
     const cleanContent = { ...args.content };
     delete cleanContent._id;
     delete cleanContent._creationTime;
+    delete cleanContent.id;
     cleanContent.lastPushedAt = Date.now();
 
     if (existing) {
