@@ -16,6 +16,7 @@ import {
 } from "react-icons/md";
 import { loginUser, registerUser, saveToken } from "@/lib/services/users";
 import { apiError } from "@/lib/api";
+import { toast } from "./ToastContainer";
 
 export default function AuthForm({ mode, t }) {
   const a = t.auth;
@@ -37,7 +38,9 @@ export default function AuthForm({ mode, t }) {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        setError("Rasm hajmi 5MB dan oshmasligi kerak");
+        const msg = "Rasm hajmi 5MB dan oshmasligi kerak";
+        setError(msg);
+        toast(msg, "warning");
         return;
       }
       setAvatarFile(file);
@@ -62,6 +65,7 @@ export default function AuthForm({ mode, t }) {
         const loginIdentifier = (form.login || form.phone || form.email || "").trim();
         const res = await loginUser({ login: loginIdentifier, password: form.password });
         saveToken(res);
+        toast("Xush kelibsiz! Tizimga muvaffaqiyatli kirdingiz", "success");
         router.push("/");
         router.refresh();
       } else {
@@ -73,11 +77,14 @@ export default function AuthForm({ mode, t }) {
           avatarFile: avatarFile,
         });
         saveToken(res);
+        toast("Ro'yxatdan muvaffaqiyatli o'tdingiz!", "success");
         router.push("/");
         router.refresh();
       }
     } catch (err) {
-      setError(apiError(err, a.error));
+      const errMsg = apiError(err, a.error);
+      setError(errMsg);
+      toast(errMsg, "error");
     } finally {
       setLoading(false);
     }

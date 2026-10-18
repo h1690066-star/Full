@@ -182,6 +182,10 @@ export default function ProductDetailClient({ product, related = [], t }) {
   const handleWishlistClick = () => {
     if (!requireAuth()) return;
     toggleWishlist(product);
+    toast(
+      isLiked ? "Saralanganlardan chiqarildi" : "Saralanganlarga qo'shildi",
+      isLiked ? "info" : "complete"
+    );
   };
 
   // Dynamic Specs & Description Extraction

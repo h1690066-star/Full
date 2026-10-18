@@ -79,6 +79,10 @@ function ProductCard({ product: p, t, priority = false }) {
     stop(e);
     if (!requireAuth()) return;
     toggleWishlist(p);
+    toast(
+      liked ? "Saralanganlardan chiqarildi" : "Saralanganlarga qo'shildi",
+      liked ? "info" : "complete"
+    );
   };
 
   return (
