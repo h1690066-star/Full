@@ -1,21 +1,19 @@
 import Link from "next/link";
-import { MdSmartphone, MdKitchen, MdTv, MdLaptopMac, MdWatch, MdArrowForward } from "react-icons/md";
+import { MdSmartphone, MdKitchen, MdTv, MdLaptopMac, MdArrowForward } from "react-icons/md";
 
 const CATS = [
   { key: "phones", icon: MdSmartphone },
   { key: "appliances", icon: MdKitchen },
   { key: "tv", icon: MdTv },
   { key: "computers", icon: MdLaptopMac },
-  { key: "watches", icon: MdWatch },
 ];
 
-// Kategoriyalar uchun API berilmagan, shuning uchun ro'yxat statik.
 export default function CategoriesSection({ t }) {
   return (
     <section className="mx-auto max-w-7xl px-4 pb-14 pt-10" aria-labelledby="cats-h">
       <h2 id="cats-h" className="text-xl font-extrabold sm:text-2xl text-slate-900 dark:text-white">{t.sections.categories}</h2>
       <p className="mb-5 text-sm text-slate-500 dark:text-slate-400">{t.sections.categoriesSub}</p>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
         {CATS.map(({ key, icon: Icon }) => (
           <Link
             key={key}

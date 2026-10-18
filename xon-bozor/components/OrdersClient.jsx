@@ -42,8 +42,8 @@ export default function OrdersClient({ t }) {
   }, []);
 
   const formatPrice = (val) => {
-    const n = Number(val) || 0;
-    return n.toLocaleString("ru-RU").replace(/,/g, " ") + " so'm";
+    const n = Math.round(Number(val) || 0);
+    return n.toLocaleString("ru-RU").replace(/,/g, " ") + " " + (t.card?.som || "so'm");
   };
 
   const formatDate = (dateStr) => {
@@ -63,38 +63,27 @@ export default function OrdersClient({ t }) {
   };
 
   const getStatusBadge = (status) => {
-    switch (status) {
-      case "paid":
-        return {
-          label: "To'langan",
-          icon: MdCheckCircle,
-          cls: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20",
-        };
-      case "shipping":
-        return {
-          label: "Yetkazilmoqda",
-          icon: MdLocalShipping,
-          cls: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20",
-        };
-      case "completed":
-        return {
-          label: "Yetkazildi",
-          icon: MdCheckCircle,
-          cls: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-300 dark:border-purple-500/20",
-        };
-      case "cancelled":
-        return {
-          label: "Bekor qilingan",
-          icon: MdCancel,
-          cls: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/20",
-        };
-      default:
-        return {
-          label: "Ko'rib chiqilmoqda",
-          icon: MdAccessTime,
-          cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20",
-        };
+    const s = (status || "").toLowerCase();
+    if (s === "confirmed" || s === "paid" || s === "shipping" || s === "completed" || s === "tasdiqlangan") {
+      return {
+        label: t.orderStatus?.confirmed || "Mahsulot tasdiqlandi, tez orada yetkaziladi",
+        icon: MdCheckCircle,
+        cls: "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20",
+      };
     }
+    if (s === "cancelled" || s === "canceled" || s === "rejected" || s === "bekor qilingan") {
+      return {
+        label: t.orderStatus?.cancelled || "Bekor qilingan, chek tekshiruvdan o'tmadi",
+        icon: MdCancel,
+        cls: "bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/20",
+      };
+    }
+    // Default / new / pending
+    return {
+      label: t.orderStatus?.pending || "Tasdiqlash jarayonida",
+      icon: MdAccessTime,
+      cls: "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20",
+    };
   };
 
   if (loading) {
@@ -116,13 +105,13 @@ export default function OrdersClient({ t }) {
           <MdReceiptLong className="text-4xl" />
         </div>
         <h2 className="text-2xl font-black text-slate-900 dark:text-white">
-          Buyurtmalarni ko'rish
+          {t.ordersPage?.guestTitle || "Buyurtmalarni ko'rish"}
         </h2>
         <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-          Buyurtmalaringiz tarixini ko'rish uchun hisobingizga kiring.
+          {t.ordersPage?.guestDesc || "Buyurtmalaringiz tarixini ko'rish uchun hisobingizga kiring."}
         </p>
         <Link href="/login" className="btn-primary inline-flex h-12 px-8">
-          Kirish
+          {t.ordersPage?.loginBtn || t.auth?.loginBtn || "Kirish"}
         </Link>
       </div>
     );
@@ -135,13 +124,13 @@ export default function OrdersClient({ t }) {
           <MdShoppingBag className="text-4xl" />
         </div>
         <h2 className="text-2xl font-black text-slate-900 dark:text-white">
-          Hozircha buyurtmalar yo'q
+          {t.ordersPage?.noOrdersTitle || "Hozircha buyurtmalar yo'q"}
         </h2>
         <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-          Siz hali birorta ham buyurtma bermagansiz. Katalogdan o'zingizga ma'qul mahsulotni tanlang.
+          {t.ordersPage?.noOrdersDesc || "Siz hali birorta ham buyurtma bermagansiz. Katalogdan o'zingizga ma'qul mahsulotni tanlang."}
         </p>
         <Link href="/catalog" className="btn-primary inline-flex h-12 px-8">
-          Katalogga o'tish
+          {t.ordersPage?.goToCatalog || "Katalogga o'tish"}
         </Link>
       </div>
     );
@@ -152,17 +141,17 @@ export default function OrdersClient({ t }) {
       <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-white/[0.06] pb-4">
         <div>
           <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-            Mening buyurtmalarim
+            {t.ordersPage?.title || t.orders || "Mening buyurtmalarim"}
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Jami {orders.length} ta buyurtma
+            {t.ordersPage?.total || "Jami"} {orders.length} {t.ordersPage?.countSuffix || "ta buyurtma"}
           </p>
         </div>
         <Link
           href="/catalog"
           className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-brand hover:underline"
         >
-          Xaridni davom ettirish <MdArrowForward />
+          {t.ordersPage?.continueShopping || "Xaridni davom ettirish"} <MdArrowForward />
         </Link>
       </div>
 
@@ -172,17 +161,17 @@ export default function OrdersClient({ t }) {
           const StatusIcon = badge.icon;
           return (
             <div
-              key={o.id || o.orderNumber}
+              key={o.id || o.orderNumber || o._id}
               className="surface overflow-hidden rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200/70 dark:border-white/[0.06] space-y-4 transition hover:border-brand/30"
             >
               {/* Order Header */}
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-white/[0.06] pb-4">
                 <div className="space-y-0.5">
                   <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Buyurtma raqami
+                    {t.ordersPage?.orderNumber || "Buyurtma raqami"}
                   </span>
                   <p className="font-mono text-base font-extrabold text-slate-900 dark:text-white">
-                    {o.orderNumber || o.id}
+                    {o.orderNumber || o.id || o._id}
                   </p>
                   <span className="text-[11px] text-slate-500 dark:text-slate-400">
                     {formatDate(o.createdAt)}
@@ -191,9 +180,9 @@ export default function OrdersClient({ t }) {
 
                 <div className="flex items-center gap-2">
                   <span
-                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold border ${badge.cls}`}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold border shadow-2xs ${badge.cls}`}
                   >
-                    <StatusIcon className="text-sm" />
+                    <StatusIcon className="text-sm shrink-0" />
                     <span>{badge.label}</span>
                   </span>
                 </div>
@@ -219,12 +208,12 @@ export default function OrdersClient({ t }) {
                         <p className="truncate font-semibold text-slate-800 dark:text-slate-100">
                           {item.name}
                         </p>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-slate-400 whitespace-nowrap">
                           {item.quantity || item.qty} dona × {formatPrice(item.price)}
                         </p>
                       </div>
                     </div>
-                    <span className="font-display font-bold text-slate-900 dark:text-white tabular-nums shrink-0">
+                    <span className="font-display font-bold text-slate-900 dark:text-white tabular-nums shrink-0 whitespace-nowrap">
                       {formatPrice((item.price || 0) * (item.quantity || item.qty || 1))}
                     </span>
                   </div>
@@ -240,8 +229,8 @@ export default function OrdersClient({ t }) {
                   </div>
                 )}
                 <div className="ml-auto text-right">
-                  <span className="text-slate-400 mr-2">Jami:</span>
-                  <span className="font-display text-lg font-black text-brand tabular-nums">
+                  <span className="text-slate-400 mr-2">{t.cartPage?.total || "Jami"}:</span>
+                  <span className="font-display text-lg font-black text-brand tabular-nums whitespace-nowrap">
                     {formatPrice(o.total)}
                   </span>
                 </div>
@@ -253,4 +242,3 @@ export default function OrdersClient({ t }) {
     </div>
   );
 }
-

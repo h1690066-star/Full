@@ -18,6 +18,8 @@ import {
   MdFavorite,
   MdArrowForward,
   MdExpandMore,
+  MdAccessTime,
+  MdCancel,
 } from "react-icons/md";
 import { getMe, updateMe, changePassword, clearToken } from "@/lib/services/users";
 import { api, apiError } from "@/lib/api";
@@ -26,7 +28,7 @@ import { LANGS } from "@/lib/dictionaries";
 import { toast } from "./ToastContainer";
 
 export default function ProfileClient({ t }) {
-  const p = t.profile;
+  const p = t.profile || {};
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
@@ -39,6 +41,7 @@ export default function ProfileClient({ t }) {
   const [state, setState] = useState("loading");
   const { wishlistCount } = useCart();
   const [ordersCount, setOrdersCount] = useState(0);
+  const [userOrders, setUserOrders] = useState([]);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [currentLang, setCurrentLang] = useState("uz");
@@ -48,11 +51,35 @@ export default function ProfileClient({ t }) {
       api.get("/api/orders/my")
         .then((res) => {
           const list = Array.isArray(res.data) ? res.data : res.data?.orders || [];
+          setUserOrders(list);
           setOrdersCount(list.length);
         })
         .catch(() => {});
     }
   }, []);
+
+  const getOrderStatusBadge = (status) => {
+    const s = (status || "").toLowerCase();
+    if (s === "confirmed" || s === "paid" || s === "shipping" || s === "completed" || s === "tasdiqlangan") {
+      return {
+        label: t.orderStatus?.confirmed || "Mahsulot tasdiqlandi, tez orada yetkaziladi",
+        icon: MdCheckCircle,
+        cls: "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20",
+      };
+    }
+    if (s === "cancelled" || s === "canceled" || s === "rejected" || s === "bekor qilingan") {
+      return {
+        label: t.orderStatus?.cancelled || "Bekor qilingan, chek tekshiruvdan o'tmadi",
+        icon: MdCancel,
+        cls: "bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/20",
+      };
+    }
+    return {
+      label: t.orderStatus?.pending || "Tasdiqlash jarayonida",
+      icon: MdAccessTime,
+      cls: "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20",
+    };
+  };
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -173,11 +200,11 @@ export default function ProfileClient({ t }) {
       setUser(merged);
       localStorage.setItem("user", JSON.stringify(merged));
       window.dispatchEvent(new CustomEvent("auth-change", { detail: merged }));
-      setMsg((m) => ({ ...m, profile: p.saved }));
-      toast(p.saved, "success");
+      setMsg((m) => ({ ...m, profile: p.saved || "Saqlandi" }));
+      toast(p.saved || "Saqlandi", "success");
     } catch (err) {
-      setMsg((m) => ({ ...m, profileErr: apiError(err, t.auth.error) }));
-      toast(apiError(err, t.auth.error), "error");
+      setMsg((m) => ({ ...m, profileErr: apiError(err, t.auth?.error || "Xatolik yuz berdi") }));
+      toast(apiError(err, t.auth?.error || "Xatolik yuz berdi"), "error");
     }
   };
 
@@ -187,9 +214,11 @@ export default function ProfileClient({ t }) {
     try {
       const res = await changePassword(pw);
       setPw({ oldPassword: "", newPassword: "" });
-      setMsg((m) => ({ ...m, password: res?.message || p.saved }));
+      setMsg((m) => ({ ...m, password: res?.message || p.saved || "Saqlandi" }));
+      toast(res?.message || p.saved || "Saqlandi", "success");
     } catch (err) {
-      setMsg((m) => ({ ...m, passwordErr: apiError(err, t.auth.error) }));
+      setMsg((m) => ({ ...m, passwordErr: apiError(err, t.auth?.error || "Xatolik yuz berdi") }));
+      toast(apiError(err, t.auth?.error || "Xatolik yuz berdi"), "error");
     }
   };
 
@@ -208,7 +237,7 @@ export default function ProfileClient({ t }) {
   if (state === "loading")
     return (
       <div className="mx-auto max-w-4xl space-y-6" aria-busy="true">
-        <span className="sr-only">{t.auth.loading}</span>
+        <span className="sr-only">{t.auth?.loading || "Yuklanmoqda..."}</span>
         <div className="surface flex items-center gap-5 p-6">
           <div className="skeleton h-20 w-20 rounded-full" />
           <div className="flex-1 space-y-2.5">
@@ -222,21 +251,22 @@ export default function ProfileClient({ t }) {
         </div>
       </div>
     );
+
   if (state === "guest")
     return (
       <div className="surface mx-auto max-w-md space-y-5 p-8 text-center animate-fade-up">
         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-brand-gradient-soft text-brand dark:text-brand-300">
           <MdPersonOutline className="text-4xl" />
         </div>
-        <p className="text-[15px] font-medium text-slate-600 dark:text-slate-300">{p.needLogin}</p>
+        <p className="text-[15px] font-medium text-slate-600 dark:text-slate-300">{p.needLogin || "Profilni ko'rish uchun tizimga kiring."}</p>
         <Link href="/login" className="btn-primary h-12 px-8">
-          {t.auth.loginBtn}
+          {t.auth?.loginBtn || "Kirish"}
         </Link>
       </div>
     );
 
   const input = "input font-medium";
-  const btn = "btn-primary h-12 w-full sm:w-auto px-7";
+  const btn = "btn-primary h-12 w-full sm:w-auto px-7 cursor-pointer";
   const label = "mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300";
 
   return (
@@ -309,19 +339,19 @@ export default function ProfileClient({ t }) {
                 }`}
               >
                 <MdVerified className="text-xs" />
-                {user?.role === "admin" ? "Admin" : "Mijoz"}
+                {user?.role === "admin" ? (p.admin || "Admin") : (p.client || "Mijoz")}
               </span>
             </div>
             <p className="mt-1 flex items-center gap-1.5 truncate text-sm font-medium text-slate-500 dark:text-slate-400">
               {user?.email ? <MdMailOutline className="shrink-0" /> : <MdPhone className="shrink-0" />}
-              {user?.email || user?.phone || "Mijoz"}
+              {user?.email || user?.phone || (p.client || "Mijoz")}
             </p>
           </div>
 
           {/* Actions */}
           <div className="flex flex-wrap items-center gap-2 sm:pb-1">
             {user?.role === "admin" && (
-              <Link href="/admin/users" className="btn-secondary h-11 px-4">
+              <Link href="/admin/users" className="btn-secondary h-11 px-4 cursor-pointer">
                 <MdAdminPanelSettings className="text-lg" />
                 {p.adminUsers}
               </Link>
@@ -355,7 +385,7 @@ export default function ProfileClient({ t }) {
               {ordersCount}
             </span>
             <p className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 mt-0.5">
-              Buyurtmalarim
+              {p.ordersTitle || t.orders || "Buyurtmalarim"}
             </p>
           </div>
         </Link>
@@ -375,10 +405,90 @@ export default function ProfileClient({ t }) {
               {wishlistCount}
             </span>
             <p className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 mt-0.5">
-              Sevimlilar
+              {p.wishlistTitle || t.wishlist || "Sevimlilar"}
             </p>
           </div>
         </Link>
+      </div>
+
+      {/* Profil ichidagi Buyurtmalar va Holati (Status) */}
+      <div className="surface p-6 space-y-4 animate-fade-up">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-white/[0.06]">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand-300">
+              <MdShoppingBag className="text-xl" />
+            </div>
+            <div>
+              <h2 className="font-display text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">
+                {p.recentOrders || "Mening buyurtmalarim"}
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {userOrders.length > 0
+                  ? `${userOrders.length} ${t.ordersPage?.countSuffix || "ta buyurtma"}`
+                  : (p.noOrdersYet || "Hozircha buyurtmalar yo'q")}
+              </p>
+            </div>
+          </div>
+          {userOrders.length > 0 && (
+            <Link
+              href="/orders"
+              className="text-xs font-bold text-brand hover:underline inline-flex items-center gap-1 cursor-pointer"
+            >
+              {p.viewAllOrders || "Barchasini ko'rish"} <MdArrowForward />
+            </Link>
+          )}
+        </div>
+
+        {userOrders.length === 0 ? (
+          <div className="py-6 text-center text-xs text-slate-500 dark:text-slate-400 space-y-2">
+            <p>{p.noOrdersYet || "Hozircha buyurtmalar yo'q"}</p>
+            <Link href="/catalog" className="btn-primary inline-flex h-9 px-4 text-xs cursor-pointer">
+              {t.ordersPage?.goToCatalog || "Katalogga o'tish"}
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-3 pt-1">
+            {userOrders.slice(0, 3).map((o) => {
+              const badge = getOrderStatusBadge(o.status);
+              const StatusIcon = badge.icon;
+              const firstItem = o.items?.[0];
+              const totalItems = o.items?.length || 1;
+              return (
+                <div
+                  key={o.id || o.orderNumber || o._id}
+                  className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4 transition dark:border-white/[0.06] dark:bg-white/[0.02] hover:border-brand/30"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5 dark:border-white/[0.06]">
+                    <div>
+                      <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
+                        {o.orderNumber || o.id || o._id}
+                      </span>
+                      {o.createdAt && (
+                        <span className="ml-2 text-[11px] text-slate-400">
+                          {new Date(o.createdAt).toLocaleDateString("uz-UZ")}
+                        </span>
+                      )}
+                    </div>
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold border shadow-2xs ${badge.cls}`}>
+                      <StatusIcon className="text-xs shrink-0" />
+                      <span>{badge.label}</span>
+                    </span>
+                  </div>
+
+                  <div className="mt-2.5 flex items-center justify-between text-xs">
+                    <span className="truncate max-w-[260px] text-slate-700 dark:text-slate-300 font-medium">
+                      {firstItem?.name || "Mahsulot"}
+                      {totalItems > 1 && ` +${totalItems - 1} ta boshqa`}
+                    </span>
+                    <span className="font-bold text-slate-900 dark:text-white whitespace-nowrap ml-2">
+                      {Math.round(Number(o.total) || 0).toLocaleString("ru-RU").replace(/,/g, " ")} {t.card?.som || "so'm"}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Profile Info Form */}
@@ -392,42 +502,42 @@ export default function ProfileClient({ t }) {
             <MdPersonOutline className="text-xl" />
           </div>
           <div>
-            <h1 className="font-display text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">{p.title}</h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Shaxsiy ma'lumotlaringizni tahrirlang</p>
+            <h1 className="font-display text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">{p.title || "Profil"}</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{p.editSubtitle || "Shaxsiy ma'lumotlaringizni tahrirlang"}</p>
           </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
-            <label className={label}>{t.auth.name}</label>
+            <label className={label}>{t.auth?.name || "To'liq ism"}</label>
             <input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder={t.auth.name}
+              placeholder={t.auth?.name || "To'liq ism"}
               className={input}
             />
           </div>
           <div>
-            <label className={label}>{t.auth.email}</label>
+            <label className={label}>{t.auth?.email || "Email"}</label>
             <input
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder={t.auth.email}
+              placeholder={t.auth?.email || "Email"}
               className={input}
             />
           </div>
           <div>
-            <label className={label}>{t.auth.phone}</label>
+            <label className={label}>{t.auth?.phone || "Telefon raqam"}</label>
             <input
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              placeholder={t.auth.phone}
+              placeholder={t.auth?.phone || "Telefon raqam"}
               className={input}
             />
           </div>
         </div>
         <div className="pt-2 flex justify-end">
-          <button className={btn}>{p.save}</button>
+          <button className={btn}>{p.save || "Saqlash"}</button>
         </div>
         {msg.profile && (
           <p className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-700 animate-fade-in dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
@@ -459,7 +569,9 @@ export default function ProfileClient({ t }) {
                 {p.passwordTitle || "Parolni almashtirish"}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                {showPasswordForm ? "Parolni o'zgartirish formasini yopish" : "Yangi parol o'rnatish uchun bosing"}
+                {showPasswordForm
+                  ? (currentLang === "ru" ? "Закрыть форму смены пароля" : currentLang === "en" ? "Close password change form" : "Parolni o'zgartirish formasini yopish")
+                  : (currentLang === "ru" ? "Нажмите, чтобы установить новый пароль" : currentLang === "en" ? "Click to set a new password" : "Yangi parol o'rnatish uchun bosing")}
               </p>
             </div>
           </div>
@@ -475,31 +587,31 @@ export default function ProfileClient({ t }) {
           >
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className={label}>{p.oldPassword}</label>
+                <label className={label}>{p.oldPassword || "Joriy parol"}</label>
                 <input
                   type="password"
                   required
                   value={pw.oldPassword}
                   onChange={(e) => setPw({ ...pw, oldPassword: e.target.value })}
-                  placeholder={p.oldPassword}
+                  placeholder={p.oldPassword || "Joriy parol"}
                   className={input}
                 />
               </div>
               <div>
-                <label className={label}>{p.newPassword}</label>
+                <label className={label}>{p.newPassword || "Yangi parol"}</label>
                 <input
                   type="password"
                   required
                   minLength={6}
                   value={pw.newPassword}
                   onChange={(e) => setPw({ ...pw, newPassword: e.target.value })}
-                  placeholder={p.newPassword}
+                  placeholder={p.newPassword || "Yangi parol"}
                   className={input}
                 />
               </div>
             </div>
             <div className="pt-2 flex justify-end">
-              <button className={btn}>{p.change}</button>
+              <button className={btn}>{p.change || "Almashtirish"}</button>
             </div>
             {msg.password && (
               <p className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-700 animate-fade-in dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
@@ -579,10 +691,10 @@ export default function ProfileClient({ t }) {
 
             <div className="space-y-1.5">
               <h3 className="font-display text-lg font-black text-slate-900 dark:text-white">
-                Akkauntdan chiqish
+                {p.logoutModalTitle || "Akkauntdan chiqish"}
               </h3>
               <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
-                Siz rostdan ham akkauntdan chiqmoqchimisiz?
+                {p.logoutModalText || "Siz rostdan ham akkauntdan chiqmoqchimisiz?"}
               </p>
             </div>
 
@@ -592,14 +704,14 @@ export default function ProfileClient({ t }) {
                 onClick={() => setShowLogoutModal(false)}
                 className="flex-1 h-11 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer"
               >
-                Bekor qilish
+                {p.cancel || "Bekor qilish"}
               </button>
               <button
                 type="button"
                 onClick={confirmLogout}
                 className="flex-1 h-11 rounded-xl bg-rose-600 hover:bg-rose-700 font-bold text-xs sm:text-sm text-white shadow-md shadow-rose-600/20 transition active:scale-95 cursor-pointer"
               >
-                Ha, chiqish
+                {p.confirmLogout || "Ha, chiqish"}
               </button>
             </div>
           </div>

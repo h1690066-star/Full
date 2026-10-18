@@ -196,18 +196,18 @@ export default function CartClient({ t }) {
             <MdCheckCircle className="text-6xl" />
           </div>
         </div>
-        <span className="eyebrow animate-fade-up">Buyurtma #qabul qilindi</span>
+        <span className="eyebrow animate-fade-up">#{t.cartPage?.orderSuccessTitle || "Qabul qilindi"}</span>
         <h1
           className="mt-4 font-display text-3xl font-extrabold tracking-tight text-slate-900 animate-fade-up dark:text-white sm:text-4xl"
           style={{ animationDelay: "60ms" }}
         >
-          Mahsulotingiz qabul qilindi!
+          {t.cartPage?.orderSuccessTitle || "Mahsulotingiz qabul qilindi!"}
         </h1>
         <p
           className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-500 animate-fade-up dark:text-slate-400 sm:text-base"
           style={{ animationDelay: "120ms" }}
         >
-          Buyurtmangiz muvaffaqiyatli rasmiylashtirildi. Tez orada operatorimiz siz ko'rsatgan raqam yoki Telegram orqali bog'lanadi.
+          {t.cartPage?.orderSuccessText || "Buyurtmangiz muvaffaqiyatli rasmiylashtirildi. Tez orada operatorimiz siz ko'rsatgan raqam yoki Telegram orqali bog'lanadi."}
         </p>
         <div
           className="surface mt-8 overflow-hidden text-left animate-fade-up"
@@ -215,15 +215,15 @@ export default function CartClient({ t }) {
         >
           <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-5 py-3.5 dark:border-white/[0.06] dark:bg-white/[0.03]">
             <MdLocalShipping className="text-lg text-brand dark:text-brand-light" />
-            <p className="font-display text-sm font-bold text-slate-900 dark:text-white">Buyurtma ma'lumotlari:</p>
+            <p className="font-display text-sm font-bold text-slate-900 dark:text-white">{t.cartPage?.orderDetails || "Buyurtma ma'lumotlari:"}</p>
           </div>
           <dl className="divide-y divide-slate-100 text-sm dark:divide-white/[0.06]">
             <div className="flex items-start justify-between gap-4 px-5 py-3">
-              <dt className="text-slate-500 dark:text-slate-400">Qabul qiluvchi:</dt>
+              <dt className="text-slate-500 dark:text-slate-400">{t.cartPage?.recipient || "Qabul qiluvchi:"}</dt>
               <dd className="text-right font-semibold text-slate-900 dark:text-white">{customerInfo.name || "Mijoz"}</dd>
             </div>
             <div className="flex items-start justify-between gap-4 px-5 py-3">
-              <dt className="text-slate-500 dark:text-slate-400">Telefon:</dt>
+              <dt className="text-slate-500 dark:text-slate-400">{t.cartPage?.phone || "Telefon:"}</dt>
               <dd className="text-right font-semibold text-slate-900 dark:text-white">{customerInfo.phone || "+998 -- --- -- --"}</dd>
             </div>
             {customerInfo.telegram && (
@@ -233,7 +233,7 @@ export default function CartClient({ t }) {
               </div>
             )}
             <div className="flex items-start justify-between gap-4 px-5 py-3">
-              <dt className="shrink-0 text-slate-500 dark:text-slate-400">Manzil:</dt>
+              <dt className="shrink-0 text-slate-500 dark:text-slate-400">{t.cartPage?.address || "Manzil:"}</dt>
               <dd className="text-right font-semibold text-slate-900 dark:text-white">
                 {customerInfo.region}, {customerInfo.district}, {customerInfo.street || "Bosh qarargoh"}
               </dd>
@@ -246,7 +246,7 @@ export default function CartClient({ t }) {
           className="btn btn-primary mt-8 h-12 px-8 animate-fade-up"
           style={{ animationDelay: "240ms" }}
         >
-          Bosh sahifaga qaytish <MdArrowForward className="text-lg" />
+          {t.cartPage?.backHome || "Bosh sahifaga qaytish"} <MdArrowForward className="text-lg" />
         </Link>
       </div>
     );
@@ -262,38 +262,41 @@ export default function CartClient({ t }) {
             <MdShoppingCart className="text-6xl" />
           </div>
         </div>
-        <span className="eyebrow animate-fade-up">Savat</span>
+        <span className="eyebrow animate-fade-up">{t.cartPage?.cartEyebrow || t.cart || "Savat"}</span>
         <h1
           className="mt-4 font-display text-3xl font-extrabold tracking-tight text-slate-900 animate-fade-up dark:text-white sm:text-4xl"
           style={{ animationDelay: "60ms" }}
         >
-          Savatingiz hozircha bo'sh
+          {t.cartPage?.emptyTitle || "Savatingiz hozircha bo'sh"}
         </h1>
         <p
           className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-slate-500 animate-fade-up dark:text-slate-400 sm:text-base"
           style={{ animationDelay: "120ms" }}
         >
-          Xon Bozor katalogidan o'zingizga ma'qul mahsulotlarni tanlang va savatga qo'shing.
+          {t.cartPage?.emptyText || "Xon Bozor katalogidan o'zingizga ma'qul mahsulotlarni tanlang va savatga qo'shing."}
         </p>
         <Link
           href="/"
           className="btn btn-primary mt-8 h-12 px-8 animate-fade-up"
           style={{ animationDelay: "180ms" }}
         >
-          Xaridni boshlash <MdArrowForward className="text-lg" />
+          {t.cartPage?.startShopping || "Xaridni boshlash"} <MdArrowForward className="text-lg" />
         </Link>
         <div
           className="mx-auto mt-10 grid max-w-md grid-cols-1 gap-3 text-left text-xs text-slate-500 animate-fade-up dark:text-slate-400 sm:grid-cols-2"
           style={{ animationDelay: "240ms" }}
         >
-          <TrustRow icon={MdLocalShipping}>Toshkent bo'yicha 2 soatda yetkazib berish</TrustRow>
-          <TrustRow icon={MdSecurity}>100% rasmiy kafolat va xavfsiz to'lov</TrustRow>
+          <TrustRow icon={MdLocalShipping}>{t.cartPage?.fastDelivery || "Toshkent bo'yicha 2 soatda yetkazib berish"}</TrustRow>
+          <TrustRow icon={MdSecurity}>{t.cartPage?.warranty || "100% rasmiy kafolat va xavfsiz to'lov"}</TrustRow>
         </div>
       </div>
     );
   }
 
-  const savings = cartOldTotal > cartTotal ? cartOldTotal - cartTotal : 0;
+  const savings =
+    cartOldTotal > cartTotal
+      ? Math.max(0, Math.round(Number(cartOldTotal) - Number(cartTotal)))
+      : 0;
 
   const handleInputChange = (e) => {
     setCustomerInfo({ ...customerInfo, [e.target.name]: e.target.value });
@@ -459,7 +462,7 @@ export default function CartClient({ t }) {
         <div className="glass inline-flex items-center gap-1.5 rounded-3xl p-2 shadow-soft sm:gap-3 sm:px-4">
           <StepPill
             index={1}
-            label="Savat"
+            label={t.cartPage?.step1 || "Savat"}
             active={step === 1}
             done={step > 1}
             onClick={() => setStep(1)}
@@ -467,7 +470,7 @@ export default function CartClient({ t }) {
           <StepConnector filled={step >= 2} />
           <StepPill
             index={2}
-            label="Manzilni aniqlash"
+            label={t.cartPage?.step2 || "Manzilni aniqlash"}
             active={step === 2}
             done={step > 2}
             onClick={() => { if (cart.length > 0) setStep(2); }}
@@ -475,7 +478,7 @@ export default function CartClient({ t }) {
           <StepConnector filled={step >= 3} />
           <StepPill
             index={3}
-            label="Rasmiylashtirish"
+            label={t.cartPage?.step3 || "Rasmiylashtirish"}
             active={step === 3}
             done={false}
             onClick={() => { if (cart.length > 0 && customerInfo.name && customerInfo.phone) setStep(3); }}
@@ -488,19 +491,19 @@ export default function CartClient({ t }) {
         <>
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4 animate-fade-up">
             <div>
-              <span className="eyebrow">Xarid savati</span>
+              <span className="eyebrow">{t.cartPage?.cartEyebrow || "Xarid savati"}</span>
               <h1 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
-                Savat
+                {t.cart || "Savat"}
               </h1>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{cart.length} xil mahsulot</p>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{cart.length} {t.cartPage?.itemsCountSuffix || "xil mahsulot"}</p>
             </div>
             <button
               type="button"
               onClick={clearCart}
-              className="btn btn-ghost h-10 gap-1.5 px-4 text-xs text-rose-500 hover:bg-rose-50 hover:text-rose-600 dark:text-rose-400 dark:hover:bg-rose-500/10 sm:text-sm"
+              className="btn btn-ghost h-10 gap-1.5 px-4 text-xs text-rose-500 hover:bg-rose-50 hover:text-rose-600 dark:text-rose-400 dark:hover:bg-rose-500/10 sm:text-sm cursor-pointer"
             >
               <MdDeleteOutline className="text-base" />
-              Savatni tozalash
+              {t.cartPage?.clearCart || "Savatni tozalash"}
             </button>
           </div>
 
@@ -544,20 +547,20 @@ export default function CartClient({ t }) {
                       {(item.color || item.storage) && (
                         <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
                           {item.color && (
-                            <span className="chip">Rang: {item.color}</span>
+                            <span className="chip">{t.cartPage?.color || "Rang"}: {item.color}</span>
                           )}
                           {item.storage && (
-                            <span className="chip">Xotira: {item.storage}</span>
+                            <span className="chip">{t.cartPage?.storage || "Xotira"}: {item.storage}</span>
                           )}
                         </div>
                       )}
                       <div className="mt-3 flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-                        <span className="font-display text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">
-                          {formatPrice(item.price)} so'm
+                        <span className="font-display text-lg font-extrabold tracking-tight text-slate-900 dark:text-white whitespace-nowrap">
+                          {formatPrice(item.price)} {t.card?.som || "so'm"}
                         </span>
                         {item.oldPrice && item.oldPrice > item.price && (
-                          <span className="text-xs text-slate-400 line-through dark:text-slate-500">
-                            {formatPrice(item.oldPrice)} so'm
+                          <span className="text-xs text-slate-400 line-through dark:text-slate-500 whitespace-nowrap">
+                            {formatPrice(item.oldPrice)} {t.card?.som || "so'm"}
                           </span>
                         )}
                       </div>
@@ -568,7 +571,7 @@ export default function CartClient({ t }) {
                         <button
                           type="button"
                           onClick={() => updateQuantity(pid, -1)}
-                          className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-600 transition hover:bg-white hover:text-slate-900 hover:shadow-xs dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                          className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-600 transition hover:bg-white hover:text-slate-900 hover:shadow-xs dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white cursor-pointer"
                           aria-label="Kamaytirish"
                         >
                           <MdRemove />
@@ -579,7 +582,7 @@ export default function CartClient({ t }) {
                         <button
                           type="button"
                           onClick={() => updateQuantity(pid, 1)}
-                          className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-600 transition hover:bg-white hover:text-slate-900 hover:shadow-xs dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                          className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-600 transition hover:bg-white hover:text-slate-900 hover:shadow-xs dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white cursor-pointer"
                           aria-label="Ko'paytirish"
                         >
                           <MdAdd />
@@ -589,9 +592,9 @@ export default function CartClient({ t }) {
                       <button
                         type="button"
                         onClick={() => removeFromCart(pid)}
-                        className="flex items-center gap-1 rounded-xl px-2 py-1.5 text-xs font-medium text-slate-400 transition hover:bg-rose-50 hover:text-rose-500 dark:text-slate-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                        className="flex items-center gap-1 rounded-xl px-2 py-1.5 text-xs font-medium text-slate-400 transition hover:bg-rose-50 hover:text-rose-500 dark:text-slate-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400 cursor-pointer"
                       >
-                        <MdDeleteOutline className="text-base" /> O'chirish
+                        <MdDeleteOutline className="text-base" /> {t.cartPage?.delete || "O'chirish"}
                       </button>
                     </div>
                   </div>
@@ -604,26 +607,26 @@ export default function CartClient({ t }) {
               <div className="surface sticky top-24 overflow-hidden animate-fade-up" style={{ animationDelay: "120ms" }}>
                 <div className="p-6">
                   <h2 className="font-display text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                    Buyurtma ma'lumoti
+                    {t.cartPage?.summaryTitle || "Buyurtma ma'lumoti"}
                   </h2>
 
                   <div className="mt-5 space-y-3 text-sm">
                     <div className="flex justify-between text-slate-500 dark:text-slate-400">
-                      <span>Mahsulotlar ({cart.length}):</span>
-                      <span className="font-medium text-slate-700 dark:text-slate-200">
-                        {formatPrice(cartOldTotal || cartTotal)} so'm
+                      <span>{t.cartPage?.productsCount || "Mahsulotlar"} ({cart.length}):</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                        {formatPrice(cartOldTotal || cartTotal)} {t.card?.som || "so'm"}
                       </span>
                     </div>
                     {savings > 0 && (
                       <div className="flex justify-between font-medium text-emerald-600 dark:text-emerald-400">
-                        <span>Chegirma:</span>
-                        <span>-{formatPrice(savings)} so'm</span>
+                        <span>{t.cartPage?.discount || "Chegirma"}:</span>
+                        <span className="whitespace-nowrap">-{formatPrice(savings)} {t.card?.som || "so'm"}</span>
                       </div>
                     )}
                     <div className="flex justify-between text-slate-500 dark:text-slate-400">
-                      <span>Yetkazib berish:</span>
+                      <span>{t.cartPage?.delivery || "Yetkazib berish"}:</span>
                       <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-                        Bepul
+                        {t.cartPage?.free || "Bepul"}
                       </span>
                     </div>
                   </div>
@@ -632,9 +635,9 @@ export default function CartClient({ t }) {
                 <div className="relative mx-4 overflow-hidden rounded-2xl bg-brand-gradient p-5 text-white shadow-glow">
                   <div aria-hidden="true" className="absolute -right-8 -top-10 h-32 w-32 rounded-full bg-white/15 blur-2xl" />
                   <div className="relative flex items-end justify-between gap-3">
-                    <span className="text-sm font-medium text-white/80">Jami to'lov:</span>
-                    <span className="font-display text-2xl font-extrabold tracking-tight">
-                      {formatPrice(cartTotal)} so'm
+                    <span className="text-sm font-medium text-white/80">{t.cartPage?.total || "Jami to'lov"}:</span>
+                    <span className="font-display text-2xl font-extrabold tracking-tight whitespace-nowrap">
+                      {formatPrice(cartTotal)} {t.card?.som || "so'm"}
                     </span>
                   </div>
                 </div>
@@ -643,15 +646,15 @@ export default function CartClient({ t }) {
                   <button
                     type="button"
                     onClick={handleGoToStep2}
-                    className="btn btn-primary h-12 w-full text-base"
+                    className="btn btn-primary h-12 w-full text-base cursor-pointer"
                   >
-                    <span>Buyurtma berish</span>
+                    <span>{t.cartPage?.checkoutBtn || "Buyurtma berish"}</span>
                     <MdArrowForward className="text-lg" />
                   </button>
 
                   <div className="mt-6 space-y-3 border-t border-slate-100 pt-5 text-xs text-slate-500 dark:border-white/[0.06] dark:text-slate-400">
-                    <TrustRow icon={MdLocalShipping}>Toshkent bo'yicha 2 soatda yetkazib berish</TrustRow>
-                    <TrustRow icon={MdSecurity}>100% rasmiy kafolat va xavfsiz to'lov</TrustRow>
+                    <TrustRow icon={MdLocalShipping}>{t.cartPage?.fastDelivery || "Toshkent bo'yicha 2 soatda yetkazib berish"}</TrustRow>
+                    <TrustRow icon={MdSecurity}>{t.cartPage?.warranty || "100% rasmiy kafolat va xavfsiz to'lov"}</TrustRow>
                   </div>
                 </div>
               </div>
@@ -671,15 +674,15 @@ export default function CartClient({ t }) {
                     <MdPerson className="text-xl" />
                   </span>
                   <h2 className="font-display text-lg font-bold tracking-tight text-slate-900 dark:text-white sm:text-xl">
-                    <span>2. Shaxsiy ma'lumotlar va yetkazib berish manzili</span>
+                    <span>{t.cartPage?.step2Title || "2. Shaxsiy ma'lumotlar va yetkazib berish manzili"}</span>
                   </h2>
                 </div>
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="btn btn-ghost h-9 gap-1 px-3 text-xs text-brand dark:text-brand-light"
+                  className="btn btn-ghost h-9 gap-1 px-3 text-xs text-brand dark:text-brand-light cursor-pointer"
                 >
-                  <MdArrowBack /> Savatga qaytish
+                  <MdArrowBack /> {t.cartPage?.backToCart || "Savatga qaytish"}
                 </button>
               </div>
 
@@ -865,7 +868,7 @@ export default function CartClient({ t }) {
           <div className="lg:col-span-1">
             <div className="surface sticky top-24 overflow-hidden animate-fade-up" style={{ animationDelay: "120ms" }}>
               <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-white/[0.06]">
-                <h3 className="font-display text-sm font-bold text-slate-900 dark:text-white">Buyurtmangiz ({cart.length} ta)</h3>
+                <h3 className="font-display text-sm font-bold text-slate-900 dark:text-white">{t.cartPage?.summaryTitle || "Buyurtmangiz"} ({cart.length})</h3>
                 <MdShoppingCart className="text-lg text-slate-400 dark:text-slate-500" />
               </div>
               <div className="max-h-64 divide-y divide-slate-100 overflow-y-auto px-5 dark:divide-white/[0.06]">
@@ -892,7 +895,7 @@ export default function CartClient({ t }) {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-semibold text-slate-800 dark:text-slate-100">{item.name}</p>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">{item.quantity} x {formatPrice(item.price)} so'm</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 whitespace-nowrap">{item.quantity} x {formatPrice(item.price)} {t.card?.som || "so'm"}</p>
                       </div>
                     </div>
                   );
@@ -902,8 +905,8 @@ export default function CartClient({ t }) {
                 <div className="relative overflow-hidden rounded-2xl bg-brand-gradient p-4 text-white shadow-glow">
                   <div aria-hidden="true" className="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-white/15 blur-2xl" />
                   <div className="relative flex items-end justify-between gap-3">
-                    <span className="text-sm font-medium text-white/80">Jami to'lov:</span>
-                    <span className="font-display text-xl font-extrabold tracking-tight">{formatPrice(cartTotal)} so'm</span>
+                    <span className="text-sm font-medium text-white/80">{t.cartPage?.total || "Jami to'lov"}:</span>
+                    <span className="font-display text-xl font-extrabold tracking-tight whitespace-nowrap">{formatPrice(cartTotal)} {t.card?.som || "so'm"}</span>
                   </div>
                 </div>
               </div>
@@ -924,15 +927,15 @@ export default function CartClient({ t }) {
                     <MdShoppingCart className="text-xl" />
                   </span>
                   <h2 className="font-display text-lg font-bold tracking-tight text-slate-900 dark:text-white sm:text-xl">
-                    <span>3. Buyurtma tarkibi va to'lov usuli</span>
+                    <span>{t.cartPage?.step3Title || "3. Buyurtma tarkibi va to'lov usuli"}</span>
                   </h2>
                 </div>
                 <button
                   type="button"
                   onClick={() => setStep(2)}
-                  className="btn btn-ghost h-9 gap-1 px-3 text-xs text-brand dark:text-brand-light"
+                  className="btn btn-ghost h-9 gap-1 px-3 text-xs text-brand dark:text-brand-light cursor-pointer"
                 >
-                  <MdArrowBack /> Manzilni o'zgartirish
+                  <MdArrowBack /> {t.cartPage?.backToCart || "Manzilni o'zgartirish"}
                 </button>
               </div>
 
@@ -942,9 +945,9 @@ export default function CartClient({ t }) {
                   <MdLocationOn className="text-xl" />
                 </span>
                 <div className="min-w-0 space-y-1">
-                  <p><span className="font-semibold text-slate-900 dark:text-white">Qabul qiluvchi:</span> {customerInfo.name} ({customerInfo.phone})</p>
+                  <p><span className="font-semibold text-slate-900 dark:text-white">{t.cartPage?.recipient || "Qabul qiluvchi:"}</span> {customerInfo.name} ({customerInfo.phone})</p>
                   {customerInfo.telegram && <p><span className="font-semibold text-slate-900 dark:text-white">Telegram:</span> {customerInfo.telegram}</p>}
-                  <p><span className="font-semibold text-slate-900 dark:text-white">Yetkazish manzili:</span> {customerInfo.region}, {customerInfo.district}, {customerInfo.street || "Bosh ko'cha"}</p>
+                  <p><span className="font-semibold text-slate-900 dark:text-white">{t.cartPage?.address || "Yetkazish manzili:"}</span> {customerInfo.region}, {customerInfo.district}, {customerInfo.street || "Bosh ko'cha"}</p>
                 </div>
               </div>
 
@@ -1032,10 +1035,10 @@ export default function CartClient({ t }) {
               type="button"
               disabled={isSubmitting}
               onClick={handleFinalOrderSubmit}
-              className="btn h-14 w-full gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-base font-bold text-white shadow-lift transition hover:from-emerald-500 hover:to-emerald-700 hover:shadow-[0_12px_40px_-12px_rgba(16,185,129,0.6)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="btn h-14 w-full gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-base font-bold text-white shadow-lift transition hover:from-emerald-500 hover:to-emerald-700 hover:shadow-[0_12px_40px_-12px_rgba(16,185,129,0.6)] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
             >
               <MdCheckCircle className={`text-xl ${isSubmitting ? "animate-spin" : ""}`} />
-              <span>{isSubmitting ? "Yuborilmoqda..." : "Buyurtmani tasdiqlash"}</span>
+              <span>{isSubmitting ? (t.auth?.loading || "Yuborilmoqda...") : (t.cartPage?.checkoutBtn || "Buyurtmani tasdiqlash")}</span>
             </button>
           </div>
 
@@ -1043,23 +1046,31 @@ export default function CartClient({ t }) {
           <div className="lg:col-span-1">
             <div className="surface sticky top-24 overflow-hidden animate-fade-up" style={{ animationDelay: "120ms" }}>
               <div className="p-5 sm:p-6">
-                <h3 className="font-display text-lg font-bold tracking-tight text-slate-900 dark:text-white">To'lov xulosasi</h3>
+                <h3 className="font-display text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+                  {t.cartPage?.summaryTitle || "To'lov xulosasi"}
+                </h3>
                 <div className="mt-4 space-y-3 text-sm">
                   <div className="flex justify-between text-slate-500 dark:text-slate-400">
-                    <span>Mahsulotlar ({cart.length}):</span>
-                    <span className="font-medium text-slate-700 dark:text-slate-200">{formatPrice(cartTotal)} so'm</span>
+                    <span>{t.cartPage?.productsCount || "Mahsulotlar"} ({cart.length}):</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                      {formatPrice(cartTotal)} {t.card?.som || "so'm"}
+                    </span>
                   </div>
                   <div className="flex justify-between text-slate-500 dark:text-slate-400">
-                    <span>Yetkazish:</span>
-                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">Bepul</span>
+                    <span>{t.cartPage?.delivery || "Yetkazish"}:</span>
+                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+                      {t.cartPage?.free || "Bepul"}
+                    </span>
                   </div>
                 </div>
               </div>
               <div className="relative mx-4 overflow-hidden rounded-2xl bg-brand-gradient p-5 text-white shadow-glow">
                 <div aria-hidden="true" className="absolute -right-8 -top-10 h-32 w-32 rounded-full bg-white/15 blur-2xl" />
                 <div className="relative flex items-end justify-between gap-3">
-                  <span className="text-sm font-medium text-white/80">Jami:</span>
-                  <span className="font-display text-2xl font-extrabold tracking-tight">{formatPrice(cartTotal)} so'm</span>
+                  <span className="text-sm font-medium text-white/80">{t.cartPage?.total || "Jami"}:</span>
+                  <span className="font-display text-2xl font-extrabold tracking-tight whitespace-nowrap">
+                    {formatPrice(cartTotal)} {t.card?.som || "so'm"}
+                  </span>
                 </div>
               </div>
               <div className="space-y-2.5 p-5 text-xs text-slate-500 dark:text-slate-400 sm:p-6">

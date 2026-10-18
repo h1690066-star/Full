@@ -125,8 +125,8 @@ export function CartProvider({ children }) {
           id: pid,
           _id: pid,
           name: product.name,
-          price: Number(product.price) || 0,
-          oldPrice: Number(product.oldPrice) || 0,
+          price: Math.round(Number(product.price) || 0),
+          oldPrice: Math.round(Number(product.oldPrice) || 0),
           image: mainImage,
           images: normalizedImages.length > 0 ? normalizedImages : [mainImage],
           monthly: product.monthly || Math.round((Number(product.price) || 0) / 12),
@@ -217,18 +217,20 @@ export function CartProvider({ children }) {
   );
 
   const cartTotal = useMemo(
-    () => cart.reduce((acc, item) => acc + (item.price || 0) * (item.quantity || 1), 0),
+    () => Math.round(cart.reduce((acc, item) => acc + (Number(item.price) || 0) * (item.quantity || 1), 0)),
     [cart]
   );
 
   const cartOldTotal = useMemo(
     () =>
-      cart.reduce(
-        (acc, item) =>
-          acc +
-          ((item.oldPrice && item.oldPrice > item.price ? item.oldPrice : item.price) || 0) *
-            (item.quantity || 1),
-        0
+      Math.round(
+        cart.reduce(
+          (acc, item) =>
+            acc +
+            ((Number(item.oldPrice) && Number(item.oldPrice) > Number(item.price) ? Number(item.oldPrice) : Number(item.price)) || 0) *
+              (item.quantity || 1),
+          0
+        )
       ),
     [cart]
   );

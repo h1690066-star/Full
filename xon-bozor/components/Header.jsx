@@ -49,9 +49,9 @@ export default function Header({ t, lang }) {
   ];
 
   const perks = [
-    { icon: MdPercent, text: "0% muddatli to'lov" },
-    { icon: MdVerified, text: "Rasmiy kafolat" },
-    { icon: MdLocalShipping, text: "Toshkent bo'ylab 2 soatda" },
+    { icon: MdPercent, text: lang === "ru" ? "Рассрочка 0%" : lang === "en" ? "0% instalments" : "0% muddatli to'lov" },
+    { icon: MdVerified, text: lang === "ru" ? "Официальная гарантия" : lang === "en" ? "Official warranty" : "Rasmiy kafolat" },
+    { icon: MdLocalShipping, text: t.cartPage?.fastDelivery || (lang === "ru" ? "По Ташкенту за 2 часа" : lang === "en" ? "Tashkent in 2 hours" : "Toshkent bo'ylab 2 soatda") },
   ];
 
   return (

@@ -39,7 +39,6 @@ const CATEGORY_MAP = {
   elektronika: "Elektronika",
   tv: "Elektronika",
   computers: "Elektronika",
-  watches: "Aksessuarlar",
 };
 
 export async function generateMetadata({ params }) {
@@ -104,6 +103,40 @@ export default async function Catalog({ params }) {
   if (slugLower === "used" && list.length > 0) {
     const usedFiltered = list.filter((p) => p.used);
     if (usedFiltered.length > 0) list = usedFiltered;
+  }
+
+  if (slugLower === "tv" && list.length > 0) {
+    const tvFiltered = list.filter((p) => {
+      const txt = `${p.name || ""} ${p.category || ""} ${p.brand || ""}`.toLowerCase();
+      return (
+        txt.includes("tv") ||
+        txt.includes("televizor") ||
+        txt.includes("audio") ||
+        txt.includes("smart") ||
+        txt.includes("showpro") ||
+        txt.includes("sound")
+      );
+    });
+    if (tvFiltered.length > 0) list = tvFiltered;
+  }
+
+  if (slugLower === "computers" && list.length > 0) {
+    const compFiltered = list.filter((p) => {
+      const txt = `${p.name || ""} ${p.category || ""} ${p.brand || ""}`.toLowerCase();
+      return (
+        txt.includes("asus") ||
+        txt.includes("tuf") ||
+        txt.includes("msi") ||
+        txt.includes("rtx") ||
+        txt.includes("gtx") ||
+        txt.includes("geforce") ||
+        txt.includes("nvidia") ||
+        txt.includes("laptop") ||
+        txt.includes("pc") ||
+        txt.includes("kompyuter")
+      );
+    });
+    if (compFiltered.length > 0) list = compFiltered;
   }
 
   const catName = t.cats?.[slug] || t.nav?.[slug] || (slug.charAt(0).toUpperCase() + slug.slice(1));

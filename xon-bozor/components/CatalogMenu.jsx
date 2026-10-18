@@ -9,12 +9,10 @@ import {
   MdKitchen,
   MdTv,
   MdLaptopMac,
-  MdWatch,
   MdVerified,
   MdSwapHoriz,
   MdBolt,
   MdArrowForward,
-  MdFilterAlt,
 } from "react-icons/md";
 
 const CATS = [
@@ -22,7 +20,6 @@ const CATS = [
   { key: "appliances", icon: MdKitchen },
   { key: "tv", icon: MdTv },
   { key: "computers", icon: MdLaptopMac },
-  { key: "watches", icon: MdWatch },
 ];
 
 const PHONES = ["iPhone 18 Pro", "iPhone 17", "iPhone 16", "Samsung Galaxy S", "Samsung Galaxy A", "Xiaomi", "Redmi", "Honor", "Realme", "Tecno", "Infinix"];
@@ -49,6 +46,24 @@ const APPLIANCE_TYPES = [
   "Mikroto'lqinli pechlar",
   "Changyutgichlar",
 ];
+
+const TV_PRODUCTS = [
+  { name: "Samsung UE85AU7100 Smart", id: "6ad43856deeea7c011f19699", badge: "85\" 4K UHD" },
+  { name: "Xiaomi TV A Pro 2025", id: "6ad4370ddeeea7c011f1966d", badge: "Smart TV" },
+  { name: "SHOWPRO Audio Jihoz", id: "6ad43b4bdeeea7c011f196e2", badge: "Audio Akustika" },
+];
+
+const TV_BRANDS = ["Samsung", "Xiaomi", "LG", "Sony", "Artel", "TCL", "Shivaki"];
+const TV_TYPES = ["Smart TV", "4K UHD Televizorlar", "OLED & QLED", "Soundbarlar", "Audio tizimlar", "Kronşteynlar"];
+
+const COMP_PRODUCTS = [
+  { name: "ASUS TUF Gaming F16", id: "6ad4405edeeea7c011f197ca", badge: "Gaming Laptop" },
+  { name: "MSI GeForce RTX 3060", id: "6ad43d34deeea7c011f1971e", badge: "GPU 12GB" },
+  { name: "NVIDIA GeForce GTX 1660 SUPER", id: "6ad43c8fdeeea7c011f1970e", badge: "6GB GDDR6" },
+];
+
+const COMP_BRANDS = ["ASUS", "MSI", "NVIDIA", "Lenovo", "HP", "Acer", "Dell", "Gigabyte"];
+const COMP_TYPES = ["Gaming Noutbuklar", "Ofis noutbuklari", "Videokartalar (GPU)", "Monitorlar", "Operativ xotira (RAM)", "SSD va HDD", "Gaming aksessuarlar"];
 
 export default function CatalogMenu({ t, phone }) {
   const [open, setOpen] = useState(false);
@@ -128,6 +143,38 @@ export default function CatalogMenu({ t, phone }) {
                       ))}
                     </div>
                   )}
+
+                  {key === "tv" && (
+                    <div className="mt-2 grid grid-cols-1 gap-1.5 border-t border-slate-100 dark:border-slate-800 pt-2 text-xs text-slate-600 dark:text-slate-400">
+                      {TV_PRODUCTS.map((prod) => (
+                        <Link
+                          key={prod.id}
+                          href={`/product/${prod.id}`}
+                          onClick={() => setOpen(false)}
+                          className="flex items-center justify-between rounded-lg bg-slate-50 dark:bg-slate-800 p-2 font-medium text-slate-700 dark:text-slate-300 hover:text-brand"
+                        >
+                          <span className="truncate">{prod.name}</span>
+                          <span className="shrink-0 rounded bg-brand/10 px-1.5 py-0.5 text-[10px] font-bold text-brand">{prod.badge}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+
+                  {key === "computers" && (
+                    <div className="mt-2 grid grid-cols-1 gap-1.5 border-t border-slate-100 dark:border-slate-800 pt-2 text-xs text-slate-600 dark:text-slate-400">
+                      {COMP_PRODUCTS.map((prod) => (
+                        <Link
+                          key={prod.id}
+                          href={`/product/${prod.id}`}
+                          onClick={() => setOpen(false)}
+                          className="flex items-center justify-between rounded-lg bg-slate-50 dark:bg-slate-800 p-2 font-medium text-slate-700 dark:text-slate-300 hover:text-brand"
+                        >
+                          <span className="truncate">{prod.name}</span>
+                          <span className="shrink-0 rounded bg-brand/10 px-1.5 py-0.5 text-[10px] font-bold text-brand">{prod.badge}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -150,7 +197,7 @@ export default function CatalogMenu({ t, phone }) {
                       <button
                         onMouseEnter={() => setActive(key)}
                         onClick={() => setActive(key)}
-                        className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm transition ${
+                        className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm transition cursor-pointer ${
                           active === key
                             ? "bg-brand/10 font-semibold text-brand"
                             : "text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800"
@@ -258,6 +305,124 @@ export default function CatalogMenu({ t, phone }) {
                           <p className="text-xs text-white/80">Artel, LG, Samsung, Midea mahsulotlari rasmiy kafolat bilan</p>
                           <Link href="/catalog/appliances" onClick={() => setOpen(false)} className="mt-3 inline-flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-ink">{m.more}<MdArrowForward /></Link>
                         </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : active === "tv" ? (
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <div>
+                      <MenuTitle title={t.cats.tv || "Televizorlar va audio"} all={m.all2} />
+                      <p className="mt-3 text-xs font-bold uppercase tracking-wider text-slate-400">Yangi qo'shilgan modellar</p>
+                      <ul className="mt-2 space-y-2 text-sm">
+                        {TV_PRODUCTS.map((prod) => (
+                          <li key={prod.id}>
+                            <Link
+                              href={`/product/${prod.id}`}
+                              onClick={() => setOpen(false)}
+                              className="group flex items-center justify-between rounded-xl p-2.5 transition hover:bg-slate-100 dark:hover:bg-slate-800"
+                            >
+                              <span className="font-semibold text-slate-800 transition group-hover:text-brand dark:text-slate-200">
+                                {prod.name}
+                              </span>
+                              <span className="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">
+                                {prod.badge}
+                              </span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="mt-4 flex flex-wrap gap-1.5 border-t border-slate-100 dark:border-slate-800 pt-3 text-xs font-medium">
+                        {TV_TYPES.map((tName) => (
+                          <Link
+                            key={tName}
+                            href={`/catalog/tv?search=${encodeURIComponent(tName)}`}
+                            onClick={() => setOpen(false)}
+                            className="rounded-lg bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-slate-700 dark:text-slate-300 hover:text-brand hover:bg-brand/10 transition"
+                          >
+                            {tName}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <MenuTitle title="Mashhur Televizor Brendlari" all={m.all2} />
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                        {TV_BRANDS.map((b) => (
+                          <Link
+                            key={b}
+                            href={`/catalog/tv?search=${encodeURIComponent(b)}`}
+                            onClick={() => setOpen(false)}
+                            className="flex items-center justify-between rounded-xl border border-slate-100 p-2.5 font-medium text-slate-700 transition hover:border-brand/40 hover:text-brand dark:border-slate-800 dark:text-slate-300 dark:hover:border-brand"
+                          >
+                            <span>{b}</span>
+                            <MdChevronRight className="text-slate-400" />
+                          </Link>
+                        ))}
+                      </div>
+                      <div className="mt-4 rounded-xl bg-gradient-to-br from-indigo-900 via-brand to-purple-900 p-4 text-white">
+                        <span className="rounded bg-sun px-1.5 py-0.5 text-[10px] font-bold text-ink">Smart & 4K UHD</span>
+                        <p className="mt-2 font-bold">Katta ekranli zamonaviy televizorlar</p>
+                        <p className="text-xs text-white/80">Kafolatli va qulay muddatli to'lov asosida</p>
+                        <Link href="/catalog/tv" onClick={() => setOpen(false)} className="mt-3 inline-flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-ink">Barchasini ko'rish <MdArrowForward /></Link>
+                      </div>
+                    </div>
+                  </div>
+                ) : active === "computers" ? (
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <div>
+                      <MenuTitle title={t.cats.computers || "Kompyuter texnikalari"} all={m.all2} />
+                      <p className="mt-3 text-xs font-bold uppercase tracking-wider text-slate-400">Yangi qo'shilgan modellar</p>
+                      <ul className="mt-2 space-y-2 text-sm">
+                        {COMP_PRODUCTS.map((prod) => (
+                          <li key={prod.id}>
+                            <Link
+                              href={`/product/${prod.id}`}
+                              onClick={() => setOpen(false)}
+                              className="group flex items-center justify-between rounded-xl p-2.5 transition hover:bg-slate-100 dark:hover:bg-slate-800"
+                            >
+                              <span className="font-semibold text-slate-800 transition group-hover:text-brand dark:text-slate-200">
+                                {prod.name}
+                              </span>
+                              <span className="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">
+                                {prod.badge}
+                              </span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="mt-4 flex flex-wrap gap-1.5 border-t border-slate-100 dark:border-slate-800 pt-3 text-xs font-medium">
+                        {COMP_TYPES.map((tName) => (
+                          <Link
+                            key={tName}
+                            href={`/catalog/computers?search=${encodeURIComponent(tName)}`}
+                            onClick={() => setOpen(false)}
+                            className="rounded-lg bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-slate-700 dark:text-slate-300 hover:text-brand hover:bg-brand/10 transition"
+                          >
+                            {tName}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <MenuTitle title="Kompyuter va Komponent Brendlari" all={m.all2} />
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                        {COMP_BRANDS.map((b) => (
+                          <Link
+                            key={b}
+                            href={`/catalog/computers?search=${encodeURIComponent(b)}`}
+                            onClick={() => setOpen(false)}
+                            className="flex items-center justify-between rounded-xl border border-slate-100 p-2.5 font-medium text-slate-700 transition hover:border-brand/40 hover:text-brand dark:border-slate-800 dark:text-slate-300 dark:hover:border-brand"
+                          >
+                            <span>{b}</span>
+                            <MdChevronRight className="text-slate-400" />
+                          </Link>
+                        ))}
+                      </div>
+                      <div className="mt-4 rounded-xl bg-gradient-to-br from-slate-900 via-indigo-950 to-brand p-4 text-white">
+                        <span className="rounded bg-sun px-1.5 py-0.5 text-[10px] font-bold text-ink">Gaming & RTX</span>
+                        <p className="mt-2 font-bold">ASUS TUF, MSI va kuchli videokartalar</p>
+                        <p className="text-xs text-white/80">O'yinlar va grafika uchun rasmiy kafolat bilan</p>
+                        <Link href="/catalog/computers" onClick={() => setOpen(false)} className="mt-3 inline-flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-ink">Barchasini ko'rish <MdArrowForward /></Link>
                       </div>
                     </div>
                   </div>

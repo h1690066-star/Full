@@ -1,6 +1,9 @@
 import { api } from "./api";
 
-export const formatPrice = (n) => String(n || 0).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+export const formatPrice = (n) => {
+  const num = Math.round(Number(n) || 0);
+  return String(num).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+};
 
 // Faqat APIdan kelgan mahsulotlarni formatlash uchun helper
 export const mapApiProduct = (item) => {
@@ -40,9 +43,9 @@ export const mapApiProduct = (item) => {
     name: item.name || "Mahsulot",
     rating: item.rating ?? 5.0,
     reviews: item.reviewsCount ?? item.reviews ?? 0,
-    oldPrice: item.oldPrice || 0,
-    price: item.price || 0,
-    monthly: item.monthly || Math.round((item.price || 0) / 12),
+    oldPrice: item.oldPrice ? Math.round(Number(item.oldPrice) || 0) : 0,
+    price: Math.round(Number(item.price) || 0),
+    monthly: item.monthly ? Math.round(Number(item.monthly) || 0) : Math.round((Number(item.price) || 0) / 12),
     images: images.length > 0 ? images : mainImage ? [mainImage] : [],
     image: mainImage,
     category: item.category,
