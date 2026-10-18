@@ -35,11 +35,13 @@ export async function POST(req) {
     let paymentMethod = "cash";
     let total = 0;
     let receiptFile = null;
+    let orderNumber = "";
 
     const contentType = req.headers.get("content-type") || "";
 
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
+      orderNumber = formData.get("orderNumber") || "";
       const rawItems = formData.get("items");
       const rawAddress = formData.get("address");
       const rawCustomer = formData.get("customerInfo");
@@ -57,6 +59,7 @@ export async function POST(req) {
       }
     } else {
       const body = await req.json();
+      orderNumber = body.orderNumber || "";
       items = body.items || [];
       customerInfo = body.customerInfo || body.address || {};
       paymentMethod = body.paymentMethod || "cash";
@@ -96,7 +99,7 @@ export async function POST(req) {
     const dateStr = new Date().toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" });
 
     const messageHtml =
-      `🛒 <b>YANGI BUYURTMA! (Xon Bozor)</b>\n\n` +
+      `🛒 <b>YANGI BUYURTMA! ${orderNumber ? `#${esc(orderNumber)} ` : ""}(Xon Bozor)</b>\n\n` +
       `👤 <b>Mijoz ismi:</b> ${esc(name)}\n` +
       `📞 <b>Telefon raqami:</b> <code>${esc(phone)}</code>\n` +
       `📍 <b>Manzil:</b> ${esc(addressFull)}\n` +

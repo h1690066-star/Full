@@ -25,7 +25,7 @@ export default function Footer({ t, siteContent }) {
             </div>
           </Link>
           <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-            O'zbekistonda original smartfonlar, noutbuklar va eng so'nggi maishiy texnikaning ishonchli do'koni. Rasmiy kafolat va tezkor yetkazib berish.
+            {siteContent?.sections?.footerAbout || "O'zbekistonda original smartfonlar, noutbuklar va eng so'nggi maishiy texnikaning ishonchli do'koni. Rasmiy kafolat va tezkor yetkazib berish."}
           </p>
           <div className="pt-2">
             <p className="text-[11px] text-slate-500 dark:text-slate-400">Savollar bo'yicha yagona aloqa markazi:</p>

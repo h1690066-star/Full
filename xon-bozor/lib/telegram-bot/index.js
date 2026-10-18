@@ -20,7 +20,7 @@ export async function getTargetChatId() {
   return process.env.TELEGRAM_CHAT_ID || null;
 }
 
-export function formatOrderMessage({ items = [], customerInfo = {}, paymentMethod = "cash", total = 0 }) {
+export function formatOrderMessage({ orderNumber = "", items = [], customerInfo = {}, paymentMethod = "cash", total = 0 }) {
   const name = customerInfo.name || "Noma'lum mijoz";
   const phone = customerInfo.phone || "Kiritilmagan";
   const region = customerInfo.region || "Toshkent shahri";
@@ -44,7 +44,7 @@ export function formatOrderMessage({ items = [], customerInfo = {}, paymentMetho
   const dateStr = new Date().toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" });
 
   return (
-    `🛒 <b>YANGI BUYURTMA! (Xon Bozor)</b>\n\n` +
+    `🛒 <b>YANGI BUYURTMA! ${orderNumber ? `#${esc(orderNumber)} ` : ""}(Xon Bozor)</b>\n\n` +
     `👤 <b>Mijoz:</b> ${esc(name)}\n` +
     `📞 <b>Telefon:</b> <code>${esc(phone)}</code>\n` +
     `📍 <b>Manzil:</b> ${esc(addressFull)}\n` +
@@ -103,9 +103,10 @@ export async function sendTelegramServer({ items, customerInfo, paymentMethod, t
 }
 
 // ===== BRAUZER TOMONI: faqat server route'ga yuboradi, token ishlatilmaydi =====
-export async function sendOrderToTelegram({ items, customerInfo, paymentMethod, total, receiptFile }) {
+export async function sendOrderToTelegram({ orderNumber, items, customerInfo, paymentMethod, total, receiptFile }) {
   try {
     const form = new FormData();
+    if (orderNumber) form.append("orderNumber", orderNumber);
     form.append("items", JSON.stringify(items));
     form.append("customerInfo", JSON.stringify(customerInfo));
     form.append("paymentMethod", paymentMethod);

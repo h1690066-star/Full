@@ -427,6 +427,7 @@ export default function CartClient({ t }) {
     };
 
     // 1. Backend serverga (MongoDB bazasiga) buyurtmani yuborish -> Admin panelda ko'rinadi
+    let createdOrder = null;
     try {
       const formData = new FormData();
       formData.append("items", JSON.stringify(items));
@@ -438,7 +439,14 @@ export default function CartClient({ t }) {
         formData.append("receipt", receiptFile);
       }
 
-      await api.post("/api/orders", formData);
+      const res = await api.post("/api/orders", formData);
+      createdOrder = res.data;
+      if (typeof window !== "undefined" && createdOrder) {
+        try {
+          const prev = JSON.parse(localStorage.getItem("my_orders") || "[]");
+          localStorage.setItem("my_orders", JSON.stringify([createdOrder, ...prev].slice(0, 50)));
+        } catch (_) {}
+      }
     } catch (apiErr) {
       console.error("Backend order submission error:", apiErr);
     }
@@ -446,6 +454,7 @@ export default function CartClient({ t }) {
     // 2. Telegram botga xabarnoma yuborish
     try {
       await sendOrderToTelegram({
+        orderNumber: createdOrder?.orderNumber,
         items,
         customerInfo: {
           ...customerInfo,

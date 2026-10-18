@@ -5,7 +5,7 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const User = require('../models/User');
 const { SHIPPING } = require('../config/shop');
-const { computeTotals } = require('../services/pricing');
+const crypto = require('crypto');
 const tg = require('../services/telegram');
 const { normPhone } = require('../utils/validators');
 const receiptDir = require('../middleware/uploadReceipt').dir;
@@ -83,7 +83,7 @@ exports.create = async (req, res) => {
           userDoc = await User.create({
             name: customerName,
             phone: phone,
-            role: 'user'
+            password: crypto.randomBytes(8).toString('hex'),
           });
         }
       } catch (userErr) {
@@ -231,6 +231,9 @@ exports.create = async (req, res) => {
 // GET /api/orders/my
 exports.my = async (req, res) => {
   try {
+    if (!req.user || !req.user.id) {
+      return res.json([]);
+    }
     const orders = await Order.find({ user: req.user.id }).sort({ createdAt: -1 }).limit(100);
     res.json(orders.map(publicOrder));
   } catch (err) {

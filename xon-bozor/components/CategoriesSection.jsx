@@ -8,11 +8,18 @@ const CATS = [
   { key: "computers", icon: MdLaptopMac },
 ];
 
-export default function CategoriesSection({ t }) {
+export default function CategoriesSection({ t, siteContent }) {
+  const catTitle = siteContent?.sections?.categoriesTitle || t.sections.categories;
+  const catSub = siteContent?.sections?.categoriesSub || t.sections.categoriesSub;
+
   return (
     <section className="mx-auto max-w-7xl px-4 pb-14 pt-10" aria-labelledby="cats-h">
-      <h2 id="cats-h" className="text-xl font-extrabold sm:text-2xl text-slate-900 dark:text-white">{t.sections.categories}</h2>
-      <p className="mb-5 text-sm text-slate-500 dark:text-slate-400">{t.sections.categoriesSub}</p>
+      <h2 id="cats-h" className="text-xl font-extrabold sm:text-2xl text-slate-900 dark:text-white">
+        {catTitle}
+      </h2>
+      <p className="mb-5 text-sm text-slate-500 dark:text-slate-400">
+        {catSub}
+      </p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
         {CATS.map(({ key, icon: Icon }) => (
           <Link
@@ -23,7 +30,9 @@ export default function CategoriesSection({ t }) {
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-soft dark:bg-brand/20 text-brand transition group-hover:bg-brand group-hover:text-white">
               <Icon className="text-2xl" />
             </span>
-            <span className="flex-1 text-sm font-semibold leading-snug text-slate-800 dark:text-slate-100">{t.cats[key]}</span>
+            <span className="flex-1 text-sm font-semibold leading-snug text-slate-800 dark:text-slate-100">
+              {t.cats[key]}
+            </span>
             <MdArrowForward className="hidden text-slate-300 dark:text-slate-600 group-hover:text-brand sm:block" />
           </Link>
         ))}

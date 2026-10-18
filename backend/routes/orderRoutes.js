@@ -8,7 +8,7 @@ const c = require('../controllers/orderController');
 // ---- Web (mijoz) ----
 router.get('/payment-info', c.paymentInfo);
 router.post('/', optionalUserAuth, uploadReceipt.single('receipt'), c.create);
-router.get('/my', userAuth, c.my);
+router.get('/my', optionalUserAuth, c.my);
 
 // ---- Admin ----
 router.get('/', auth, c.listAll);

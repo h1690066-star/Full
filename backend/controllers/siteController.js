@@ -1,6 +1,7 @@
 const SiteContent = require('../models/SiteContent');
 const { exec } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
 const DEFAULT_CONTENT = {
   heroSlides: [
@@ -55,6 +56,13 @@ const DEFAULT_CONTENT = {
     { id: 'p-2', text: 'Rasmiy kafolat' },
     { id: 'p-3', text: "Toshkent bo'ylab 2 soatda" }
   ],
+  sections: {
+    productsTitle: 'Mahsulotlar',
+    allLabel: "Barchasini ko'rish",
+    categoriesTitle: 'Kategoriyalar',
+    categoriesSub: "Kerakli bo'limni tez toping",
+    footerAbout: "O'zbekistonda original smartfonlar, noutbuklar va eng so'nggi maishiy texnikaning ishonchli do'koni. Rasmiy kafolat va tezkor yetkazib berish."
+  },
   promo: {
     tag: 'Eksklyuziv',
     title: 'iPhone 18 Pro',
@@ -85,7 +93,7 @@ exports.getSiteContent = async (req, res) => {
 // PUT /api/site-content (Admin protected)
 exports.updateSiteContent = async (req, res) => {
   try {
-    const { heroSlides, quickCards, contact, perks, promo, announcement, doGitPush } = req.body;
+    const { heroSlides, quickCards, contact, perks, sections, promo, announcement, doGitPush } = req.body;
 
     let content = await SiteContent.findOne().sort({ createdAt: -1 });
     if (!content) {
@@ -96,6 +104,7 @@ exports.updateSiteContent = async (req, res) => {
     if (quickCards) content.quickCards = quickCards;
     if (contact) content.contact = { ...content.contact, ...contact };
     if (perks) content.perks = perks;
+    if (sections) content.sections = { ...content.sections, ...sections };
     if (promo) content.promo = { ...content.promo, ...promo };
     if (announcement) content.announcement = { ...content.announcement, ...announcement };
 
@@ -103,6 +112,17 @@ exports.updateSiteContent = async (req, res) => {
     content.updatedBy = req.admin?.email || 'admin';
 
     await content.save();
+
+    // Sinxronizatsiya: fayl tizimiga siteContent.json yozish
+    try {
+      const repoRoot = path.resolve(__dirname, '..', '..');
+      const jsonPath = path.join(repoRoot, 'xon-bozor', 'lib', 'siteContent.json');
+      if (fs.existsSync(path.dirname(jsonPath))) {
+        fs.writeFileSync(jsonPath, JSON.stringify(content.toObject(), null, 2), 'utf-8');
+      }
+    } catch (fsErr) {
+      console.warn('siteContent.json write warning:', fsErr.message);
+    }
 
     let gitOutput = null;
     let gitSuccess = false;
@@ -112,7 +132,7 @@ exports.updateSiteContent = async (req, res) => {
       try {
         const repoRoot = path.resolve(__dirname, '..', '..');
         await new Promise((resolve) => {
-          exec('git add . && git commit -m "Auto-update site content from admin panel" && git push', { cwd: repoRoot, timeout: 20000 }, (error, stdout, stderr) => {
+          exec('git add . && git commit -m "Auto-update site content from admin panel" && git push origin main', { cwd: repoRoot, timeout: 25000 }, (error, stdout, stderr) => {
             if (error) {
               gitOutput = stderr || error.message;
               gitSuccess = false;
@@ -133,11 +153,11 @@ exports.updateSiteContent = async (req, res) => {
       message: "Sayt ma'lumotlari muvaffaqiyatli saqlandi va jonli efirga chiqarildi!",
       content,
       gitPushed: gitSuccess,
-      gitDetails: gitOutput
+      gitDetails: gitOutput,
+      vercelUrl: "https://xonbozoruz.vercel.app/"
     });
   } catch (err) {
     console.error('updateSiteContent error:', err);
     res.status(500).json({ message: 'Saqlashda xatolik yuz berdi', error: err.message });
   }
 };
-

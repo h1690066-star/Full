@@ -1,3 +1,5 @@
+import fallbackData from "./siteContent.json";
+
 export async function fetchSiteContent() {
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://full-nbal.onrender.com";
   try {
@@ -9,8 +11,7 @@ export async function fetchSiteContent() {
     const data = await res.json();
     return data;
   } catch (err) {
-    console.warn("fetchSiteContent error, using fallback defaults:", err.message);
-    return null;
+    console.warn("fetchSiteContent API fetch error, using local fallback:", err.message);
+    return fallbackData;
   }
 }
-

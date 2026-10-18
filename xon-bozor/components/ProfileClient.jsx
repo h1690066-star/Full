@@ -47,15 +47,34 @@ export default function ProfileClient({ t }) {
   const [currentLang, setCurrentLang] = useState("uz");
 
   useEffect(() => {
-    if (typeof window !== "undefined" && localStorage.getItem("token")) {
-      api.get("/api/orders/my")
-        .then((res) => {
-          const list = Array.isArray(res.data) ? res.data : res.data?.orders || [];
-          setUserOrders(list);
-          setOrdersCount(list.length);
-        })
-        .catch(() => {});
-    }
+    const loadOrders = async () => {
+      let orders = [];
+      if (typeof window !== "undefined" && localStorage.getItem("token")) {
+        try {
+          const res = await api.get("/api/orders/my");
+          const apiList = Array.isArray(res.data) ? res.data : res.data?.orders || [];
+          orders = [...apiList];
+        } catch (_) {}
+      }
+      if (typeof window !== "undefined") {
+        try {
+          const localList = JSON.parse(localStorage.getItem("my_orders") || "[]");
+          if (Array.isArray(localList)) {
+            const seen = new Set(orders.map((o) => o.orderNumber || o._id || o.id));
+            for (const item of localList) {
+              const key = item.orderNumber || item._id || item.id;
+              if (key && !seen.has(key)) {
+                orders.push(item);
+                seen.add(key);
+              }
+            }
+          }
+        } catch (_) {}
+      }
+      setUserOrders(orders);
+      setOrdersCount(orders.length);
+    };
+    loadOrders();
   }, []);
 
   const getOrderStatusBadge = (status) => {

@@ -37,6 +37,13 @@ const SiteContentSchema = new mongoose.Schema(
         text: { type: String, default: '' }
       }
     ],
+    sections: {
+      productsTitle: { type: String, default: 'Mahsulotlar' },
+      allLabel: { type: String, default: 'Barchasini ko\'rish' },
+      categoriesTitle: { type: String, default: 'Kategoriyalar' },
+      categoriesSub: { type: String, default: 'Kerakli bo\'limni tez toping' },
+      footerAbout: { type: String, default: 'O\'zbekistonda original smartfonlar, noutbuklar va eng so\'nggi maishiy texnikaning ishonchli do\'koni. Rasmiy kafolat va tezkor yetkazib berish.' }
+    },
     promo: {
       tag: { type: String, default: 'Eksklyuziv' },
       title: { type: String, default: 'iPhone 18 Pro' },
@@ -55,4 +62,3 @@ const SiteContentSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model('SiteContent', SiteContentSchema);
-

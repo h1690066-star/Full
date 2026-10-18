@@ -123,24 +123,24 @@ export default async function Home() {
           fallback={
             <SectionSkeleton
               id="products"
-              title={t.nav?.products || "Mahsulotlar"}
+              title={siteContent?.sections?.productsTitle || t.nav?.products || "Mahsulotlar"}
               href="/catalog"
-              allLabel={s?.all || "Barchasini ko'rish"}
+              allLabel={siteContent?.sections?.allLabel || s?.all || "Barchasini ko'rish"}
             />
           }
         >
           <AsyncProductSection
             id="products"
-            title={t.nav?.products || "Mahsulotlar"}
+            title={siteContent?.sections?.productsTitle || t.nav?.products || "Mahsulotlar"}
             href="/catalog"
-            allLabel={s?.all || "Barchasini ko'rish"}
+            allLabel={siteContent?.sections?.allLabel || s?.all || "Barchasini ko'rish"}
             productsPromise={productsPromise}
             priority={true}
             t={t}
           />
         </Suspense>
 
-        <CategoriesSection t={t} />
+        <CategoriesSection t={t} siteContent={siteContent} />
       </main>
       <Footer t={t} siteContent={siteContent} />
     </>
