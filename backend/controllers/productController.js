@@ -67,11 +67,15 @@ exports.getProducts = async (req, res) => {
           { category: new RegExp('^phones$', 'i'), used: true },
           { used: true }
         ];
-      } else if (/^(home\s*appliances?|elektronika|maishiy\s*texnika)$/i.test(catTrim)) {
+      } else if (/^(home\s*appliances?|maishiy\s*texnika)$/i.test(catTrim)) {
         filter.$or = [
           { category: new RegExp('^home\\s*appliances?$', 'i') },
-          { category: new RegExp('^elektronika$', 'i') },
           { category: new RegExp('^maishiy\\s*texnika$', 'i') }
+        ];
+      } else if (/^(computers?|kompyuter(\s*jihozlar(i)?)?|elektronika)$/i.test(catTrim)) {
+        filter.$or = [
+          { category: new RegExp('^elektronika$', 'i') },
+          { category: new RegExp('^computers?$', 'i') }
         ];
       } else {
         filter.category = new RegExp('^' + escapeRegex(catTrim) + '$', 'i');

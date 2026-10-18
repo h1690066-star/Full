@@ -1,13 +1,7 @@
-// lib/telegram-bot/index.js
-// Token va chat ID faqat serverda (.env.local) saqlanadi, brauzerga chiqmaydi.
-//
-// .env.local:
-//   TELEGRAM_BOT_TOKEN=BotFather_bergan_yangi_token
-//   TELEGRAM_CHAT_ID=sizning_chat_id_raqamingiz   (guruh bo'lsa -100... bilan boshlanadi)
 
 export const TELEGRAM_BOT_USERNAME = "xonbozorbuyurtma_bot";
 export const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
-// DIQQAT: tokenni hech qachon kodga yozmang, faqat .env.local da saqlang.
+
 
 const esc = (s) =>
   String(s ?? "")
@@ -15,7 +9,6 @@ const esc = (s) =>
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 
-// Chat ID ni .env dan olamiz (getUpdates ishonchsiz, shuning uchun ishlatilmaydi)
 export async function getTargetChatId() {
   return process.env.TELEGRAM_CHAT_ID || null;
 }

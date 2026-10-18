@@ -162,6 +162,19 @@ export async function fetchProducts(params = {}) {
         return mapped;
       }
     }
+    // Agar Render 503 bo'lsa (bandwidth tugaganda), lokal 5000 portdan tortish
+    try {
+      const localRes = await fetch(`http://localhost:5000/api/products${q ? `?${q}` : ""}`, { signal: AbortSignal.timeout(5000) });
+      if (localRes.ok) {
+        const localData = await localRes.json();
+        const items = localData?.items || (Array.isArray(localData) ? localData : []);
+        const mapped = items.map(mapApiProduct).filter(Boolean);
+        if (mapped.length > 0) {
+          memoryCache.set(cacheKey, { data: mapped, timestamp: now, refreshing: false });
+          return mapped;
+        }
+      }
+    } catch (_) {}
     throw new Error(`Fetch status: ${res.status}`);
   } catch (err) {
     try {
@@ -195,12 +208,13 @@ export async function fetchProductsByCategory(category, fallback = [], limit = 1
 
     if (catLower.includes("used") || catLower.includes("b/u")) {
       categoriesToFetch = ["Used Phones", "B/U Telefonlar"];
+    } else if (catLower.includes("computer") || catLower.includes("kompyuter")) {
+      categoriesToFetch = ["Elektronika", "Computers"];
     } else if (
       catLower.includes("appliance") ||
-      catLower.includes("elektronika") ||
       catLower.includes("maishiy")
     ) {
-      categoriesToFetch = ["Home appliances", "Elektronika", "Maishiy texnika"];
+      categoriesToFetch = ["Home appliances", "Maishiy texnika"];
     } else if (catLower.includes("accessor") || catLower.includes("aksessuar")) {
       categoriesToFetch = ["Aksessuarlar", "Accessories"];
     } else if (catLower === "phones") {
@@ -256,3 +270,62 @@ export async function fetchProductsByCategory(category, fallback = [], limit = 1
 if (typeof window === "undefined") {
   fetchProducts({ limit: 10000 }).catch(() => { });
 }
+
+export const isComputerEquipment = (p) => {
+  if (!p) return false;
+  const name = (p.name || "").toLowerCase();
+  const brand = (p.brand || "").toLowerCase();
+  const desc = (p.description || "").toLowerCase();
+  const cat = (p.category || "").toLowerCase();
+  const txt = `${name} ${brand} ${desc} ${cat}`;
+
+  return (
+    txt.includes("asus") ||
+    txt.includes("tuf") ||
+    txt.includes("msi") ||
+    txt.includes("rtx") ||
+    txt.includes("gtx") ||
+    txt.includes("geforce") ||
+    txt.includes("nvidia") ||
+    txt.includes("laptop") ||
+    txt.includes("noutbuk") ||
+    txt.includes("kompyuter") ||
+    txt.includes("videokarta") ||
+    txt.includes("graphics card") ||
+    txt.includes("gpu") ||
+    txt.includes("ram ddr") ||
+    txt.includes("monitor") ||
+    txt.includes("mag 275")
+  );
+};
+
+export const isHouseholdAppliance = (p) => {
+  if (!p) return false;
+  if (isComputerEquipment(p)) return false;
+  const name = (p.name || "").toLowerCase();
+  const brand = (p.brand || "").toLowerCase();
+  const desc = (p.description || "").toLowerCase();
+  const cat = (p.category || "").toLowerCase();
+  const txt = `${name} ${brand} ${desc} ${cat}`;
+
+  return (
+    cat.includes("appliance") ||
+    cat.includes("maishiy") ||
+    txt.includes("muzlatgich") ||
+    txt.includes("kir yuvish") ||
+    txt.includes("konditsioner") ||
+    txt.includes("plitasi") ||
+    txt.includes("plita") ||
+    txt.includes("gaz plitasi") ||
+    txt.includes("duxovka") ||
+    txt.includes("mikrotolqinli") ||
+    txt.includes("mikroto'lqinli") ||
+    txt.includes("changyutgich") ||
+    txt.includes("artel") ||
+    txt.includes("hofmann") ||
+    txt.includes("midea") ||
+    txt.includes("haier") ||
+    txt.includes("tv") ||
+    txt.includes("televizor")
+  );
+};

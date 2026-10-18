@@ -14,7 +14,7 @@ export default async function OrdersPage() {
   return (
     <>
       <Header t={t} lang={lang} />
-      <main className="min-h-[60vh] bg-slate-50/50 dark:bg-[#0f1015] transition-colors pb-28 min-[1121px]:pb-12">
+      <main className="min-h-[60vh] bg-slate-50/50 dark:bg-[#0f1015] transition-colors pb-28 min-[1251px]:pb-12">
         <OrdersClient t={t} />
       </main>
       <Footer t={t} />

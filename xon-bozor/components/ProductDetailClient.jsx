@@ -258,7 +258,7 @@ export default function ProductDetailClient({ product, related = [], t }) {
   }, [product]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 pb-28 min-[1121px]:pb-8">
+    <div className="mx-auto max-w-7xl px-4 py-6 pb-28 min-[1251px]:pb-8">
       {/* Breadcrumbs */}
       <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
         <Link href="/" className="hover:text-brand transition">Bosh sahifa</Link>

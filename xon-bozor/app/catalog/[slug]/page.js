@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CatalogClient from "@/components/CatalogClient";
 import { getT } from "@/lib/i18n";
-import { fetchProducts, fetchProductsByCategory } from "@/lib/products";
+import { fetchProducts, isComputerEquipment, isHouseholdAppliance } from "@/lib/products";
 
 export const revalidate = 30;
 
@@ -23,22 +23,9 @@ const BRAND_MAP = {
   avalon: "Avalon",
   tefal: "Tefal",
   panasonic: "Panasonic",
-};
-
-const CATEGORY_MAP = {
-  phones: "Phones",
-  iphone: "Phones",
-  samsung: "Phones",
-  xiaomi: "Phones",
-  honor: "Phones",
-  redmi: "Phones",
-  used: "Used Phones",
-  appliances: "Home appliances",
-  accessories: "Aksessuarlar",
-  electronics: "Elektronika",
-  elektronika: "Elektronika",
-  tv: "Elektronika",
-  computers: "Elektronika",
+  asus: "ASUS",
+  msi: "MSI",
+  nvidia: "Nvidia",
 };
 
 export async function generateMetadata({ params }) {
@@ -70,73 +57,66 @@ export default async function Catalog({ params }) {
   const { slug } = await params;
   const { t, lang } = await getT();
 
-  let list = [];
+  const allProducts = await fetchProducts({ limit: 10000 });
   const slugLower = (slug || "").toLowerCase();
-  const cat = CATEGORY_MAP[slugLower];
-  const brand = BRAND_MAP[slugLower];
+  let list = [];
 
-  if (cat) {
-    list = await fetchProductsByCategory(cat, [], 10000);
+  if (slugLower === "samsung") {
+    // Barcha Samsung mahsulotlari (Yangi, B/U telefonlar va Samsung maishiy/TV)
+    list = allProducts.filter((p) => {
+      const b = (p.brand || "").toLowerCase();
+      const n = (p.name || "").toLowerCase();
+      const c = (p.category || "").toLowerCase();
+      return b.includes("samsung") || n.includes("samsung") || c.includes("samsung");
+    });
+  } else if (slugLower === "iphone" || slugLower === "apple") {
+    list = allProducts.filter((p) => {
+      const b = (p.brand || "").toLowerCase();
+      const n = (p.name || "").toLowerCase();
+      return b.includes("apple") || n.includes("iphone") || n.includes("apple");
+    });
+  } else if (slugLower === "xiaomi") {
+    list = allProducts.filter((p) => {
+      const b = (p.brand || "").toLowerCase();
+      const n = (p.name || "").toLowerCase();
+      return b.includes("xiaomi") || n.includes("xiaomi") || b.includes("redmi") || n.includes("redmi");
+    });
+  } else if (slugLower === "redmi") {
+    list = allProducts.filter((p) => {
+      const b = (p.brand || "").toLowerCase();
+      const n = (p.name || "").toLowerCase();
+      return b.includes("redmi") || n.includes("redmi") || n.includes("note");
+    });
+  } else if (slugLower === "honor") {
+    list = allProducts.filter((p) => {
+      const b = (p.brand || "").toLowerCase();
+      const n = (p.name || "").toLowerCase();
+      return b.includes("honor") || n.includes("honor");
+    });
+  } else if (slugLower === "used" || slugLower === "b-u") {
+    list = allProducts.filter((p) => p.used === true);
+  } else if (slugLower === "phones") {
+    list = allProducts.filter((p) => !p.used && !isComputerEquipment(p) && !isHouseholdAppliance(p));
+  } else if (slugLower === "appliances" || slugLower === "maishiy-texnika") {
+    // Maishiy texnikada faqat uy texnikalari chiqadi, kompyuter jihozlari CHIQARILMAYDI
+    list = allProducts.filter(isHouseholdAppliance);
+  } else if (slugLower === "computers" || slugLower === "kompyuter-jihozlari") {
+    // Kompyuter jihozlari bo'limi: noutbuklar, videokartalar, monitorlar va qismlar
+    list = allProducts.filter(isComputerEquipment);
+  } else if (slugLower === "tv") {
+    list = allProducts.filter((p) => {
+      const txt = `${p.name || ""} ${p.category || ""} ${p.brand || ""}`.toLowerCase();
+      return txt.includes("tv") || txt.includes("televizor") || txt.includes("smart") || txt.includes("audio");
+    });
   } else {
-    list = await fetchProducts({ limit: 10000 });
-  }
-
-  if (brand && list.length > 0) {
-    const brandLower = brand.toLowerCase();
-    const brandFiltered = list.filter((p) => {
-      const pBrand = (p.brand || "").toLowerCase();
-      const pName = (p.name || "").toLowerCase();
-      return pBrand === brandLower || pBrand.includes(brandLower) || pName.includes(brandLower);
+    const brand = BRAND_MAP[slugLower] || slugLower;
+    list = allProducts.filter((p) => {
+      const b = (p.brand || "").toLowerCase();
+      const n = (p.name || "").toLowerCase();
+      const c = (p.category || "").toLowerCase();
+      return b.includes(brand.toLowerCase()) || n.includes(brand.toLowerCase()) || c.includes(brand.toLowerCase());
     });
-    if (brandFiltered.length > 0) list = brandFiltered;
-  } else if (!cat && list.length > 0) {
-    // Agar slug toifada ham, brend xaritasida ham bo'lmasa, erkin qidiramiz
-    const matched = list.filter((p) => {
-      const pBrand = (p.brand || "").toLowerCase();
-      const pName = (p.name || "").toLowerCase();
-      const pCat = (p.category || "").toLowerCase();
-      return pBrand.includes(slugLower) || pName.includes(slugLower) || pCat.includes(slugLower);
-    });
-    if (matched.length > 0) list = matched;
-  }
-
-  if (slugLower === "used" && list.length > 0) {
-    const usedFiltered = list.filter((p) => p.used);
-    if (usedFiltered.length > 0) list = usedFiltered;
-  }
-
-  if (slugLower === "tv" && list.length > 0) {
-    const tvFiltered = list.filter((p) => {
-      const txt = `${p.name || ""} ${p.category || ""} ${p.brand || ""}`.toLowerCase();
-      return (
-        txt.includes("tv") ||
-        txt.includes("televizor") ||
-        txt.includes("audio") ||
-        txt.includes("smart") ||
-        txt.includes("showpro") ||
-        txt.includes("sound")
-      );
-    });
-    if (tvFiltered.length > 0) list = tvFiltered;
-  }
-
-  if (slugLower === "computers" && list.length > 0) {
-    const compFiltered = list.filter((p) => {
-      const txt = `${p.name || ""} ${p.category || ""} ${p.brand || ""}`.toLowerCase();
-      return (
-        txt.includes("asus") ||
-        txt.includes("tuf") ||
-        txt.includes("msi") ||
-        txt.includes("rtx") ||
-        txt.includes("gtx") ||
-        txt.includes("geforce") ||
-        txt.includes("nvidia") ||
-        txt.includes("laptop") ||
-        txt.includes("pc") ||
-        txt.includes("kompyuter")
-      );
-    });
-    if (compFiltered.length > 0) list = compFiltered;
+    if (list.length === 0) list = allProducts;
   }
 
   const catName = t.cats?.[slug] || t.nav?.[slug] || (slug.charAt(0).toUpperCase() + slug.slice(1));

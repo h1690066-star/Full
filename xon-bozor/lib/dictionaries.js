@@ -2,7 +2,7 @@ const uz = {
   city: "Shahar", cityName: "Toshkent", pickup: "Topshirish punktlari", faq: "Savol-javob", orders: "Buyurtmalarim",
   catalog: "Katalog", searchPh: "Telefon va texnikalarni izlash", search: "Topish",
   login: "Kirish", wishlist: "Saralanganlar", cart: "Savat", more: "Yana",
-  nav: { newPhones: "Yangi telefonlar", usedPhones: "B/U telefonlar", iphone: "iPhone", samsung: "Samsung", xiaomi: "Xiaomi", honor: "Honor", redmi: "Redmi", accessories: "Aksessuarlar", appliances: "Maishiy texnika" },
+  nav: { newPhones: "Yangi telefonlar", usedPhones: "B/U telefonlar", iphone: "iPhone", samsung: "Samsung", xiaomi: "Xiaomi", honor: "Honor", redmi: "Redmi", accessories: "Aksessuarlar", appliances: "Maishiy texnika", computers: "Kompyuter jihozlari" },
   hero: [
     { badge: "Eksklyuziv premyera", title: "Yangi iPhone 18 Pro - Xon Bozorda!", text: "Kutilgan titan korpus, eng so'nggi A20 chip va maxsus muddatli to'lov shartlari bilan.", cta: "Hozir xarid qiling" },
     { badge: "Yangi ranglar", title: "iPhone 18 - uchta yangi rang", text: "Binafsha, mis va to'q qizil. Original kafolat va 0% muddatli to'lov.", cta: "Batafsil" },
@@ -131,7 +131,7 @@ const ru = {
   city: "Город", cityName: "Ташкент", pickup: "Пункты выдачи", faq: "Вопрос-ответ", orders: "Мои заказы",
   catalog: "Каталог", searchPh: "Поиск телефонов и техники", search: "Найти",
   login: "Войти", wishlist: "Избранное", cart: "Корзина", more: "Ещё",
-  nav: { newPhones: "Новые телефоны", usedPhones: "Б/У телефоны", iphone: "iPhone", samsung: "Samsung", xiaomi: "Xiaomi", honor: "Honor", redmi: "Redmi", accessories: "Аксессуары", appliances: "Бытовая техника" },
+  nav: { newPhones: "Новые телефоны", usedPhones: "Б/У телефоны", iphone: "iPhone", samsung: "Samsung", xiaomi: "Xiaomi", honor: "Honor", redmi: "Redmi", accessories: "Аксессуары", appliances: "Бытовая техника", computers: "Компьютерная техника" },
   hero: [
     { badge: "Эксклюзивная премьера", title: "Новый iPhone 18 Pro - в Xon Bozor!", text: "Долгожданный титановый корпус, новейший чип A20 и особые условия рассрочки.", cta: "Купить сейчас" },
     { badge: "Новые цвета", title: "iPhone 18 - три новых цвета", text: "Фиолетовый, медный и бордовый. Оригинальная гарантия и рассрочка 0%.", cta: "Подробнее" },
@@ -260,7 +260,7 @@ const en = {
   city: "City", cityName: "Tashkent", pickup: "Pickup points", faq: "FAQ", orders: "My orders",
   catalog: "Catalog", searchPh: "Search phones and appliances", search: "Search",
   login: "Log in", wishlist: "Wishlist", cart: "Cart", more: "More",
-  nav: { newPhones: "New phones", usedPhones: "Used phones", iphone: "iPhone", samsung: "Samsung", xiaomi: "Xiaomi", honor: "Honor", redmi: "Redmi", accessories: "Accessories", appliances: "Home appliances" },
+  nav: { newPhones: "New phones", usedPhones: "Used phones", iphone: "iPhone", samsung: "Samsung", xiaomi: "Xiaomi", honor: "Honor", redmi: "Redmi", accessories: "Accessories", appliances: "Home appliances", computers: "Computer Equipment" },
   hero: [
     { badge: "Exclusive premiere", title: "The new iPhone 18 Pro is at Xon Bozor!", text: "The long-awaited titanium body, the latest A20 chip and special instalment terms.", cta: "Buy now" },
     { badge: "New colors", title: "iPhone 18 - three new colors", text: "Purple, copper and deep red. Original warranty and 0% instalments.", cta: "Learn more" },

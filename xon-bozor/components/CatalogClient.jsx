@@ -23,21 +23,30 @@ const APPLIANCE_TYPES = [
   { name: "Muzlatgichlar", match: "Muzlatgich" },
   { name: "Kir yuvish mashinalari", match: "Kir yuvish" },
   { name: "Konditsionerlar", match: "Konditsioner" },
+  { name: "Gaz plitalari", match: "plita" },
+  { name: "Televizorlar", match: "tv" },
   { name: "Mikroto'lqinli pechlar", match: "Mikrotolqinli" },
   { name: "Changyutgichlar", match: "Changyutgich" },
 ];
 
+const COMPUTER_TYPES = [
+  { name: "Gaming Noutbuklar", match: "tuf" },
+  { name: "Videokartalar (GPU)", match: "geforce" },
+  { name: "Monitorlar", match: "monitor" },
+  { name: "Audio va Akustika", match: "audio" },
+];
 
-const MODELS_LIST = ["iPhone 18 Pro", "iPhone 17", "iPhone 16", "Galaxy S25", "Galaxy A55", "Xiaomi 15"];
+const MODELS_LIST = ["iPhone 18", "iPhone 15", "iPhone 14", "iPhone 13", "iPhone 11", "Galaxy S24", "Galaxy S23", "Galaxy A54", "Xiaomi 14", "Redmi Note"];
 const STORAGE_LIST = ["64GB", "128GB", "256GB", "512GB", "1TB"];
-const RAM_LIST = ["4GB", "6GB", "8GB", "12GB"];
+const RAM_LIST = ["4GB", "6GB", "8GB", "12GB", "16GB"];
 const COLOR_LIST = [
-  { name: "Black", hex: "#000000" },
-  { name: "Beige", hex: "#d4c5b9" },
-  { name: "White", hex: "#ffffff" },
-  { name: "Purple", hex: "#6b21a8" },
-  { name: "Blue", hex: "#2563eb" },
-  { name: "Green", hex: "#059669" },
+  { name: "Black", hex: "#000000", match: ["qora", "black", "dark", "titan"] },
+  { name: "Beige", hex: "#d4c5b9", match: ["bej", "beige", "titan", "oltin", "gold"] },
+  { name: "White", hex: "#ffffff", match: ["oq", "white", "silver", "kumush"] },
+  { name: "Purple", hex: "#6b21a8", match: ["binafsha", "purple"] },
+  { name: "Blue", hex: "#2563eb", match: ["ko'k", "kok", "blue"] },
+  { name: "Green", hex: "#059669", match: ["yashil", "green"] },
+  { name: "Cherry", hex: "#dc2626", match: ["qizil", "red", "cherry"] },
 ];
 
 /* ---------- Presentational class helpers ---------- */
@@ -213,7 +222,7 @@ const SidebarFilters = memo(function SidebarFilters({
         </div>
       )}
 
-      {/* Texnika turi (Faqat Maishiy texnika bo'limi uchun) */}
+      {/* Texnika turi / Qurilma turi / Telefon parametrlari */}
       {categorySlug === "appliances" ? (
         <div className={SECTION}>
           <div className="flex items-center justify-between">
@@ -245,6 +254,43 @@ const SidebarFilters = memo(function SidebarFilters({
                       {checked && <MdCheck className="text-xs" />}
                     </div>
                     <span className={checked ? "font-semibold text-slate-900 dark:text-white" : ""}>{a.name}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : categorySlug === "computers" ? (
+        <div className={SECTION}>
+          <div className="flex items-center justify-between">
+            <h3 className={`${SECTION_TITLE} flex items-center gap-1.5`}>
+              <MdKitchen className="text-sm text-brand" />
+              <span>Qurilma turi</span>
+            </h3>
+            {selectedApplianceType && (
+              <button
+                type="button"
+                onClick={() => setSelectedApplianceType("")}
+                className="text-[11px] font-semibold text-brand dark:text-brand-light hover:underline"
+              >
+                Hammasi
+              </button>
+            )}
+          </div>
+          <div className="space-y-0.5">
+            {COMPUTER_TYPES.map((c) => {
+              const checked = selectedApplianceType?.toLowerCase() === c.match.toLowerCase();
+              return (
+                <div
+                  key={c.match}
+                  onClick={() => setSelectedApplianceType(checked ? "" : c.match)}
+                  className={ROW}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className={checkBox(checked)}>
+                      {checked && <MdCheck className="text-xs" />}
+                    </div>
+                    <span className={checked ? "font-semibold text-slate-900 dark:text-white" : ""}>{c.name}</span>
                   </div>
                 </div>
               );
@@ -500,10 +546,14 @@ export default function CatalogClient({
     const map = {};
     products.forEach((p) => {
       if (p.brand) {
-        map[p.brand] = (map[p.brand] || 0) + 1;
+        const b = p.brand.trim();
+        const norm = b.charAt(0).toUpperCase() + b.slice(1);
+        map[norm] = (map[norm] || 0) + 1;
       }
     });
-    return Object.keys(map).map((name) => ({ name, count: map[name] }));
+    return Object.keys(map)
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ name, count: map[name] }));
   }, [products]);
 
   const toggleBrand = useCallback((brand) => {
@@ -567,10 +617,66 @@ export default function CatalogClient({
       if (onlyOriginal && p.used) return false;
       if (condition === "new" && p.used) return false;
       if (condition === "used" && !p.used) return false;
-      if (selectedBrands.length > 0 && p.brand && !selectedBrands.includes(p.brand)) return false;
-      if (selectedModels.length > 0 && !selectedModels.some((m) => (p.name || "").includes(m))) return false;
-      if (selectedStorage && p.storage && p.storage !== selectedStorage) return false;
-      if (selectedRam && p.ram && p.ram !== selectedRam) return false;
+
+      // Brendlar filtri
+      if (selectedBrands.length > 0) {
+        const pBrand = (p.brand || "").toLowerCase();
+        const pName = (p.name || "").toLowerCase();
+        const matches = selectedBrands.some((b) => {
+          const bLower = b.toLowerCase();
+          return pBrand === bLower || pBrand.includes(bLower) || pName.includes(bLower);
+        });
+        if (!matches) return false;
+      }
+
+      // Modellar filtri
+      if (selectedModels.length > 0 && !selectedModels.some((m) => (p.name || "").toLowerCase().includes(m.toLowerCase()))) {
+        return false;
+      }
+
+      // Xotira filtri (Massiv, String va Nomi orqali xavfsiz tekshirish)
+      if (selectedStorage) {
+        const sNorm = selectedStorage.toLowerCase().replace(/\s+/g, "");
+        const hasStorage = (() => {
+          if (Array.isArray(p.storage) && p.storage.length > 0) {
+            return p.storage.some((s) => String(s).toLowerCase().replace(/\s+/g, "") === sNorm);
+          }
+          if (typeof p.storage === "string" && p.storage.trim()) {
+            return p.storage.toLowerCase().replace(/\s+/g, "") === sNorm;
+          }
+          const txt = `${p.name || ""} ${p.description || ""} ${JSON.stringify(p.specs || [])}`.toLowerCase().replace(/\s+/g, "");
+          return txt.includes(sNorm);
+        })();
+        if (!hasStorage) return false;
+      }
+
+      // Rang filtri
+      if (selectedColor) {
+        const colorDef = COLOR_LIST.find((c) => c.name === selectedColor);
+        const matchWords = colorDef?.match || [selectedColor.toLowerCase()];
+        const hasColor = (() => {
+          const pColors = Array.isArray(p.colors)
+            ? p.colors.map((c) => String(c).toLowerCase())
+            : typeof p.colors === "string"
+            ? [p.colors.toLowerCase()]
+            : [];
+          const txt = `${p.name || ""} ${p.description || ""} ${pColors.join(" ")}`.toLowerCase();
+          return matchWords.some((w) => txt.includes(w));
+        })();
+        if (!hasColor) return false;
+      }
+
+      // RAM filtri
+      if (selectedRam) {
+        const rNorm = selectedRam.toLowerCase().replace(/\s+/g, "");
+        const hasRam = (() => {
+          if (p.ram) return String(p.ram).toLowerCase().replace(/\s+/g, "") === rNorm;
+          const txt = `${p.name || ""} ${p.description || ""} ${JSON.stringify(p.specs || [])}`.toLowerCase().replace(/\s+/g, "");
+          return txt.includes(rNorm);
+        })();
+        if (!hasRam) return false;
+      }
+
       if (highRating && (p.rating || 5) < 4.0) return false;
 
       return true;
@@ -597,6 +703,7 @@ export default function CatalogClient({
     selectedBrands,
     selectedModels,
     selectedStorage,
+    selectedColor,
     selectedRam,
     highRating,
     sortBy,
@@ -638,7 +745,7 @@ export default function CatalogClient({
   ]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pt-4 sm:pt-6 pb-28 min-[1121px]:pb-0">
+    <div className="mx-auto max-w-7xl px-4 pt-4 sm:pt-6 pb-28 min-[1251px]:pb-0">
       {/* Page Hero Header */}
       <section className="relative mb-6 overflow-hidden rounded-3xl border border-slate-200/70 dark:border-white/[0.06] bg-white dark:bg-night-100 px-5 py-7 sm:px-8 sm:py-10 shadow-soft animate-fade-up">
         <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid opacity-60 dark:opacity-30" />

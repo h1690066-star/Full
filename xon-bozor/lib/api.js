@@ -36,8 +36,21 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
-    if (err.response?.status === 401 && typeof window !== "undefined") localStorage.removeItem("token");
+  async (err) => {
+    if (err.response?.status === 401 && typeof window !== "undefined") {
+      localStorage.removeItem("token");
+    }
+    // If Render is 503 (suspended) or network error, fallback to localhost:5000 in local dev
+    if (
+      (err.response?.status === 503 || !err.response) &&
+      typeof window !== "undefined" &&
+      window.location.hostname === "localhost" &&
+      !err.config?._retriedLocal
+    ) {
+      err.config._retriedLocal = true;
+      err.config.baseURL = "http://localhost:5000";
+      return api(err.config);
+    }
     return Promise.reject(err);
   }
 );
