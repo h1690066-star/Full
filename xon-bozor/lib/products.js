@@ -68,7 +68,12 @@ export const usedPhones = [];
 export const appliances = [];
 export const accessories = [];
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE =
+  (process.env.NEXT_PUBLIC_API_URL &&
+    !process.env.NEXT_PUBLIC_API_URL.includes("3211") &&
+    !process.env.NEXT_PUBLIC_API_URL.includes("onrender.com"))
+    ? process.env.NEXT_PUBLIC_API_URL
+    : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:5000";
 
 // Server-side in-memory cache
 const memoryCache = new Map();
@@ -84,6 +89,23 @@ export async function fetchCategories() {
   if (cached && Date.now() - cached.timestamp < 60_000) {
     return cached.data;
   }
+
+  // Server-side: MongoDB Atlas dan to'g'ridan-to'g'ri o'qish (Vercel uchun 100% ishonchli)
+  if (typeof window === "undefined") {
+    try {
+      const { connectToDatabase } = await import("./mongodb");
+      const Product = (await import("./models/Product")).default;
+      await connectToDatabase();
+      const distinctCats = await Product.distinct("category", { isActive: { $ne: false } });
+      if (Array.isArray(distinctCats) && distinctCats.length > 0) {
+        memoryCache.set(cacheKey, { data: distinctCats, timestamp: Date.now() });
+        return distinctCats;
+      }
+    } catch (dbErr) {
+      console.warn("Direct DB fetchCategories error:", dbErr.message);
+    }
+  }
+
   try {
     const res = await fetch(`${API_BASE}/api/products/categories`, {
       next: { revalidate: 60 },
@@ -119,39 +141,46 @@ export async function fetchProducts(params = {}) {
     return cached.data;
   }
 
+  // 1. Server-side: MongoDB Atlas dan to'g'ridan-to'g'ri tortish (Render 503 bo'lsa ham Vercel 100% ishlaydi)
+  if (typeof window === "undefined") {
+    try {
+      const { connectToDatabase } = await import("./mongodb");
+      const Product = (await import("./models/Product")).default;
+      await connectToDatabase();
+      const limit = parseInt(params.limit || "10000", 10);
+      const filter = { isActive: { $ne: false } };
+      if (params.category) {
+        filter.category = new RegExp(String(params.category).trim(), "i");
+      }
+      if (params.search) {
+        filter.name = new RegExp(String(params.search).trim(), "i");
+      }
+      const raw = await Product.find(filter)
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .lean();
+      const mapped = raw.map(mapApiProduct).filter(Boolean);
+      if (mapped.length > 0) {
+        memoryCache.set(cacheKey, { data: mapped, timestamp: now, refreshing: false });
+        return mapped;
+      }
+    } catch (dbErr) {
+      console.warn("Direct DB fetchProducts error:", dbErr.message);
+    }
+  }
+
   // Stale kesh (20s - 3 min): darhol qaytarib, orqa fonda yangilash
   if (cached && cached.data?.length > 0 && now - cached.timestamp < 180_000) {
-    if (!cached.refreshing) {
-      cached.refreshing = true;
-      (async () => {
-        try {
-          const q = new URLSearchParams({ limit: "10000", ...params }).toString();
-          const url = `${API_BASE}/api/products${q ? `?${q}` : ""}`;
-          const res = await fetch(url, { signal: AbortSignal.timeout(40000) });
-          if (res.ok) {
-            const data = await res.json();
-            const items = data?.items || (Array.isArray(data) ? data : []);
-            const mapped = items.map(mapApiProduct).filter(Boolean);
-            if (mapped.length > 0) {
-              memoryCache.set(cacheKey, { data: mapped, timestamp: Date.now(), refreshing: false });
-            }
-          }
-        } catch (_) {
-        } finally {
-          if (memoryCache.has(cacheKey)) memoryCache.get(cacheKey).refreshing = false;
-        }
-      })();
-    }
     return cached.data;
   }
 
-  // Kesh yo'q bo'lsa yoki eskirgan bo'lsa
+  // Kesh yo'q bo'lsa yoki eskirgan bo'lsa (HTTP fallback)
   try {
     const q = new URLSearchParams({ limit: "10000", ...params }).toString();
     const url = `${API_BASE}/api/products${q ? `?${q}` : ""}`;
     const res = await fetch(url, {
       next: { revalidate: 30 },
-      signal: AbortSignal.timeout(40000),
+      signal: AbortSignal.timeout(15000),
     });
     if (res.ok) {
       const data = await res.json();
@@ -162,34 +191,20 @@ export async function fetchProducts(params = {}) {
         return mapped;
       }
     }
-    // Agar Render 503 bo'lsa (bandwidth tugaganda), lokal 5000 portdan tortish
-    try {
-      const localRes = await fetch(`http://localhost:5000/api/products${q ? `?${q}` : ""}`, { signal: AbortSignal.timeout(5000) });
-      if (localRes.ok) {
-        const localData = await localRes.json();
-        const items = localData?.items || (Array.isArray(localData) ? localData : []);
-        const mapped = items.map(mapApiProduct).filter(Boolean);
-        if (mapped.length > 0) {
-          memoryCache.set(cacheKey, { data: mapped, timestamp: now, refreshing: false });
-          return mapped;
-        }
-      }
-    } catch (_) {}
-    throw new Error(`Fetch status: ${res.status}`);
-  } catch (err) {
-    try {
-      const res = await api.get("/api/products", { params: { limit: 10000, ...params } });
-      const items = res.data?.items || (Array.isArray(res.data) ? res.data : []);
-      const mapped = items.map(mapApiProduct).filter(Boolean);
-      if (mapped.length > 0) {
-        memoryCache.set(cacheKey, { data: mapped, timestamp: now, refreshing: false });
-        return mapped;
-      }
-    } catch {
-      return cached?.data || [];
+  } catch (_) {}
+
+  try {
+    const res = await api.get("/api/products", { params: { limit: 10000, ...params } });
+    const items = res.data?.items || (Array.isArray(res.data) ? res.data : []);
+    const mapped = items.map(mapApiProduct).filter(Boolean);
+    if (mapped.length > 0) {
+      memoryCache.set(cacheKey, { data: mapped, timestamp: now, refreshing: false });
+      return mapped;
     }
+  } catch {
     return cached?.data || [];
   }
+  return cached?.data || [];
 }
 
 // 2️⃣ Kategoriya bo'yicha olish (cheksiz limit)
@@ -200,6 +215,60 @@ export async function fetchProductsByCategory(category, fallback = [], limit = 1
 
   if (cached && cached.data?.length > 0 && now - cached.timestamp < 20_000) {
     return cached.data;
+  }
+
+  // 1. Server-side: MongoDB Atlas dan to'g'ridan-to'g'ri tortish
+  if (typeof window === "undefined") {
+    try {
+      const { connectToDatabase } = await import("./mongodb");
+      const Product = (await import("./models/Product")).default;
+      await connectToDatabase();
+      const catLower = (category || "").toLowerCase();
+      let queryFilter = { isActive: { $ne: false } };
+
+      if (catLower.includes("used") || catLower.includes("b/u")) {
+        queryFilter = {
+          $and: [
+            { isActive: { $ne: false } },
+            {
+              $or: [
+                { used: true },
+                { category: { $in: ["Used Phones", "B/U Telefonlar"] } },
+                { name: { $regex: /\(used|\(b\/u\)/i } },
+              ],
+            },
+          ],
+        };
+      } else if (catLower.includes("computer") || catLower.includes("kompyuter")) {
+        queryFilter.category = { $in: ["Elektronika", "Computers"] };
+      } else if (catLower.includes("appliance") || catLower.includes("maishiy")) {
+        queryFilter.category = { $in: ["Home appliances", "Maishiy texnika"] };
+      } else if (catLower.includes("accessor") || catLower.includes("aksessuar")) {
+        queryFilter.category = { $in: ["Aksessuarlar", "Accessories"] };
+      } else if (catLower === "phones") {
+        queryFilter.category = "Phones";
+        queryFilter.used = { $ne: true };
+      } else {
+        queryFilter.category = new RegExp(category.trim(), "i");
+      }
+
+      const raw = await Product.find(queryFilter)
+        .sort({ createdAt: -1 })
+        .limit(limit || 10000)
+        .lean();
+      let mapped = raw.map(mapApiProduct).filter(Boolean);
+      if (catLower.includes("appliance") || catLower.includes("maishiy")) {
+        mapped = mapped.filter((p) => !isComputerEquipment(p));
+      } else if (catLower.includes("computer") || catLower.includes("kompyuter")) {
+        mapped = mapped.filter((p) => isComputerEquipment(p));
+      }
+      if (mapped.length > 0) {
+        memoryCache.set(cacheKey, { data: mapped, timestamp: now });
+        return mapped;
+      }
+    } catch (e) {
+      console.warn("Direct DB fetchProductsByCategory error:", e.message);
+    }
   }
 
   try {
@@ -227,7 +296,7 @@ export async function fetchProductsByCategory(category, fallback = [], limit = 1
           const q = new URLSearchParams({ category: cat, limit: String(limit || 10000) }).toString();
           const res = await fetch(`${API_BASE}/api/products?${q}`, {
             next: { revalidate: 30 },
-            signal: AbortSignal.timeout(40000),
+            signal: AbortSignal.timeout(15000),
           });
           if (res.ok) {
             const data = await res.json();

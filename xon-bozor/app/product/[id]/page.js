@@ -18,6 +18,38 @@ export async function generateMetadata({ params }) {
       ? `https://${process.env.VERCEL_URL}`
       : "https://xonbozor.vercel.app";
   try {
+    const { connectToDatabase } = await import("@/lib/mongodb");
+    const Product = (await import("@/lib/models/Product")).default;
+    await connectToDatabase();
+    const raw = await Product.findById(id).lean();
+    if (raw?.name) {
+      const p = mapApiProduct(raw);
+      const title = `${p.name} — Narxi, xususiyatlari va muddatli to'lovi`;
+      const description = `${p.name} eng arzon narxda (${p.price?.toLocaleString()} so'm). Rasmiy kafolat, 0% muddatli to'lov va Toshkent bo'yicha tezkor yetkazib berish.`;
+      const img = p.image || `${SITE}/logo.png`;
+      return {
+        title,
+        description,
+        alternates: { canonical: `/product/${id}` },
+        openGraph: {
+          title: `${p.name} — Xon Bozor`,
+          description,
+          url: `/product/${id}`,
+          siteName: "Xon Bozor",
+          images: [{ url: img, alt: p.name }],
+          type: "website",
+        },
+        twitter: {
+          card: "summary_large_image",
+          title: `${p.name} — Xon Bozor`,
+          description,
+          images: [img],
+        },
+      };
+    }
+  } catch (e) {}
+
+  try {
     const res = await api.get(`/api/products/${id}`);
     if (res.data?.product?.name) {
       const p = mapApiProduct(res.data.product);
@@ -59,13 +91,34 @@ export default async function ProductPage({ params }) {
   let product = null;
   let related = [];
 
+  // Direct MongoDB fetch on server
   try {
-    const res = await api.get(`/api/products/${id}`);
-    if (res.data?.product) {
-      product = mapApiProduct(res.data.product);
-      related = (res.data.related || []).map(mapApiProduct);
+    const { connectToDatabase } = await import("@/lib/mongodb");
+    const Product = (await import("@/lib/models/Product")).default;
+    await connectToDatabase();
+    const raw = await Product.findById(id).lean();
+    if (raw) {
+      product = mapApiProduct(raw);
+      const relRaw = await Product.find({
+        category: raw.category,
+        _id: { $ne: raw._id },
+        isActive: { $ne: false },
+      })
+        .limit(6)
+        .lean();
+      related = relRaw.map(mapApiProduct);
     }
-  } catch (e) {}
+  } catch (_) {}
+
+  if (!product) {
+    try {
+      const res = await api.get(`/api/products/${id}`);
+      if (res.data?.product) {
+        product = mapApiProduct(res.data.product);
+        related = (res.data.related || []).map(mapApiProduct);
+      }
+    } catch (e) {}
+  }
 
   if (!product) {
     return (

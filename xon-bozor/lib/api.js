@@ -1,7 +1,19 @@
 import axios from "axios";
 
+const getBaseURL = () => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (envUrl && !envUrl.includes("3211") && !envUrl.includes("onrender.com")) {
+    return envUrl;
+  }
+  // Browserda bo'lsa, relative URL (shu saytning o'zidagi Next.js API) eng xavfsiz va CORSsiz
+  if (typeof window !== "undefined") {
+    return "";
+  }
+  return process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:5000";
+};
+
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000",
+  baseURL: getBaseURL(),
   timeout: 25000,
 });
 
@@ -42,7 +54,7 @@ api.interceptors.response.use(
       localStorage.removeItem("user");
       window.dispatchEvent(new CustomEvent("auth-change", { detail: null }));
     }
-    // If Render is 503 (suspended) or network error, fallback to localhost:5000 in local dev
+    // Lokal dev muhitida fallback
     if (
       (err.response?.status === 503 || !err.response) &&
       typeof window !== "undefined" &&
@@ -58,4 +70,5 @@ api.interceptors.response.use(
   }
 );
 
-export const apiError = (err, fallback) => err?.response?.data?.message || err?.response?.data?.error || fallback;
+export const apiError = (err, fallback) =>
+  err?.response?.data?.message || err?.response?.data?.error || fallback;
