@@ -123,7 +123,7 @@ export default function ProfileClient({ t }) {
   };
 
   const fileInputRef = useRef(null);
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3211";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   const currentAvatar =
     avatarPreview ||
@@ -138,7 +138,10 @@ export default function ProfileClient({ t }) {
   }, [currentAvatar]);
 
   useEffect(() => {
-    if (!localStorage.getItem("token")) return setState("guest");
+    if (!localStorage.getItem("token")) {
+      clearToken();
+      return setState("guest");
+    }
     let cachedUser = null;
     try {
       cachedUser = JSON.parse(localStorage.getItem("user") || "null");
@@ -147,6 +150,10 @@ export default function ProfileClient({ t }) {
     getMe()
       .then((d) => {
         const u = d?.user || d;
+        if (!u || !u.name) {
+          clearToken();
+          return setState("guest");
+        }
         const merged = { ...cachedUser, ...u };
         setUser(merged);
         localStorage.setItem("user", JSON.stringify(merged));
@@ -157,8 +164,11 @@ export default function ProfileClient({ t }) {
         });
         setState("ok");
       })
-      .catch(() => {
-        if (cachedUser) {
+      .catch((err) => {
+        if (err?.response?.status === 401 || err?.response?.status === 404) {
+          clearToken();
+          setState("guest");
+        } else if (cachedUser && localStorage.getItem("token")) {
           setUser(cachedUser);
           setForm({ name: cachedUser.name || "", email: cachedUser.email || "", phone: cachedUser.phone || "" });
           setState("ok");

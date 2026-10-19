@@ -86,7 +86,10 @@ function ProductCard({ product: p, t, priority = false }) {
   };
 
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-xl sm:rounded-2xl bg-white dark:bg-[#181920] border border-slate-200/80 dark:border-white/10 transition-all duration-300 hover:shadow-lg dark:hover:shadow-[0_12px_32px_-12px_rgba(0,0,0,0.7)] hover:-translate-y-0.5">
+    <article
+      className="group relative flex h-full flex-col overflow-hidden rounded-xl sm:rounded-2xl bg-white dark:bg-[#181920] border border-slate-200/80 dark:border-white/10 transition-all duration-300 hover:shadow-lg dark:hover:shadow-[0_12px_32px_-12px_rgba(0,0,0,0.7)] hover:-translate-y-0.5"
+      style={priority ? undefined : { contentVisibility: "auto", containIntrinsicSize: "0 340px" }}
+    >
       {/* 1:1 Kvadrat Rasm maydoni */}
       <div className="relative aspect-square w-full overflow-hidden bg-slate-50 dark:bg-[#12131a]">
         {/* Holat nishoni (ORIGINAL / B/U) */}

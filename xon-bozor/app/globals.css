@@ -28,16 +28,6 @@
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  body,
-  header,
-  footer,
-  main,
-  article,
-  .glass,
-  nav {
-    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
-  }
-
   body {
     @apply bg-[#f8f7fc] text-ink antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
@@ -53,11 +43,12 @@
     height: 90vh;
     z-index: -1;
     pointer-events: none;
+    transform: translateZ(0);
+    will-change: transform;
     background:
       radial-gradient(40% 50% at 15% 10%, rgba(124, 58, 237, 0.13), transparent 70%),
       radial-gradient(35% 45% at 85% 0%, rgba(224, 64, 251, 0.10), transparent 70%),
       radial-gradient(30% 40% at 50% 30%, rgba(59, 130, 246, 0.06), transparent 70%);
-    filter: blur(10px);
   }
   html.dark body::before {
     background:

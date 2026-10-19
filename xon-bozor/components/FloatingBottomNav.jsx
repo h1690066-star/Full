@@ -23,8 +23,16 @@ export default function FloatingBottomNav() {
   const [lang, setLang] = useState("uz");
 
   useEffect(() => {
-    setUser(getCurrentUser());
-    const handleAuth = (e) => setUser(e.detail || getCurrentUser());
+    const sync = () => {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) {
+        setUser(null);
+      } else {
+        setUser(getCurrentUser());
+      }
+    };
+    sync();
+    const handleAuth = (e) => setUser(e.detail || (localStorage.getItem("token") ? getCurrentUser() : null));
     window.addEventListener("auth-change", handleAuth);
 
     const updateLang = () => {
@@ -120,7 +128,7 @@ export default function FloatingBottomNav() {
     },
   ];
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3211";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   const avatar = user?.avatar;
   const avatarUrl =
     avatar && typeof avatar === "string" && avatar.trim()

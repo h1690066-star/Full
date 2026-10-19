@@ -9,60 +9,56 @@ export default function UserMenu({ loginLabel }) {
   const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
-    const cached = getCurrentUser();
-    if (cached) setUser(cached);
-
-    let timer = null;
-    const syncUser = (immediate = false) => {
-      if (!localStorage.getItem("token")) {
+    const syncUser = () => {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("user");
+        }
         setUser(null);
         return;
       }
       const u = getCurrentUser();
       if (u) setUser(u);
 
-      const doFetch = () => {
-        getMe()
-          .then((d) => {
-            const fresh = d?.user || d;
-            if (fresh && fresh.name) {
-              setUser(fresh);
-              localStorage.setItem("user", JSON.stringify(fresh));
-              window.dispatchEvent(new CustomEvent("auth-change", { detail: fresh }));
-            }
-          })
-          .catch(() => {});
-      };
-
-      if (immediate) {
-        doFetch();
-      } else {
-        doFetch(); // Darhol sinxronlash
-      }
+      getMe()
+        .then((d) => {
+          const fresh = d?.user || d;
+          if (fresh && fresh.name) {
+            setUser(fresh);
+            localStorage.setItem("user", JSON.stringify(fresh));
+          } else {
+            clearToken();
+            setUser(null);
+          }
+        })
+        .catch((err) => {
+          if (err?.response?.status === 401 || err?.response?.status === 404) {
+            clearToken();
+            setUser(null);
+          }
+        });
     };
 
-    syncUser(true);
+    syncUser();
 
     const handleAuthChange = (e) => {
       if (e.detail) {
         setUser(e.detail);
       } else {
-        syncUser(true);
+        syncUser();
       }
     };
 
     const handleStorage = (e) => {
-      if (e.key === "user") {
-        try {
-          setUser(JSON.parse(e.newValue));
-        } catch {}
+      if (e.key === "user" || e.key === "token") {
+        syncUser();
       }
     };
 
     window.addEventListener("auth-change", handleAuthChange);
     window.addEventListener("storage", handleStorage);
     return () => {
-      if (timer) clearTimeout(timer);
       window.removeEventListener("auth-change", handleAuthChange);
       window.removeEventListener("storage", handleStorage);
     };
@@ -70,7 +66,7 @@ export default function UserMenu({ loginLabel }) {
 
   const name = user?.name || user?.fullName || "";
   const avatar = user?.avatar;
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3211";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   let avatarUrl = null;
   if (avatar && typeof avatar === "string" && avatar.trim()) {
