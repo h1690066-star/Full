@@ -9,14 +9,14 @@ const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1511707267537-b85faf000
 export const resolveImage = (img) => {
   if (!img || typeof img !== "string") return null;
   const trimmed = img.trim();
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:") || trimmed.startsWith("blob:")) {
     return trimmed;
   }
   if (trimmed.startsWith("/uploads/")) {
-    return `${API_BASE}${trimmed}`;
+    return trimmed;
   }
   if (trimmed.startsWith("uploads/")) {
-    return `${API_BASE}/${trimmed}`;
+    return `/${trimmed}`;
   }
   return trimmed;
 };

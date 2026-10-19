@@ -10,10 +10,17 @@ export const mapApiProduct = (item) => {
   if (!item) return null;
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-  // URL rasmlarni afzal ko'ramiz (HTML hajmini kichik va yuklanishni tez qilish uchun)
-  const rawImages = (item.images || [])
-    .map((img) => (typeof img === "string" && img.startsWith("/uploads/") ? `${apiBase}${img}` : img))
-    .filter(Boolean);
+  const resolvePath = (img) => {
+    if (!img || typeof img !== "string") return null;
+    const clean = img.trim();
+    if (clean.startsWith("/uploads/") || clean.startsWith("uploads/")) {
+      return clean.startsWith("/") ? clean : `/${clean}`;
+    }
+    return clean;
+  };
+
+  // URL rasmlarni afzal ko'ramiz
+  const rawImages = (item.images || []).map(resolvePath).filter(Boolean);
 
   // Katta base64 rasmlar (80KB+) HTML hajmini 800KB ga oshirib, mobil LCP ni 15s ga cho'zadi.
   // Faqat 4KB dan kichik bo'lsa yoki URL bo'lmasa xavfsiz placeholder beramiz.
@@ -23,10 +30,7 @@ export const mapApiProduct = (item) => {
 
   const defaultPlaceholder = "https://images.unsplash.com/photo-1511707267537-b85faf00021e?w=400&h=400&fit=crop";
   const images = rawImages.length > 0 ? rawImages : embeddedImages.length > 0 ? embeddedImages : [defaultPlaceholder];
-  const mainImage =
-    images[0] ||
-    (typeof item.image === "string" && item.image.startsWith("/uploads/") ? `${apiBase}${item.image}` : item.image) ||
-    defaultPlaceholder;
+  const mainImage = images[0] || resolvePath(item.image) || defaultPlaceholder;
 
   const isUsed =
     item.used === true ||

@@ -74,7 +74,7 @@ export default function UserMenu({ loginLabel }) {
       avatarUrl = avatar;
     } else {
       const cleanPath = avatar.startsWith("/") ? avatar : `/${avatar}`;
-      avatarUrl = `${apiBase}${cleanPath}`;
+      avatarUrl = cleanPath;
     }
   }
 

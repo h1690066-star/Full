@@ -123,14 +123,14 @@ export default function ProfileClient({ t }) {
   };
 
   const fileInputRef = useRef(null);
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
   const currentAvatar =
     avatarPreview ||
     (user?.avatar
       ? user.avatar.startsWith("http://") || user.avatar.startsWith("https://") || user.avatar.startsWith("data:") || user.avatar.startsWith("blob:")
         ? user.avatar
-        : `${apiBase}${user.avatar.startsWith("/") ? "" : "/"}${user.avatar}`
+        : user.avatar.startsWith("/")
+          ? user.avatar
+          : `/${user.avatar}`
       : null);
 
   useEffect(() => {

@@ -6,3 +6,4 @@ node_modules
 *.log
 .vscode/
 lighthouse-report*.json
+arzon-nomer-uzb/

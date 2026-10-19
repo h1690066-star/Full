@@ -128,13 +128,14 @@ export default function FloatingBottomNav() {
     },
   ];
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   const avatar = user?.avatar;
   const avatarUrl =
     avatar && typeof avatar === "string" && avatar.trim()
       ? avatar.startsWith("http://") || avatar.startsWith("https://") || avatar.startsWith("data:") || avatar.startsWith("blob:")
         ? avatar
-        : `${apiBase}${avatar.startsWith("/") ? "" : "/"}${avatar}`
+        : avatar.startsWith("/")
+          ? avatar
+          : `/${avatar}`
       : null;
   const initialLetter = user?.name && user.name.trim().length > 0 ? user.name.trim().charAt(0).toUpperCase() : "";
   const [avatarErr, setAvatarErr] = useState(false);

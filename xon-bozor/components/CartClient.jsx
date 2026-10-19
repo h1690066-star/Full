@@ -526,8 +526,8 @@ export default function CartClient({ t }) {
             <div className="space-y-4 lg:col-span-2">
               {cart.map((item, idx) => {
                 const pid = item.id || item._id;
-                const itemImg = (typeof item.image === "string" && item.image.startsWith("/uploads/"))
-                  ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${item.image}`
+                const itemImg = (typeof item.image === "string" && (item.image.startsWith("/uploads/") || item.image.startsWith("uploads/")))
+                  ? (item.image.startsWith("/") ? item.image : `/${item.image}`)
                   : item.image || (item.images && item.images[0]) || "https://images.unsplash.com/photo-1511707267537-b85faf00021e?w=400&h=400&fit=crop";
 
                 return (
@@ -887,8 +887,8 @@ export default function CartClient({ t }) {
               </div>
               <div className="max-h-64 divide-y divide-slate-100 overflow-y-auto px-5 dark:divide-white/[0.06]">
                 {cart.map((item) => {
-                  const itemImg = (typeof item.image === "string" && item.image.startsWith("/uploads/"))
-                    ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${item.image}`
+                  const itemImg = (typeof item.image === "string" && (item.image.startsWith("/uploads/") || item.image.startsWith("uploads/")))
+                    ? (item.image.startsWith("/") ? item.image : `/${item.image}`)
                     : item.image || (item.images && item.images[0]) || "https://images.unsplash.com/photo-1511707267537-b85faf00021e?w=400&h=400&fit=crop";
 
                   return (

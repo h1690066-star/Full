@@ -35,3 +35,4 @@ export async function GET(request, { params }) {
     return NextResponse.json({ message: "Server xatosi" }, { status: 500 });
   }
 }
+

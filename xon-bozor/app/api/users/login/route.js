@@ -64,3 +64,4 @@ export async function POST(request) {
     return NextResponse.json({ message: err.message || "Server xatosi" }, { status: 500 });
   }
 }
+

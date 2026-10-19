@@ -36,3 +36,4 @@ export async function GET(request) {
     return NextResponse.json([], { status: 500 });
   }
 }
+

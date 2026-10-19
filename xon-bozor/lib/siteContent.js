@@ -1,17 +1,25 @@
 import fallbackData from "./siteContent.json";
+import { connectToDatabase } from "./mongodb";
 
 export async function fetchSiteContent() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   try {
-    const res = await fetch(`${apiBase}/api/site-content`, {
-      next: { revalidate: 15 },
-      headers: { "Accept": "application/json" }
-    });
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    const data = await res.json();
-    return data;
+    if (typeof window === "undefined") {
+      const conn = await connectToDatabase();
+      const db = conn.connection?.db || conn.db;
+      if (db) {
+        const doc = await db.collection("sitecontents").findOne();
+        if (doc) return JSON.parse(JSON.stringify(doc));
+      }
+    } else {
+      const res = await fetch("/api/site-content", {
+        headers: { Accept: "application/json" },
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    }
   } catch (err) {
-    console.warn("fetchSiteContent API fetch error, using local fallback:", err.message);
-    return fallbackData;
+    console.warn("fetchSiteContent error, using fallback:", err.message);
   }
+  return fallbackData;
 }
