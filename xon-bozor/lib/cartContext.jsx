@@ -3,7 +3,6 @@ import { createContext, useContext, useEffect, useState, useMemo, useCallback } 
 
 const CartContext = createContext(null);
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1511707267537-b85faf00021e?w=400&h=400&fit=crop";
 
 export const resolveImage = (img) => {

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import { connectToDatabase } from "@/lib/mongodb";
 import User from "@/lib/models/User";
 
@@ -15,17 +16,18 @@ const normPhone = (raw) => {
   return null;
 };
 
-const sign = (user) =>
-  jwt.sign({ id: user._id, role: "user" }, JWT_SECRET, {
+const sign = (user, role = "user") =>
+  jwt.sign({ id: user._id, role }, JWT_SECRET, {
     expiresIn: "365d",
   });
 
-const publicUser = (u) => ({
+const publicUser = (u, role = "user") => ({
   id: u._id,
-  name: u.name,
+  name: u.name || u.username,
   phone: u.phone || null,
   email: u.email || null,
   avatar: u.avatar || null,
+  role: role || u.role || "user",
   createdAt: u.createdAt,
 });
 
@@ -33,35 +35,57 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request) {
   try {
-    await connectToDatabase();
+    const conn = await connectToDatabase();
     const body = await request.json();
     const password = String(body.password || "");
-    const login = String(body.login || body.email || "");
+    const login = String(body.login || body.email || body.phone || "").trim();
 
     if (!login || !password) {
-      return NextResponse.json({ message: "Email va parolni kiriting" }, { status: 400 });
+      return NextResponse.json({ message: "Login va parolni kiriting" }, { status: 400 });
     }
 
+    // 1. Foydalanuvchini email yoki telefon bo'yicha qidirish
     const query = login.includes("@")
       ? { email: login.toLowerCase().trim() }
-      : { phone: normPhone(login) };
+      : { phone: normPhone(login) || login };
 
-    if (!query.email && !query.phone) {
-      return NextResponse.json({ message: "Email yoki parol xato" }, { status: 400 });
+    let user = await User.findOne(query).select("+password");
+
+    // Agar topilmasa, boshqa formatdagi telefon yoki ism bo'yicha ham sinab ko'rish
+    if (!user && !login.includes("@")) {
+      user = await User.findOne({
+        $or: [
+          { phone: login },
+          { phone: normPhone(login) },
+          { name: login },
+        ],
+      }).select("+password");
     }
 
-    const user = await User.findOne(query).select("+password");
-    if (!user || !(await user.comparePassword(password))) {
-      return NextResponse.json({ message: "Email yoki parol xato" }, { status: 400 });
+    if (user && (await user.comparePassword(password))) {
+      return NextResponse.json({
+        token: sign(user, "user"),
+        user: publicUser(user, "user"),
+      });
     }
 
-    return NextResponse.json({
-      token: sign(user),
-      user: publicUser(user),
-    });
+    // 2. Agar foydalanuvchi topilmasa, adminlar jadvalidan tekshirish
+    const db = conn.connection?.db || conn.db;
+    if (db) {
+      const admin = await db.collection("admins").findOne({
+        $or: [{ username: login }, { email: login }],
+      });
+      if (admin && admin.password && (await bcrypt.compare(password, admin.password))) {
+        return NextResponse.json({
+          token: sign(admin, "admin"),
+          user: { id: admin._id, name: admin.username, role: "admin" },
+        });
+      }
+    }
+
+    return NextResponse.json({ message: "Email, telefon yoki parol noto'g'ri" }, { status: 400 });
   } catch (err) {
     console.error("API /api/users/login error:", err);
     return NextResponse.json({ message: err.message || "Server xatosi" }, { status: 500 });
   }
 }
-

@@ -66,7 +66,6 @@ export default function UserMenu({ loginLabel }) {
 
   const name = user?.name || user?.fullName || "";
   const avatar = user?.avatar;
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   let avatarUrl = null;
   if (avatar && typeof avatar === "string" && avatar.trim()) {

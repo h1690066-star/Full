@@ -15,7 +15,7 @@ export const mapApiProduct = (rawItem) => {
     item = rawItem;
   }
   if (!item) return null;
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
 
   const resolvePath = (img) => {
     if (!img || typeof img !== "string") return null;
@@ -84,7 +84,7 @@ const API_BASE =
     !process.env.NEXT_PUBLIC_API_URL.includes("3211") &&
     !process.env.NEXT_PUBLIC_API_URL.includes("onrender.com"))
     ? process.env.NEXT_PUBLIC_API_URL
-    : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:5000";
+    : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 // Server-side in-memory cache
 const memoryCache = new Map();

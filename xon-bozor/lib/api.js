@@ -1,15 +1,17 @@
 import axios from "axios";
 
 const getBaseURL = () => {
-  const envUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (envUrl && !envUrl.includes("3211") && !envUrl.includes("onrender.com")) {
-    return envUrl;
-  }
-  // Browserda bo'lsa, relative URL (shu saytning o'zidagi Next.js API) eng xavfsiz va CORSsiz
+  // Browserda bo'lsa, har doim relative URL ("") bo'lishi kerak.
+  // Sayt qaysi portda (3000, 3001) yoki Vercel-da bo'lishidan qat'i nazar,
+  // API so'rovlari o'sha saytning o'zidagi /api/... ga boradi va hech qachon port/CORS xatosi bo'lmaydi.
   if (typeof window !== "undefined") {
     return "";
   }
-  return process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:5000";
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (envUrl && !envUrl.includes("3211") && !envUrl.includes("onrender.com") && !envUrl.includes("5000")) {
+    return envUrl;
+  }
+  return process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 };
 
 export const api = axios.create({
@@ -49,22 +51,17 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   async (err) => {
-    if ((err.response?.status === 401 || err.response?.status === 403) && typeof window !== "undefined") {
+    // Faqat oddiy API larda token eskirgan bo'lsa tozalash (login yoki register xatosi bo'lsa tozalash shart emas)
+    const url = err.config?.url || "";
+    if (
+      (err.response?.status === 401 || err.response?.status === 403) &&
+      typeof window !== "undefined" &&
+      !url.includes("/login") &&
+      !url.includes("/register")
+    ) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       window.dispatchEvent(new CustomEvent("auth-change", { detail: null }));
-    }
-    // Lokal dev muhitida fallback
-    if (
-      (err.response?.status === 503 || !err.response) &&
-      typeof window !== "undefined" &&
-      window.location.hostname === "localhost" &&
-      !err.config?._retriedLocal &&
-      err.config?.baseURL !== "http://localhost:5000"
-    ) {
-      err.config._retriedLocal = true;
-      err.config.baseURL = "http://localhost:5000";
-      return api(err.config);
     }
     return Promise.reject(err);
   }

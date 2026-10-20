@@ -21,29 +21,11 @@ export const registerUser = async (data) => {
 
 export const loginUser = async (data) => {
   const loginStr = (data.login || data.email || data.phone || "").trim();
-  try {
-    const res = await api.post("/api/users/login", {
-      login: loginStr,
-      email: data.email,
-      phone: data.phone,
-      password: data.password,
-    });
-    return res.data;
-  } catch (err) {
-    // Agar mijoz login xato bo'lsa va admin ma'lumotlari kiritilgan bo'lsa, admin loginni sinab ko'ramiz
-    try {
-      const adminRes = await api.post("/api/auth/login", {
-        username: loginStr,
-        password: data.password,
-      });
-      return {
-        token: adminRes.data?.token,
-        user: { name: adminRes.data?.username, role: "admin" },
-      };
-    } catch {
-      throw err;
-    }
-  }
+  const res = await api.post("/api/users/login", {
+    login: loginStr,
+    password: data.password,
+  });
+  return res.data;
 };
 
 export const getMe = () => api.get("/api/users/me").then((r) => r.data);
