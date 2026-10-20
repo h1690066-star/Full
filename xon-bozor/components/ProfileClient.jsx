@@ -154,11 +154,12 @@ export default function ProfileClient({ t }) {
           clearToken();
           return setState("guest");
         }
-        const merged = { ...cachedUser, ...u };
+        const validName = (u.name && u.name !== "null") ? u.name : (cachedUser?.name && cachedUser.name !== "null") ? cachedUser.name : "Foydalanuvchi";
+        const merged = { ...cachedUser, ...u, name: validName };
         setUser(merged);
         localStorage.setItem("user", JSON.stringify(merged));
         setForm({
-          name: u.name || "",
+          name: validName,
           email: u.email || "",
           phone: u.phone || "",
         });
@@ -194,10 +195,14 @@ export default function ProfileClient({ t }) {
         setUploadingAvatar(true);
         const formData = new FormData();
         formData.append("avatar", file);
+        if (user?.name && user.name !== "null") formData.append("name", user.name);
+        if (user?.phone && user.phone !== "null") formData.append("phone", user.phone);
+        if (user?.email && user.email !== "null") formData.append("email", user.email);
 
         const d = await updateMe(formData);
         const updated = d?.user || d;
-        const merged = { ...user, ...updated };
+        const validName = (updated?.name && updated.name !== "null") ? updated.name : (user?.name && user.name !== "null") ? user.name : "Foydalanuvchi";
+        const merged = { ...user, ...updated, name: validName };
         setUser(merged);
         localStorage.setItem("user", JSON.stringify(merged));
         window.dispatchEvent(new CustomEvent("auth-change", { detail: merged }));

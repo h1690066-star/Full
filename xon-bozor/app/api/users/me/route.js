@@ -76,10 +76,10 @@ export async function PUT(request) {
 
     if (contentType.includes("multipart/form-data")) {
       const formData = await request.formData();
-      body.name = formData.get("name");
-      body.phone = formData.get("phone");
-      body.email = formData.get("email");
-      body.removeAvatar = formData.get("removeAvatar");
+      body.name = formData.get("name") || undefined;
+      body.phone = formData.get("phone") || undefined;
+      body.email = formData.get("email") || undefined;
+      body.removeAvatar = formData.get("removeAvatar") || undefined;
 
       const file = formData.get("avatar");
       if (file && typeof file === "object" && file.size > 0) {
@@ -97,7 +97,12 @@ export async function PUT(request) {
       body = await request.json();
     }
 
-    if (body.name !== undefined && String(body.name).trim() !== "") {
+    if (
+      body.name !== undefined &&
+      body.name !== null &&
+      String(body.name).trim() !== "" &&
+      String(body.name).trim().toLowerCase() !== "null"
+    ) {
       const name = String(body.name).trim();
       if (name.length < 2) {
         return NextResponse.json({ message: "Ism kamida 2 ta belgi bo'lsin" }, { status: 400 });
@@ -105,7 +110,11 @@ export async function PUT(request) {
       user.name = name;
     }
 
-    if (body.phone && String(body.phone).trim() !== "") {
+    if (
+      body.phone &&
+      String(body.phone).trim() !== "" &&
+      String(body.phone).trim().toLowerCase() !== "null"
+    ) {
       const p = normPhone(body.phone);
       if (!p) {
         return NextResponse.json({ message: "Telefon raqam noto'g'ri" }, { status: 400 });
@@ -113,7 +122,11 @@ export async function PUT(request) {
       user.phone = p;
     }
 
-    if (body.email && String(body.email).trim() !== "") {
+    if (
+      body.email &&
+      String(body.email).trim() !== "" &&
+      String(body.email).trim().toLowerCase() !== "null"
+    ) {
       const em = String(body.email).toLowerCase().trim();
       if (!emailRx.test(em)) {
         return NextResponse.json({ message: "Email noto'g'ri" }, { status: 400 });

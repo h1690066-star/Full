@@ -64,7 +64,8 @@ export default function UserMenu({ loginLabel }) {
     };
   }, []);
 
-  const name = user?.name || user?.fullName || "";
+  const rawName = user?.name || user?.fullName || "";
+  const name = rawName === "null" ? "" : rawName;
   const avatar = user?.avatar;
 
   let avatarUrl = null;

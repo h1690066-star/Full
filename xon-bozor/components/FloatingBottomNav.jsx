@@ -137,7 +137,9 @@ export default function FloatingBottomNav() {
           ? avatar
           : `/${avatar}`
       : null;
-  const initialLetter = user?.name && user.name.trim().length > 0 ? user.name.trim().charAt(0).toUpperCase() : "";
+  const rawName = user?.name || "";
+  const cleanName = rawName === "null" ? "" : rawName;
+  const initialLetter = cleanName && cleanName.trim().length > 0 ? cleanName.trim().charAt(0).toUpperCase() : "";
   const [avatarErr, setAvatarErr] = useState(false);
 
   useEffect(() => {
