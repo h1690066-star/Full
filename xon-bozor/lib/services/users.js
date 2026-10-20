@@ -69,9 +69,18 @@ export const saveToken = (res) => {
 
 export const clearToken = () => {
   if (typeof window !== "undefined") {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    // Faqat theme ni saqlab qolamiz, qolgan barcha ma'lumotlarni (cart, like, user, buyurtmalar) o'chiramiz
+    const savedTheme = localStorage.getItem("theme");
+    try {
+      localStorage.clear();
+    } catch (e) {}
+    if (savedTheme) {
+      try {
+        localStorage.setItem("theme", savedTheme);
+      } catch (e) {}
+    }
     window.dispatchEvent(new CustomEvent("auth-change", { detail: null }));
+    window.dispatchEvent(new CustomEvent("xon-cart-clear", { detail: null }));
   }
 };
 

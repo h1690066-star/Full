@@ -253,10 +253,6 @@ export default function ProfileClient({ t }) {
 
   const confirmLogout = () => {
     clearToken();
-    try {
-      localStorage.removeItem("user");
-      window.dispatchEvent(new CustomEvent("auth-change", { detail: null }));
-    } catch {}
     toast("Akkauntdan chiqildi", "info");
     setShowLogoutModal(false);
     router.push("/");

@@ -176,7 +176,7 @@ export default async function ProductPage({ params }) {
       />
       <Header t={t} lang={lang} />
       <main className="min-h-screen bg-slate-50/50 dark:bg-[#0f1015] text-slate-900 dark:text-slate-100 pb-24 min-[1121px]:pb-14 transition-colors">
-        <ProductDetailClient product={product} related={related} t={t} />
+        <ProductDetailClient product={JSON.parse(JSON.stringify(product))} related={JSON.parse(JSON.stringify(related))} t={t} />
       </main>
       <Footer t={t} />
     </>

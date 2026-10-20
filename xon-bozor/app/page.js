@@ -65,7 +65,7 @@ function SectionSkeleton({ id = "products", title = "Mahsulotlar", href = "/cata
 
 // Orqa fonda ma'lumotlarni olib keluvchi asinxron komponent (Barcha mahsulotlar aralash holda)
 async function AsyncProductSection({ id = "products", title, href, allLabel, t, priority = false, productsPromise }) {
-  const allProducts = (await productsPromise) || [];
+  const allProducts = JSON.parse(JSON.stringify((await productsPromise) || []));
   return (
     <ProductSection
       id={id}

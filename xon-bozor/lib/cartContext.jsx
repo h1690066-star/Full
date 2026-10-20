@@ -78,6 +78,25 @@ export function CartProvider({ children }) {
     setHydrated(true);
   }, []);
 
+  // Foydalanuvchi hisobdan chiqqanda cart va wishlist holatini darhol tozalash
+  useEffect(() => {
+    const handleLogout = () => {
+      setCart([]);
+      setWishlist([]);
+    };
+    const handleAuth = (e) => {
+      if (!e.detail) {
+        handleLogout();
+      }
+    };
+    window.addEventListener("auth-change", handleAuth);
+    window.addEventListener("xon-cart-clear", handleLogout);
+    return () => {
+      window.removeEventListener("auth-change", handleAuth);
+      window.removeEventListener("xon-cart-clear", handleLogout);
+    };
+  }, []);
+
   const saveCartSync = (newCart) => {
     try {
       localStorage.setItem("xon_cart", JSON.stringify(newCart));

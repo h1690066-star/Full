@@ -13,15 +13,18 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
   this.password = await bcrypt.hash(this.password, 10);
-  next();
 });
 
 userSchema.methods.comparePassword = function (plain) {
   return bcrypt.compare(String(plain || ""), this.password);
 };
 
-export default mongoose.models.User || mongoose.model("User", userSchema);
+if (mongoose.models.User) {
+  delete mongoose.models.User;
+}
+
+export default mongoose.model("User", userSchema);
 

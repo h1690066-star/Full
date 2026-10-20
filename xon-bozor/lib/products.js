@@ -6,7 +6,14 @@ export const formatPrice = (n) => {
 };
 
 // Faqat APIdan kelgan mahsulotlarni formatlash uchun helper
-export const mapApiProduct = (item) => {
+export const mapApiProduct = (rawItem) => {
+  let item = rawItem;
+  try {
+    item = typeof rawItem?.toObject === "function" ? rawItem.toObject() : rawItem;
+    item = JSON.parse(JSON.stringify(item));
+  } catch (_) {
+    item = rawItem;
+  }
   if (!item) return null;
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -42,8 +49,8 @@ export const mapApiProduct = (item) => {
         item.name.toLowerCase().includes("(b/u)")));
 
   return {
-    id: item._id || item.id,
-    _id: item._id || item.id,
+    id: String(item._id || item.id || ""),
+    _id: String(item._id || item.id || ""),
     name: item.name || "Mahsulot",
     rating: item.rating ?? 5.0,
     reviews: item.reviewsCount ?? item.reviews ?? 0,
