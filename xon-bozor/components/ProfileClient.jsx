@@ -381,9 +381,9 @@ export default function ProfileClient({ t }) {
           {/* Actions */}
           <div className="flex flex-wrap items-center gap-2 sm:pb-1">
             {user?.role === "admin" && (
-              <Link href="/admin/users" className="btn-secondary h-11 px-4 cursor-pointer">
+              <Link href="/admin" className="btn-secondary h-11 px-4 cursor-pointer">
                 <MdAdminPanelSettings className="text-lg" />
-                {p.adminUsers}
+                <span>Admin Panel</span>
               </Link>
             )}
             <button

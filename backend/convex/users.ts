@@ -4,14 +4,60 @@ import { v } from "convex/values";
 export const list = query({
   args: {},
   handler: async (ctx) => {
-    const users = await ctx.db.query("users").collect();
+    const [users, orders] = await Promise.all([
+      ctx.db.query("users").collect(),
+      ctx.db.query("orders").collect(),
+    ]);
     users.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-    return users.map((u) => ({
-      ...u,
-      id: u.originalId || u._id,
-      _id: u.originalId || u._id,
-      convexId: u._id,
-    }));
+    const normDigits = (p: any) => String(p || "").replace(/\D/g, "").slice(-9);
+
+    return users.map((u) => {
+      const uid = String(u.originalId || u._id);
+      const uPhone = normDigits(u.phone);
+      const uName = String(u.name || "").trim().toLowerCase();
+
+      const matched = orders.filter((o) => {
+        if (o.user && String(o.user) === uid) return true;
+        const oPhone = normDigits(o.customer?.phone || o.address?.phone);
+        if (uPhone && oPhone && uPhone === oPhone) return true;
+        const oName = String(o.customer?.name || "").trim().toLowerCase();
+        if (uName && oName && uName.length > 2 && uName === oName) return true;
+        return false;
+      });
+
+      const valid = matched.filter(
+        (o) => o.status !== "cancelled" && o.status !== "Bekor qilingan"
+      );
+      const totalSpent = valid.reduce((s, o) => s + (Number(o.total) || 0), 0);
+      const lastOrder = matched[0] || null;
+      const lastAddress = lastOrder?.address?.text
+        ? `${lastOrder.address.title ? lastOrder.address.title + " — " : ""}${lastOrder.address.text}`
+        : "Toshkent sh., Yetkazib berish manzili";
+
+      return {
+        ...u,
+        id: u.originalId || u._id,
+        _id: u.originalId || u._id,
+        convexId: u._id,
+        ordersCount: matched.length,
+        activeOrdersCount: valid.length,
+        totalSpent: Math.round(totalSpent),
+        avgCheck: valid.length > 0 ? Math.round(totalSpent / valid.length) : 0,
+        lastActive: lastOrder?.createdAt || u.createdAt,
+        lastAddress,
+        isVip: matched.length >= 2 || totalSpent >= 10000000,
+        orderHistory: matched.slice(0, 10).map((o) => ({
+          id: String(o._id),
+          _id: String(o._id),
+          orderNumber: o.orderNumber,
+          status: o.status || "new",
+          total: Number(o.total) || 0,
+          itemsCount: Array.isArray(o.items) ? o.items.length : 1,
+          items: o.items || [],
+          createdAt: o.createdAt,
+        })),
+      };
+    });
   },
 });
 

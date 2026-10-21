@@ -168,23 +168,103 @@ exports.changePassword = async (req, res) => {
   }
 };
 
-// GET /api/users   (admin) -> mijozlar royxati, ?search=&page=&limit=
+// GET /api/users   (admin) -> mijozlar royxati + real buyurtmalar tarixi bilan
 exports.listUsers = async (req, res) => {
   try {
-    const { search, page = 1, limit = 20 } = req.query;
-    const filter = {};
-    if (search) {
-      const rx = new RegExp(String(search).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-      filter.$or = [{ name: rx }, { phone: rx }, { email: rx }];
-    }
-    const pageNum = Math.max(1, Number(page) || 1);
-    const limitNum = Math.min(100, Math.max(1, Number(limit) || 20));
-
-    const [items, total] = await Promise.all([
-      User.find(filter).sort({ createdAt: -1 }).skip((pageNum - 1) * limitNum).limit(limitNum),
-      User.countDocuments(filter),
+    const { search, page = 1, limit = 100 } = req.query;
+    const Order = require('../models/Order');
+    const [usersRaw, ordersRaw] = await Promise.all([
+      User.find({}).sort({ createdAt: -1 }).lean(),
+      Order.find({}).select('-receiptData').sort({ createdAt: -1 }).lean(),
     ]);
-    res.json({ items: items.map(publicUser), total, page: pageNum, pages: Math.ceil(total / limitNum) });
+
+    const normDigits = (p) => String(p || '').replace(/\D/g, '').slice(-9);
+
+    const enriched = (usersRaw || []).map((u) => {
+      const uid = String(u._id);
+      const uPhone = normDigits(u.phone);
+      const uName = String(u.name || '').trim().toLowerCase();
+
+      const matchedOrders = (ordersRaw || []).filter((o) => {
+        if (o.user && String(o.user) === uid) return true;
+        const oPhone = normDigits(o.customer?.phone || o.address?.phone);
+        if (uPhone && oPhone && uPhone === oPhone) return true;
+        const oName = String(o.customer?.name || '').trim().toLowerCase();
+        if (uName && oName && uName.length > 2 && uName === oName) return true;
+        return false;
+      });
+
+      const validOrders = matchedOrders.filter(
+        (o) => o.status !== 'cancelled' && o.status !== 'Bekor qilingan'
+      );
+
+      const totalSpent = validOrders.reduce((s, o) => {
+        let t = Number(o.total) || 0;
+        if (!t && Array.isArray(o.items)) {
+          t = o.items.reduce(
+            (is, it) => is + (Number(it.price) || 0) * (Number(it.qty || it.quantity) || 1),
+            0
+          );
+        }
+        return s + t;
+      }, 0);
+
+      const lastOrder = matchedOrders[0] || null;
+      const lastAddress = lastOrder?.address?.text
+        ? `${lastOrder.address.title ? lastOrder.address.title + ' — ' : ''}${lastOrder.address.text}`
+        : 'Toshkent sh., Yetkazib berish manzili';
+
+      return {
+        id: uid,
+        _id: uid,
+        name: u.name || 'Mijoz',
+        phone: u.phone || lastOrder?.customer?.phone || lastOrder?.address?.phone || null,
+        email: u.email || null,
+        avatar: u.avatar || null,
+        createdAt: u.createdAt,
+        ordersCount: matchedOrders.length,
+        activeOrdersCount: validOrders.length,
+        totalSpent: Math.round(totalSpent),
+        avgCheck: validOrders.length > 0 ? Math.round(totalSpent / validOrders.length) : 0,
+        lastActive: lastOrder?.createdAt || u.createdAt,
+        lastAddress,
+        isVip: matchedOrders.length >= 2 || totalSpent >= 10000000,
+        orderHistory: matchedOrders.slice(0, 10).map((o) => ({
+          id: String(o._id),
+          _id: String(o._id),
+          orderNumber: o.orderNumber || `XB-${String(o._id).slice(-6)}`,
+          status: o.status || 'new',
+          total: Number(o.total) || 0,
+          itemsCount: Array.isArray(o.items)
+            ? o.items.reduce((s, i) => s + (Number(i.qty || i.quantity) || 1), 0)
+            : 1,
+          items: o.items || [],
+          createdAt: o.createdAt,
+        })),
+      };
+    });
+
+    const q = search ? String(search).trim().toLowerCase() : '';
+    const filtered = q
+      ? enriched.filter(
+          (u) =>
+            String(u.name || '').toLowerCase().includes(q) ||
+            String(u.phone || '').toLowerCase().includes(q) ||
+            String(u.email || '').toLowerCase().includes(q)
+        )
+      : enriched;
+
+    const pageNum = Math.max(1, Number(page) || 1);
+    const limitNum = Math.min(200, Math.max(1, Number(limit) || 100));
+    const paged = filtered.slice((pageNum - 1) * limitNum, pageNum * limitNum);
+
+    res.json({
+      items: paged,
+      users: paged,
+      total: filtered.length,
+      page: pageNum,
+      pages: Math.max(1, Math.ceil(filtered.length / limitNum)),
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
