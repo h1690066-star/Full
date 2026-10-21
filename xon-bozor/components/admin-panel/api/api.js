@@ -1,14 +1,23 @@
+export const isDev =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
 const envApiUrl = '';
 
-// Always try relative '/api' first (works in Next.js /admin and Vite proxy), then fallback across local backend ports
+// Always try relative '/api' first (works in Next.js /admin and Vite proxy), then fallback across live/local backends
 export const SERVER_URL = envApiUrl || '';
 export const BASE_URL = '/api';
 
 const FALLBACK_BASES = [
   '/api',
-  'http://localhost:5000/api',
-  'http://localhost:3000/api',
-  'http://127.0.0.1:3211/api',
+  'https://xonbozoruz.vercel.app/api',
+  ...(isDev
+    ? [
+        'http://localhost:5000/api',
+        'http://localhost:3000/api',
+        'http://127.0.0.1:3211/api',
+      ]
+    : []),
 ];
 
 let activeBaseUrl = BASE_URL;
@@ -27,9 +36,8 @@ export function getImageUrl(path) {
     return path;
   }
   const clean = path.startsWith('/') ? path : `/${path}`;
-  if (isDev) return clean;
-  const host = activeBaseUrl.replace(/\/api$/, '') || SERVER_URL || 'http://localhost:5000';
-  return `${host}${clean}`;
+  const host = activeBaseUrl.replace(/\/api$/, '') || SERVER_URL || '';
+  return host ? `${host}${clean}` : clean;
 }
 
 export function getToken() {
