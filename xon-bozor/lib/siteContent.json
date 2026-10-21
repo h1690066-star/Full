@@ -79,7 +79,7 @@
     },
     {
       "id": "q-3",
-      "title": "Aksessuarlarcha",
+      "title": "Aksessuarlar",
       "sub": "Chexol, oyna, quvvatlagich",
       "href": "/catalog/accessories",
       "_id": "6ad45455fc18fff5fa05fdff"
@@ -110,8 +110,8 @@
     }
   ],
   "updatedBy": "admin",
-  "lastPushedAt": "2026-10-21T09:39:37.613Z",
+  "lastPushedAt": "2026-10-21T09:40:29.905Z",
   "createdAt": "2026-10-18T05:08:37.970Z",
-  "updatedAt": "2026-10-21T09:39:37.617Z",
-  "__v": 7
+  "updatedAt": "2026-10-21T09:40:29.906Z",
+  "__v": 8
 }
